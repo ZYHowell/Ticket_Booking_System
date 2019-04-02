@@ -1,11 +1,14 @@
 //version 0.1 only complete :find; split; merge; insert and delete functions.
 //version 0.2 consider the input and output.
-//version 0.3 ??
-//version 0.0.1 now tring to build a structure and solve details later
+//version 0.3 a cache
+//version 0.0.1 builds a structure and solves details later. all datas are pretended to be located in memories
+//version 0.0.2 makes insertion in memories avaliable
+//version 0.1.1 uses file to read and write. Now
 #ifndef SJTU_BPLUSTREE_HPP
 #define SJTU_BPLUSTREE_HPP
 #include <cstddef>
 #include <functional>
+#include "exceptions.h"
 typedef void* loc;
 template<class key_type, class value_type, size_t part_size, class Compare = std::less<key_type>>
 class bplustree{
@@ -27,7 +30,8 @@ class bplustree{
 
     loc find(key_type k){
     //find the one smaller than k but the next is larger
-        loc now = root_first;
+        loc now = root_first->head;
+        if (now == nullptr) return now;
         while(now->type || !com(k, now->key)){
             if (!com(k, now->key)) now = (node *)(now->next);
             else now = (node *)((node *)now->prior)->child;
@@ -37,7 +41,7 @@ class bplustree{
     }
     void split(node *now){
         size_t s = now->size / 2;
-        node *temp = new node(k(),now->parent, nullptr, now->tail, now, now->next, s, now->type);
+        node *temp = new node(key_type(),now->parent, nullptr, now->tail, now, now->next, s, now->type);
     //in fact it can be a new in buffer instead of directly using new operator. maybe a placement new?
         node *tmp = now->tail;
         for (size_t i = 0;i < s;i++, tmp = tmp->prior) tmp->parent = temp;
@@ -51,8 +55,8 @@ class bplustree{
             if (now->parent->size > part_size) split(now->parent);
         }
         else{
-            root = now->parent = new node(k(),now,temp);
-            root->size = 2, root->type = 1;
+            root_first = now->parent = new node(key_type(), nullptr, now, temp);
+            root_first->size = 2, root_first->type = 1;
         }
     }
     void merge(node *now){
@@ -65,20 +69,29 @@ class bplustree{
         for (auto i = nex->head;i != nex->tail;i = i->next) i->parnet = now;
         nex->tail->parnet = now;
         if (now->size > part_size) split(now);
-        if (now->parent != root && now->parent->size < part_size / 2) merge(now->parent);
+        if (now->parent != root_first && now->parent->size < part_size / 2) merge(now);
     }
 public:
     bplustree():root_first(nullptr),num(0){}
     bool insert(key_type k,value_type v){
         node *now = (node *)find(k);
-        
+        if (!(com(now->key, k) || com(k, now->key))) return 0;
+        node *temp = new node(k, now->parent, nullptr, nullptr, now, now->next, 1, 1);
+        temp->head = temp->tail = new value_type(v);
+        if (now->next != nullptr) now->next->prior = temp;
+        now->next = temp;
+        if (++(now->parent->size) > part_size) split(now->parent);
     }
     bool remove(key_type k){
         node *now = (node *)find(k);
+        if (!(com(now->key, k) || com(k,now->key))) throw(runtime_error());
         return del(now);
     }
     value_type search(key_type k){
-        return *(T *)find(k);
+        loc l = find(k);
+        if (l != nullptr)
+            return *(value_type *)l;
+        else throw(runtime_error());
     }
 };
 #endif
