@@ -3,42 +3,90 @@
 //version 0.3 a cache
 //version 0.0.1 builds a structure and solves details later. all datas are pretended to be located in memories
 //version 0.0.2 makes insertion in memories avaliable
-//version 0.1.1 uses file to read and write. Now
+//version 0.1.1 change the data structure in order to fit the file system. Now
 #ifndef SJTU_BPLUSTREE_HPP
 #define SJTU_BPLUSTREE_HPP
 #include <cstddef>
 #include <functional>
+#include <stdio.h>
 #include "exceptions.h"
-typedef void* loc;
+using loc   =   long;
+using byte  =   char;
 template<class key_type, class value_type, size_t part_size, class Compare = std::less<key_type>>
-class bplustree{
-    struct node{
+class bplustree
+{
+    struct node
+    {
         key_type key;
         loc head, tail;
         loc prior, next, parent;
-        size_t size;
+        loc pos;
+        size_t size;                    //the size of its brothers
         bool type;                      //0 for a leaf and 1 otherwise
-        node(key_type k = key_type(),
+        node(key_type k = key_type(),loc p = nullptr
         loc par = nullptr, loc h = nullptr, loc t = nullptr, loc pre = nullptr, loc nex = nullptr, 
-        size_t s = 1, bool type = 0)
-        :key(k),parent(par),head(h),tail(t),prior(pre),next(nex),size(s),type(ty){}
+        size_t s = 0, bool type = 0)
+        :key(k),pos(p),parent(par),head(h),tail(t),prior(pre),next(nex),size(s),type(ty){}
     };
-    node *root_first;
+    loc root;
     Compare com;
     size_t num;
     FILE *fp;
 
-    loc find(key_type k){
-    //find the one smaller than k but the next is larger
-        loc now = root_first->head;
-        if (now == nullptr) return now;
-        while(now->type || !com(k, now->key)){
-            if (!com(k, now->key)) now = (node *)(now->next);
-            else now = (node *)((node *)now->prior)->child;
-        }
-    //break when size = 1 and k < now->key, i.e., k is added between the prior of now and now
-        return now->prior;
+    inline bool equal(const key_type& k1,const key_type& k2){
+        return !(com(k1, k2) || com(k2, k1));
     }
+//return info of the number n element, from 0 to n
+    void load(byte *start, node& p)
+    {}
+    void clear(byte *start, node &p)
+    {}
+    value_type& get_value(loc l)
+    {}
+    node& get_node(loc l)
+    {}
+
+
+    inline key_type* nth_element_key(byte *start, size_t n)
+    {
+        return (key_type *)(start + (sizeof(key_type) + sizeof(loc)) * n);
+    }
+    inline loc* nth_element_loc(byte *start, size_t n)
+    {
+        return (loc *)(start + sizeof(key_type) * (n + 1) + sizeof(loc) * n);
+    }
+    inline size_t binary_search_key(byte *start,const key_type& k, size_t n)
+    {
+    //find the one smaller than k but the next is larger, if k is the smallest,
+    //simply return the head waiting the extern function to judge
+    //there are n + 1 elements in total, which are 0 to n
+    //return the pointer to the contains instead of that to the key
+        size_t l = 0, r = n, mid;
+        while (r > l)
+        {
+            mid = (l + r) / 2;
+            if (cmp(*nth_element_key(start, mid), k)) l = mid + 1;
+            else r = mid;
+        }
+        return l;
+    }
+    value_type& find(node &p,const key_type& k)
+    {
+        byte *cache;
+        load(cache, p);
+        size_t ord = binary_search_key(cache, k, p.size);
+        loc* tmp = nth_element_loc(cache, ord);
+        if (!p.type){
+            clear(cache, p);
+            if (equal(nth_element_key(cache, ord), k)) return get_value(tmp);
+            else return value_type();
+        }
+        clear(cache, p);
+        return find(get_node(loc), k);
+    }
+
+
+
     void split(node *now){
         size_t s = now->size / 2;
         node *temp = new node(key_type(),now->parent, nullptr, now->tail, now, now->next, s, now->type);
@@ -73,6 +121,7 @@ class bplustree{
     }
 public:
     bplustree():root_first(nullptr),num(0){}
+
     bool insert(key_type k,value_type v){
         node *now = (node *)find(k);
         if (!(com(now->key, k) || com(k, now->key))) return 0;
@@ -87,11 +136,6 @@ public:
         if (!(com(now->key, k) || com(k,now->key))) throw(runtime_error());
         return del(now);
     }
-    value_type search(key_type k){
-        loc l = find(k);
-        if (l != nullptr)
-            return *(value_type *)l;
-        else throw(runtime_error());
-    }
+
 };
 #endif
