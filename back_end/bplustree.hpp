@@ -33,44 +33,56 @@ class bplustree
     size_t num;
     FILE *fp;
 
-    inline bool equal(const key_type& k1,const key_type& k2){
+    inline bool equal(const key_type& k1,const key_type& k2)
+    {
         return !(com(k1, k2) || com(k2, k1));
     }
-//return info of the number n element, from 0 to n
+
+    inline pointer_to(FILE *f, loc l)
+    {
+        fseek(f, l, SEEK_SET);
+    }
+    //load the info of node p and its brothers into the buffer
     void load(byte *start, node& p)
     {}
+    //clear the buffer
     void clear(byte *start, node &p)
     {}
+    //get the value from the file with location l
     value_type& get_value(loc l)
     {}
+    //get the whole info of a node from the file with location l
     node& get_node(loc l)
     {}
 
-
+    //return the key of the number n element in the buffer, 0-base
     inline key_type* nth_element_key(byte *start, size_t n)
     {
         return (key_type *)(start + (sizeof(key_type) + sizeof(loc)) * n);
     }
+    //return the loc of the number n element in the buffer, 0-base
     inline loc* nth_element_loc(byte *start, size_t n)
     {
         return (loc *)(start + sizeof(key_type) * (n + 1) + sizeof(loc) * n);
     }
+    /*  
+        use binary search to find the one smaller than or equal to k but the next is greater,
+        mention that the key must be greater than or equal to the first key in the compared set.
+        there are n elements in the compared set in total.
+    */
     inline size_t binary_search_key(byte *start,const key_type& k, size_t n)
     {
-    //find the one smaller than k but the next is larger, if k is the smallest,
-    //simply return the head waiting the extern function to judge
-    //there are n + 1 elements in total, which are 0 to n
-    //return the pointer to the contains instead of that to the key
         size_t l = 0, r = n, mid;
-        while (r > l)
+        while (l < r)
         {
             mid = (l + r) / 2;
-            if (cmp(*nth_element_key(start, mid), k)) l = mid + 1;
+            if ( cmp(*nth_element_key(start, mid), k) ) l = mid + 1;
             else r = mid;
         }
         return l;
     }
-    value_type& find(node &p,const key_type& k)
+    //find the value attached to k, or maybe just return the loc of this value greater to use more?
+    value_type& _find(node &p,const key_type& k)
     {
         byte *cache;
         load(cache, p);
@@ -82,60 +94,64 @@ class bplustree
             else return value_type();
         }
         clear(cache, p);
-        return find(get_node(loc), k);
+        return _find(get_node(loc), k);
     }
 
+    node _insert(const key_type &k, const value_type &v)
+    {
 
-
-    void split(node *now){
-        size_t s = now->size / 2;
-        node *temp = new node(key_type(),now->parent, nullptr, now->tail, now, now->next, s, now->type);
-    //in fact it can be a new in buffer instead of directly using new operator. maybe a placement new?
-        node *tmp = now->tail;
-        for (size_t i = 0;i < s;i++, tmp = tmp->prior) tmp->parent = temp;
-        temp->head = tmp->next;
-        now->tail = tmp;
-        now->next->prior = tmp;
-        now->next = tmp;
-        tmp->next = nullptr, temp->head->prior = nullptr;
-        if (now->parent != nullptr){
-            now->parent->size++;
-            if (now->parent->size > part_size) split(now->parent);
-        }
-        else{
-            root_first = now->parent = new node(key_type(), nullptr, now, temp);
-            root_first->size = 2, root_first->type = 1;
+    }
+    //make the first of p become the last of l while the size of p equals to pars_size and that of l is less
+    void left_balance(node &p, node &l)
+    {
+        if (l.size >= part_size)
+        if (l.prior){
+            node tmp = get_node(l.next);
+            if (tmp.size < part_size) left_balance(l,tmp);
         }
     }
-    void merge(node *now){
-    //merge now and the next. the corretness is considered before using this function
-        node *nex = now->next;
-        nex->head->prior = now->tail;
-        if (nex->parent->tail == nex) nex->parent->tail = now;
-        --(now->parent->size);
-        now->size += nex->size;
-        for (auto i = nex->head;i != nex->tail;i = i->next) i->parnet = now;
-        nex->tail->parnet = now;
-        if (now->size > part_size) split(now);
-        if (now->parent != root_first && now->parent->size < part_size / 2) merge(now);
+    //make the last of p become the first of r while the size of p equals to part_size and that of r is less
+    void right_balance(node &p, node &r)
+    {
+        if (r.size >= part_size)
+        if (r.next){
+            node tmp = get_node(r.next);
+            if (tmp.size < part_size) right_balance(r, tmp);
+        }
+    }
+    //receive a node from the left part if avaliable
+    void receive_left()
+    {
+
+    }
+    //receive a node from the right part if avaliable
+    void receive_right()
+    {
+
+    }
+    void split(node &now)
+    {
+        
+    }
+    //merge now and the next of it
+    void merge(node &now){
+    
     }
 public:
-    bplustree():root_first(nullptr),num(0){}
+    bplustree():root(),num(0)
+    {}
+    value_type& find(const key_type &k)
+    {
 
-    bool insert(key_type k,value_type v){
-        node *now = (node *)find(k);
-        if (!(com(now->key, k) || com(k, now->key))) return 0;
-        node *temp = new node(k, now->parent, nullptr, nullptr, now, now->next, 1, 1);
-        temp->head = temp->tail = new value_type(v);
-        if (now->next != nullptr) now->next->prior = temp;
-        now->next = temp;
-        if (++(now->parent->size) > part_size) split(now->parent);
     }
-    bool remove(key_type k){
-        node *now = (node *)find(k);
-        if (!(com(now->key, k) || com(k,now->key))) throw(runtime_error());
-        return del(now);
+    bool insert(key_type k,value_type v)
+    {
+        
     }
-
+    bool remove(key_type k)
+    {
+        
+    }
+    
 };
 #endif
