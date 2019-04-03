@@ -31,7 +31,7 @@ class bplustree
     loc root;
     Compare com;
     size_t num;
-    FILE *fp;
+    FILE *datafile, *bptfile;
 
     inline bool equal(const key_type& k1,const key_type& k2)
     {
@@ -44,7 +44,9 @@ class bplustree
     }
     //load the info of node p and its brothers into the buffer
     void load(byte *start, node& p)
-    {}
+    {
+        
+    }
     //clear the buffer
     void clear(byte *start, node &p)
     {}
@@ -152,6 +154,6 @@ public:
     {
         
     }
-    
+
 };
 #endif
