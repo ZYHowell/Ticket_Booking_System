@@ -20,7 +20,7 @@ class bplustree{
         pointer pos;
         size_t size;                    //the size of its brothers
         bool type;                      //0 for a leaf and 1 otherwise
-        node(key_type k = key_type(),pointer p = nullptr, pointer par = nullptr, 
+        node(key_type k = key_type(), pointer p = nullptr, pointer par = nullptr, 
         pointer pre = nullptr, pointer nex = nullptr, 
         size_t s = 1, bool ty = 0)
         :key(k),pos(p),parent(par),prior(pre),next(nex),size(s),type(ty){}
@@ -34,10 +34,10 @@ class bplustree{
         return !(com(k1, k2) || com(k2, k1));
     }
 
-    // inline pointer_to(FILE *f, pointer l)
-    // {
-    //     fseek(f, l, SEEK_SET);
-    // }
+        // inline pointer_to(FILE *f, pointer l)
+        // {
+        //     fseek(f, l, SEEK_SET);
+        // }
     //load the info of node p and its brothers into the cache
     void load_cache(byte *start, node& p){
         fseek(bptfile, p.pos, SEEK_SET);
@@ -95,14 +95,13 @@ class bplustree{
         }
         return l;
     }
-    //find the value attached to k, or maybe just return the pointer of this value greater to use more?
+    //find the pointer to k, or maybe just find the leaf part of it?
     pointer _find(node &p,const key_type& k){
         byte *cache;
         load_cache(cache, p);
         size_t ord = binary_search_key(cache, k, p.size);
         pointer* tmp = nth_element_pointer(cache, ord);
         if (!p.type){
-            clear(cache, p);
             if (equal(nth_element_key(cache, ord), k)) return nth_element_pointer(cache, ord);
             else return nullptr;
         }
@@ -149,12 +148,43 @@ class bplustree{
         save_cache(p_cache, p);
     }
     //receive a node from the left part if avaliable
-    void receive_left(){
-
+    void receive_left(node &p, node &l, byte *p_cache){
+        byte *left_cache;
+        load_cache(left_cache, r);
+        ++r.size;
+        for (size_t i = p.size;i > 0;i++){
+            *nth_element_key(right_cache, i) = *nth_element_key(right_cache, i - 1);
+            *nth_element_pointer(right_cache, i) = *nth_element_pointer(right_cache, i - 1);
+        }
+        --p.size;
+        *nth_element_key(right_cache, 0) = *nth_element_key(p_cache, p.size);
+        *nth_element_pointer(right_cache, 0) = *nth_element_pointer(p_cache, p.size);
+        // if (r.size >= part_size)
+        // if (r.next){
+        //     node tmp = get_node(r.next);
+        //     if (tmp.size < part_size) right_balance(r, tmp);
+        // }
+        save_cache(right_cache, r);
+        save_cache(p_cache, p);
     }
     //receive a node from the right part if avaliable
-    void receive_right(){
-
+    void receive_right(node &p, node &r, byte *p_cache){
+        byte *right_cache;
+        load_cache(right_cache, r);
+        *nth_element_key(p_cache, p.size) = *nth_element_key(right_cache, 0);
+        *nth_element_pointer(p_cache, p.size) = *nth_element_pointer(right_cache, 0);
+        ++p.size, --r.size;
+        for (size_t i = 0; i < right.size;i++){
+            *nth_element_key(right_cache, i) = *nth_element_key(right_cache, i + 1);
+            *nth_element_pointer(right_cache, i) = *nth_element_pointer(right_cache, i + 1);
+        }
+        // if (l.size >= part_size)
+        // if (l.prior){
+        //     node tmp = get_node(l.next);
+        //     if (tmp.size < part_size) left_balance(l,tmp,left_cache);
+        // }
+        save_cache(left_cache, l);
+        save_cache(p_cache, p);
     }
     //find the quickest way to solve the problem of the size of a node, save before break.
     //mode = 0 when the size is too big and 1 otherwise
@@ -188,8 +218,8 @@ class bplustree{
             }
         }
     }
-    void split(node &now, byte *start){
-        node tmp(key_value(), nullptr, now.parent, nullptr, nullptr, now, now.next, 1, now->type);
+    void split(node &now, byte *cache){
+        node tmp(key_value(), nullptr, now.parent, now, now.next, 1, now->type);
 
 
         node p = get_node(now.parent);
@@ -202,9 +232,32 @@ class bplustree{
     
     }
     //insert (k,v) and return the node containing this information
-    node _insert(const key_type &k, const value_type &v){
-        pointer p = _find(get_node(root),k);
+    bool _insert(node &p, const key_type &k, const value_type &v){
+        size_t ord = binary_search_key(p, k);
+        pointer loc = nth_element_pointer(p, ord);
+        if (p.type){
 
+        }
+        else{
+            if (equal(nth_element_key(p, ord), k)) return node();
+            alloc_new_memory_in_data_file_and_return_its_postion_pos_which_is_a_pointer
+            byte *cache;
+            load_cache(cache, p);
+            pointer next_p = nth_element_pointer(p, ord + 1);
+            node tmp(k, pos, p.parent, loc, next_p, 1, 0);
+            //the existance of a and b needs to be considered
+            node a = get_node(loc), b = get_node(next_p);
+            a.next = b.prior = pos;
+            write_node(a), write_node(b);
+            for (size_t i = p.size;i > ord;i++){
+                *nth_element_key(p, i) = *nth_element_key(p, i - 1);
+                *nth_element_pointer(p, i) = *nth_element_pointer(p, i - 1);
+            }
+            *nth_element_key(p, ord + 1) = k;
+            *nth_element_pointer(p, ord + 1) = pos;
+            //whether the size is too big is waiting to be considered
+            return true;
+        }
     }
     bool _remove(const key_type &k){
 
