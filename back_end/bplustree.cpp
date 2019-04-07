@@ -49,21 +49,21 @@ class bplustree{
         fwrite(start, sizeof(node), p.size, bptfile);
     }
     //get the value from the file with pointer l
-    value_type& get_value(pointer l){
+    value_type& load_value(pointer l){
         fseek(datafile, l, SEEK_SET);
         value_type* tmp;
         fread(tmp, sizeof(value_type), 1, datafile);
         return *tmp;
     }
     //get the whole info of a node from the file with pointer l
-    node& get_node(pointer l){
+    node& load_node(pointer l){
         fseek(bptfile, l, SEEK_SET);
         node tmp;
         fread(&tmp, sizeof(node), 1, bptfile);
         return tmp;
     }
     //write the whole info of a node to the file
-    bool write_node(node &p){
+    bool save_node(node &p){
         try{
             fseek(bptfile, p.pos, SEEK_SET);
             fwrite(&p, sizeof(node), 1, bptfile);
@@ -105,7 +105,7 @@ class bplustree{
             if (equal(nth_element_key(cache, ord), k)) return nth_element_pointer(cache, ord);
             else return nullptr;
         }
-        return _find(get_node(tmp), k);
+        return _find(load_node(tmp), k);
     }
     
     //make the first of p become the last of l while the size of p equals to pars_size and that of l is less
@@ -121,7 +121,7 @@ class bplustree{
         }
         // if (l.size >= part_size)
         // if (l.prior){
-        //     node tmp = get_node(l.next);
+        //     node tmp = load_node(l.next);
         //     if (tmp.size < part_size) left_balance(l,tmp,left_cache);
         // }
         save_cache(left_cache, l);
@@ -141,7 +141,7 @@ class bplustree{
         *nth_element_pointer(right_cache, 0) = *nth_element_pointer(p_cache, p.size);
         // if (r.size >= part_size)
         // if (r.next){
-        //     node tmp = get_node(r.next);
+        //     node tmp = load_node(r.next);
         //     if (tmp.size < part_size) right_balance(r, tmp);
         // }
         save_cache(right_cache, r);
@@ -161,7 +161,7 @@ class bplustree{
         *nth_element_pointer(right_cache, 0) = *nth_element_pointer(p_cache, p.size);
         // if (r.size >= part_size)
         // if (r.next){
-        //     node tmp = get_node(r.next);
+        //     node tmp = load_node(r.next);
         //     if (tmp.size < part_size) right_balance(r, tmp);
         // }
         save_cache(right_cache, r);
@@ -180,7 +180,7 @@ class bplustree{
         }
         // if (l.size >= part_size)
         // if (l.prior){
-        //     node tmp = get_node(l.next);
+        //     node tmp = load_node(l.next);
         //     if (tmp.size < part_size) left_balance(l,tmp,left_cache);
         // }
         save_cache(left_cache, l);
@@ -197,7 +197,7 @@ class bplustree{
             if (!tried){
                 if (p.prior == nullptr) ++tried;
                 else{
-                    tmp = get_node(p.prior);
+                    tmp = load_node(p.prior);
                     if (tmp.size < part_size) {
                         left_balance(p, tmp, cache);
                         break;
@@ -208,7 +208,7 @@ class bplustree{
             else{
                 if (p.next == nullptr) {split(p, cache);break;}
                 else{
-                    tmp = get_node(p.next);
+                    tmp = load_node(p.next);
                     if (tmp.size < part_size){
                         right_balance(p, tmp, cache);
                         break;
@@ -222,40 +222,49 @@ class bplustree{
         node tmp(key_value(), nullptr, now.parent, now, now.next, 1, now->type);
 
 
-        node p = get_node(now.parent);
+        node p = load_node(now.parent);
         ++p.size;
         if (p.size >= part_size) consider(p);
-        else write_node(p);
+        else save_node(p);
     }
     //merge now and the next of it
     void merge(node &now){
     
     }
-    //insert (k,v) and return the node containing this information
+    //insert (k,v) and return true if it is an insertion and false for a change
+    //whether split or not is considered in its parent,
+    //as we prove that all parts are smaller than part_size, the memory is save.
+    //but mention to judge the size of the root.(actually, it does need to be specially treated)
     bool _insert(node &p, const key_type &k, const value_type &v){
         size_t ord = binary_search_key(p, k);
         pointer loc = nth_element_pointer(p, ord);
         if (p.type){
-
+            node child_node = load_node(loc);
+            bool ret = _insert(child_node, k, v);
+            if (child_node.size >= part_size) {
+                consider(child_node, 0);
+                ++p.size;
+            }
+            return ret;
         }
         else{
-            if (equal(nth_element_key(p, ord), k)) return node();
+            if (equal(nth_element_key(p, ord), k)) {
+                change_the_value_in_value_file
+                return false;
+            }
             alloc_new_memory_in_data_file_and_return_its_postion_pos_which_is_a_pointer
             byte *cache;
             load_cache(cache, p);
-            pointer next_p = nth_element_pointer(p, ord + 1);
-            node tmp(k, pos, p.parent, loc, next_p, 1, 0);
-            //the existance of a and b needs to be considered
-            node a = get_node(loc), b = get_node(next_p);
-            a.next = b.prior = pos;
-            write_node(a), write_node(b);
-            for (size_t i = p.size;i > ord;i++){
+            for (size_t i = p.size;i > ord + 1;i++){
                 *nth_element_key(p, i) = *nth_element_key(p, i - 1);
                 *nth_element_pointer(p, i) = *nth_element_pointer(p, i - 1);
             }
+            ++p.size;
             *nth_element_key(p, ord + 1) = k;
             *nth_element_pointer(p, ord + 1) = pos;
-            //whether the size is too big is waiting to be considered
+            save_cache(cache, p);
+            //w......if it is oversized, this save function is surplus.
+            p.key = nth_element_key(p, 0);
             return true;
         }
     }
