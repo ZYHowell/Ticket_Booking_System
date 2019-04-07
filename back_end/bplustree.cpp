@@ -218,6 +218,7 @@ class bplustree{
             }
         }
     }
+    //waiting to complete
     void split(node &now, byte *cache){
         node tmp(key_value(), nullptr, now.parent, now, now.next, 1, now->type);
 
@@ -227,9 +228,24 @@ class bplustree{
         if (p.size >= part_size) consider(p);
         else save_node(p);
     }
-    //merge now and the next of it
+    //merge now and the next of it, the correctness must be judged before using it.
     void merge(node &now){
-    
+        node tmp = load_node(now.next);
+        now.next = tmp.next;
+        if (tmp.next != nullptr){
+            node temp = load_node(tmp.next);
+            temp.prior = now.pos;
+            save_node(temp);
+        }
+        byte *cache_a, *cache_b;
+        size_t s = now.size;
+        load_cache(cache_a, now), load_cache(cache_b, tmp);
+        for (size_t i = 0;i < tmp.size;i++){
+            *nth_element_key(cache_a, s + i)        =   *nth_element_key(cache_b, i);
+            *nth_element_pointer(cache_a, s + i)    =   *nth_element_pointer(cache_b, i);
+        }
+        now.size += tmp.size;
+        save_cache(cache_a, now);
     }
     //insert (k,v) and return true if it is an insertion and false for a change
     //whether split or not is considered in its parent,
