@@ -1,9 +1,7 @@
 //version 0.1 only complete :find; split; merge; insert and delete functions.
 //version 0.2 consider the input and output.
-//version 0.3 improvement about memories
-//version 0.0.1 builds a structure and solves details later. all datas are pretended to be in memories
-//version 0.0.2 makes insertion in memories avaliable
-//version 0.1.1 change the data structure in order to fit the file system. Now
+//version 0.3 the alloc function
+//an alloc file for secondary storage is needed and can be greatly improved, writing at last
 #ifndef SJTU_BPLUSTREE_HPP
 #define SJTU_BPLUSTREE_HPP
 #include <cstddef>
@@ -12,8 +10,11 @@
 #include "exceptions.h"
 using pointer   =   long;
 using byte      =   char;
-template<class key_type, class value_type, size_t part_size, class Compare = std::less<key_type>>
-class bplustree{
+template<class key_type,
+         class value_type, 
+         size_t part_size, 
+         class Compare = std::less<key_type>
+>   class bplustree{
     struct node{
         key_type key;
         pointer prior, next, parent;
@@ -33,12 +34,10 @@ class bplustree{
     inline bool equal(const key_type& k1,const key_type& k2){
         return !(com(k1, k2) || com(k2, k1));
     }
-
-        // inline pointer_to(FILE *f, pointer l)
-        // {
-        //     fseek(f, l, SEEK_SET);
-        // }
-    //load the info of node p and its brothers into the cache
+    /*
+        * Load the info of node p and its brothers into the cache. 
+        * The info of node p contains those keys greater than p.key but smaller than p.next.key
+    */
     void load_cache(byte *start, node& p){
         fseek(bptfile, p.pos, SEEK_SET);
         fread(start, sizeof(node), p.size, bptfile);
@@ -108,7 +107,10 @@ class bplustree{
         return _find(load_node(tmp), k);
     }
     
-    //make the first of p become the last of l while the size of p equals to pars_size and that of l is less
+    /*
+        * make the first of p become the last of l while the size of p equals to pars_size and that of l is less. 
+        * save them both
+    */
     void left_balance(const node &p, const node &l, byte *p_cache){
         byte *left_cache;
         load_cache(left_cache, l);
@@ -127,7 +129,10 @@ class bplustree{
         save_cache(left_cache, l);
         save_cache(p_cache, p);
     }
-    //make the last of p become the first of r while the size of p equals to part_size and that of r is less
+    /*
+        * Make the last of p become the first of r while the size of p equals to part_size and that of r is less. 
+        * Save them both
+    */
     void right_balance(node &p, node &r, byte *p_cache){
         byte *right_cache;
         load_cache(right_cache, r);
@@ -147,7 +152,10 @@ class bplustree{
         save_cache(right_cache, r);
         save_cache(p_cache, p);
     }
-    //receive a node from the left part if avaliable
+    /*
+        * Receive a node from the left part if avaliable
+        * Save them both
+    */
     void receive_left(node &p, node &l, byte *p_cache){
         byte *left_cache;
         load_cache(left_cache, r);
@@ -167,7 +175,10 @@ class bplustree{
         save_cache(right_cache, r);
         save_cache(p_cache, p);
     }
-    //receive a node from the right part if avaliable
+    /*
+        * Receive a node from the right part if avaliable. 
+        * Save them both
+    */
     void receive_right(node &p, node &r, byte *p_cache){
         byte *right_cache;
         load_cache(right_cache, r);
@@ -186,9 +197,12 @@ class bplustree{
         save_cache(left_cache, l);
         save_cache(p_cache, p);
     }
-    //find the quickest way to solve the problem of the size of a node, save before break.
-    //mode = 0 when the size is too big and 1 otherwise
-    void consider(node &p, bool mode){
+    /*
+        * Find the quickest way to solve the problem of the size of a node, 
+        * mode = 0 when the size is too big and 1 otherwise. 
+        * Save p and its brother, save parent?
+    */
+    void consider(node &p, bool mode, node &par){
         node tmp;
         int tried = 0;
         byte *cache;
@@ -198,7 +212,14 @@ class bplustree{
                 if (p.prior == nullptr) ++tried;
                 else{
                     tmp = load_node(p.prior);
-                    if (tmp.size < part_size) {
+                    if (mode){
+                        if (tmp.size > part_size / 2){
+                            receive_left(p, tmp, cache);
+                            break;
+                        }
+                        else ++tried;
+                    }
+                    else if (tmp.size < part_size) {
                         left_balance(p, tmp, cache);
                         break;
                     }
@@ -206,30 +227,76 @@ class bplustree{
                 }
             }
             else{
-                if (p.next == nullptr) {split(p, cache);break;}
+                if (p.next == nullptr) {
+                    if (mode){
+                        if (p.prior == nullptr){
+                            tmp = load_node(p.parent);
+                            if (tmp.parent != nullptr) consider(tmp, 1, load_node(tmp.parent));
+                            //shall we save node p there?
+                            break;
+                        }
+                        else{
+                            byte *cache_tmp;
+                            load_cache(cache_tmp, tmp);
+                            merge(tmp, cache_tmp, cache, par);
+                            break;
+                        }
+                    }
+                    else{
+                        split(p, cache);
+                        ++par.size;
+                        break;
+                    }
+                }
                 else{
                     tmp = load_node(p.next);
-                    if (tmp.size < part_size){
+                    if (mode){
+                        byte *cache_tmp;
+                        load_cache(cache_tmp, tmp);
+                        merge(p, cache, cache_tmp);
+                        break;
+                    }
+                    else if (tmp.size < part_size){
                         right_balance(p, tmp, cache);
                         break;
                     }
-                    else {split(p,cache);break}
+                    else {
+                        split(p,cache);
+                        ++par.size;
+                        break;
+                    }
                 }
             }
         }
     }
     //waiting to complete
     void split(node &now, byte *cache){
-        node tmp(key_value(), nullptr, now.parent, now, now.next, 1, now->type);
-
-
+        size_t s = now.size / 2;
+        now.size -= s;
+        node tmp(key_value(), nullptr, now.parent, now, now.next, now.size / 2, now->type);
+        if (now.next != nullptr){
+            node temp = load_node(now.next);
+            temp.prior = tmp;
+            save_node(temp);
+        }
+        alloc_a_pointe_as_the_position_of_tmp_named_pos
+        tmp.pos = pos;
+        byte *cache_tmp;
+        size_t ns = now.size;
+        for (size_t i = 0;i < s;i++){
+            *nth_element_key(cache_tmp, i) = *nth_element_key(cache, ss + i);
+            *nth_element_pointer(cache_tmp, i) = *nth_element_pointer(cache, ss + i);
+            //or maybe it needs to add "+1"?
+        }
+        save_cache(cache_tmp, tmp);
+        save_cache(cache, now);
         node p = load_node(now.parent);
         ++p.size;
-        if (p.size >= part_size) consider(p);
+        if (p.size >= part_size) consider(p, 1, );
         else save_node(p);
     }
-    //merge now and the next of it, the correctness must be judged before using it.
-    void merge(node &now){
+    //merge now and the next of it, if the result is too big, use split automatically
+    void merge(node &now, byte *cache_a, byte *cache_b, node &par){
         node tmp = load_node(now.next);
         now.next = tmp.next;
         if (tmp.next != nullptr){
@@ -237,20 +304,22 @@ class bplustree{
             temp.prior = now.pos;
             save_node(temp);
         }
-        byte *cache_a, *cache_b;
         size_t s = now.size;
-        load_cache(cache_a, now), load_cache(cache_b, tmp);
         for (size_t i = 0;i < tmp.size;i++){
             *nth_element_key(cache_a, s + i)        =   *nth_element_key(cache_b, i);
             *nth_element_pointer(cache_a, s + i)    =   *nth_element_pointer(cache_b, i);
         }
         now.size += tmp.size;
+        if (now.size >= part_size) split(now, cache_a);
+        else --par.size;
         save_cache(cache_a, now);
     }
-    //insert (k,v) and return true if it is an insertion and false for a change
-    //whether split or not is considered in its parent,
-    //as we prove that all parts are smaller than part_size, the memory is save.
-    //but mention to judge the size of the root.(actually, it does need to be specially treated)
+    /*
+        * Insert (k,v) and return true if it is an insertion and false for a change, 
+        * whether split or not is considered in its parent,
+        * as we prove that all parts are smaller than part_size, the memory is safe.
+        * But mention to judge the size of the root.(actually, it does need to be specially treated)
+    */
     bool _insert(node &p, const key_type &k, const value_type &v){
         size_t ord = binary_search_key(p, k);
         pointer loc = nth_element_pointer(p, ord);
@@ -258,8 +327,8 @@ class bplustree{
             node child_node = load_node(loc);
             bool ret = _insert(child_node, k, v);
             if (child_node.size >= part_size) {
-                consider(child_node, 0);
-                ++p.size;
+                consider(child_node, 0, p);
+                save_node(p);//do we need this?
             }
             return ret;
         }
@@ -285,15 +354,21 @@ class bplustree{
         }
     }
     bool _remove(const key_type &k){
-
+        
     }
 public:
-    bplustree():root(),num(0){}
+    bplustree(){}
     value_type& find(const key_type &k){
 
     }
     bool insert(key_type k,value_type v){
-        
+        _insert(root_node, k, v);
+        if (root_node.size >= part_size){
+            alloc_a_new_node_and_return_its_position_pos
+            root_node.parent = pos;
+            node now_root = load_node(pos);
+            
+        }
     }
     bool remove(key_type k){
         
