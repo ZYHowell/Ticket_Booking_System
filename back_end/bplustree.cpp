@@ -84,6 +84,7 @@ template<class key_type,
         use binary search to find the one smaller than or equal to k but the next is greater,
         mention that the key must be greater than or equal to the first key in the compared set.
         there are n elements in the compared set in total.
+        OOOOOP! mention that if the inserted (k, v) has a key smaller than any exist key, it should be judged at first
     */
     inline size_t binary_search_key(byte *start,const key_type& k, size_t n){
         size_t l = 0, r = n, mid;
@@ -94,7 +95,9 @@ template<class key_type,
         }
         return l;
     }
-    //find the pointer to k, or maybe just find the leaf part of it?
+    /*
+        * find the pointer of database file locating the value of key k
+    */
     pointer _find(node &p,const key_type& k){
         byte *cache;
         load_cache(cache, p);
@@ -284,15 +287,21 @@ template<class key_type,
         byte *cache_tmp;
         size_t ns = now.size;
         for (size_t i = 0;i < s;i++){
-            *nth_element_key(cache_tmp, i) = *nth_element_key(cache, ss + i);
-            *nth_element_pointer(cache_tmp, i) = *nth_element_pointer(cache, ss + i);
+            *nth_element_key(cache_tmp, i)      = *nth_element_key(cache, ss + i);
+            *nth_element_pointer(cache_tmp, i)  = *nth_element_pointer(cache, ss + i);
             //or maybe it needs to add "+1"?
         }
         save_cache(cache_tmp, tmp);
         save_cache(cache, now);
         node p = load_node(now.parent);
         ++p.size;
-        if (p.size >= part_size) consider(p, 1, );
+        if (p.size >= part_size){
+            if (p.parent == nullptr){
+                locate_a_new_node_as_the_root
+                p.parent = root;
+            }
+            consider(p, 0, load_node(p.parent));
+        }
         else save_node(p);
     }
     //merge now and the next of it, if the result is too big, use split automatically
@@ -321,10 +330,13 @@ template<class key_type,
         * But mention to judge the size of the root.(actually, it does need to be specially treated)
     */
     bool _insert(node &p, const key_type &k, const value_type &v){
-        size_t ord = binary_search_key(p, k);
-        pointer loc = nth_element_pointer(p, ord);
+        byte *cache;load_cache(cache, p);
+        size_t ord = binary_search_key(cache, k, p.size);
+        pointer loc = nth_element_pointer(cache, ord);
         if (p.type){
             node child_node = load_node(loc);
+            //w...it will not actually clear the cache there, but clear it might be a good idea?
+            //nonsense, the memory is not tested and will not be tooooo big.
             bool ret = _insert(child_node, k, v);
             if (child_node.size >= part_size) {
                 consider(child_node, 0, p);
@@ -334,10 +346,11 @@ template<class key_type,
         }
         else{
             if (equal(nth_element_key(p, ord), k)) {
-                change_the_value_in_value_file
+                pointer value_pointer = *nth_element_pointer(p, ord);
+                use_this_to_locate_the_value_in_the_database_file_and_change_it
                 return false;
             }
-            alloc_new_memory_in_data_file_and_return_its_postion_pos_which_is_a_pointer
+            alloc_new_memory_in_database_file_and_return_its_postion_pos_which_is_a_pointer
             byte *cache;
             load_cache(cache, p);
             for (size_t i = p.size;i > ord + 1;i++){
@@ -353,8 +366,35 @@ template<class key_type,
             return true;
         }
     }
-    bool _remove(const key_type &k){
-        
+    bool _remove(node &p, const key_type &k){
+        byte *cache;
+        load_cache(cache, p);
+        size_t ord = binary_search_key(cache, k, p.size);
+        if (p.type){
+            pointer loc = nth_element_pointer(cache, ord);
+            node child_node = load_node(loc);
+            bool ret = _remove(child_node, k);
+            if (child_node.size < part_size / 2) {
+                consider(child_node, 1, p);
+                save_node(p);
+            }
+            return ret;
+        }
+        else{
+            if (*nth_element_key(cache, ord) == k){
+                delete_value_in_database_file
+                --p.size;
+                for (size_t i = ord - 1;i < p.size;i++){
+                    *nth_element_key(cache, i)      = *nth_element_key(cache, i + 1);
+                    *nth_element_pointer(cache, i)  = *nth_element_pointer(cache, i + 1);
+                }
+                save_cache(cache, p);
+                p.key = nth_element_key(cache, 0);
+                return true;
+            }
+            else return false;
+            //or throw something?
+        }
     }
 public:
     bplustree(){}
@@ -362,7 +402,8 @@ public:
 
     }
     bool insert(key_type k,value_type v){
-        _insert(root_node, k, v);
+        if (com(min_key, k)) _insert(root_node, k, v);
+        else waiting_to_complete
         if (root_node.size >= part_size){
             alloc_a_new_node_and_return_its_position_pos
             root_node.parent = pos;
