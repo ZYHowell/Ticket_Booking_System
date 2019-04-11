@@ -38,31 +38,32 @@ template<class key_type,
         * Load the info of node p and its brothers into the cache. 
         * The info of node p contains those keys greater than p.key but smaller than p.next.key
     */
-    void load_cache(byte *start, node& p){
-        fseek(bptfile, p.pos, SEEK_SET);
-        fread(start, sizeof(node), p.size, bptfile);
+    inline void load_cache(byte *start, node& p){
+        fseek(bptfile, p.pos + sizeof(node), SEEK_SET);
+        fread(start, (sizeof(key) + sizeof(pointer)) * p.size, 1, bptfile);
     }
     //save the info in the cache
-    void save_cache(byte *start, node &p){
-        fseek(bptfile, p.pos, SEEK_SET);
-        fwrite(start, sizeof(node), p.size, bptfile);
+    inline void save_cache(byte *start, node &p){
+        fseek(bptfile, p.pos + sizeof(node), SEEK_SET);
+        fwrite(start, (sizeof(key) + sizeof(pointer)) * p.size, 1, bptfile);
     }
-    //get the value from the file with pointer l
-    value_type& load_value(pointer l){
+    //get the value from the file with pointer l, 
+    //the result cannot be value_type& (notice the '&')
+    inline value_type load_value(pointer l){
         fseek(datafile, l, SEEK_SET);
-        value_type* tmp;
-        fread(tmp, sizeof(value_type), 1, datafile);
-        return *tmp;
+        value_type tmp;
+        fread(&tmp, sizeof(value_type), 1, datafile);
+        return tmp;
     }
     //get the whole info of a node from the file with pointer l
-    node& load_node(pointer l){
+    inline node& load_node(pointer l){
         fseek(bptfile, l, SEEK_SET);
         node tmp;
         fread(&tmp, sizeof(node), 1, bptfile);
         return tmp;
     }
     //write the whole info of a node to the file
-    bool save_node(node &p){
+    inline bool save_node(node &p){
         try{
             fseek(bptfile, p.pos, SEEK_SET);
             fwrite(&p, sizeof(node), 1, bptfile);
@@ -81,19 +82,21 @@ template<class key_type,
         return (pointer *)(start + sizeof(key_type) * (n + 1) + sizeof(pointer) * n);
     }
     /*  
-        use binary search to find the one smaller than or equal to k but the next is greater,
-        mention that the key must be greater than or equal to the first key in the compared set.
-        there are n elements in the compared set in total.
+        * use binary search to find the one smaller than or equal to k but the next is greater,
+        * mention that the key must be greater than or equal to the first key in the compared set.
+        * there are n elements in the compared set in total.
+        * mention that the result can be n, a not-so-good result
         OOOOOP! mention that if the inserted (k, v) has a key smaller than any exist key, it should be judged at first
     */
     inline size_t binary_search_key(byte *start,const key_type& k, size_t n){
         size_t l = 0, r = n, mid;
-        while (l < r){
+        while (r - l > 1){
             mid = (l + r) / 2;
-            if ( cmp(*nth_element_key(start, mid), k) ) l = mid + 1;
+            if ( com(*nth_element_key(start, mid), k) ) l = mid;
             else r = mid;
         }
-        return l;
+        if (r == n || !com(k, *nth_element_key(start, r))) return r;
+        else return l;
     }
     /*
         * find the pointer of database file locating the value of key k
@@ -114,7 +117,7 @@ template<class key_type,
         * make the first of p become the last of l while the size of p equals to pars_size and that of l is less. 
         * save them both
     */
-    void left_balance(const node &p, const node &l, byte *p_cache){
+    inline void left_balance(const node &p, const node &l, byte *p_cache){
         byte *left_cache;
         load_cache(left_cache, l);
         *nth_element_key(left_cache, l.size) = *nth_element_key(p_cache, 0);
@@ -136,7 +139,7 @@ template<class key_type,
         * Make the last of p become the first of r while the size of p equals to part_size and that of r is less. 
         * Save them both
     */
-    void right_balance(node &p, node &r, byte *p_cache){
+    inline void right_balance(node &p, node &r, byte *p_cache){
         byte *right_cache;
         load_cache(right_cache, r);
         ++r.size;
@@ -159,7 +162,7 @@ template<class key_type,
         * Receive a node from the left part if avaliable
         * Save them both
     */
-    void receive_left(node &p, node &l, byte *p_cache){
+    inline void receive_left(node &p, node &l, byte *p_cache){
         byte *left_cache;
         load_cache(left_cache, r);
         ++r.size;
@@ -182,7 +185,7 @@ template<class key_type,
         * Receive a node from the right part if avaliable. 
         * Save them both
     */
-    void receive_right(node &p, node &r, byte *p_cache){
+    inline void receive_right(node &p, node &r, byte *p_cache){
         byte *right_cache;
         load_cache(right_cache, r);
         *nth_element_key(p_cache, p.size) = *nth_element_key(right_cache, 0);
