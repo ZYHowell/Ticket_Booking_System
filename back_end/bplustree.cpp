@@ -85,7 +85,7 @@ template<class key_type,
         * use binary search to find the one smaller than or equal to k but the next is greater,
         * mention that the key must be greater than or equal to the first key in the compared set.
         * there are n elements in the compared set in total.
-        * mention that the result can be n, a not-so-good result
+        * mention that the result cannot be n. great.
         OOOOOP! mention that if the inserted (k, v) has a key smaller than any exist key, it should be judged at first
     */
     inline size_t binary_search_key(byte *start,const key_type& k, size_t n){
@@ -99,7 +99,8 @@ template<class key_type,
         else return l;
     }
     /*
-        * find the pointer of database file locating the value of key k
+        * find the pointer of database file locating the value of key k. 
+        * k must be not smaller than the smallest key 
     */
     pointer _find(node &p,const key_type& k){
         byte *cache;
@@ -112,7 +113,7 @@ template<class key_type,
         }
         return _find(load_node(tmp), k);
     }
-    
+
     /*
         * make the first of p become the last of l while the size of p equals to pars_size and that of l is less. 
         * save them both
@@ -137,17 +138,16 @@ template<class key_type,
     }
     /*
         * Make the last of p become the first of r while the size of p equals to part_size and that of r is less. 
-        * Save them both
+        * Save them both. do we need so?
     */
     inline void right_balance(node &p, node &r, byte *p_cache){
         byte *right_cache;
         load_cache(right_cache, r);
-        ++r.size;
-        for (size_t i = p.size;i > 0;i++){
+        for (size_t i = r.size;i > 0;i++){
             *nth_element_key(right_cache, i) = *nth_element_key(right_cache, i - 1);
             *nth_element_pointer(right_cache, i) = *nth_element_pointer(right_cache, i - 1);
         }
-        --p.size;
+        ++r.size;--p.size;
         *nth_element_key(right_cache, 0) = *nth_element_key(p_cache, p.size);
         *nth_element_pointer(right_cache, 0) = *nth_element_pointer(p_cache, p.size);
         // if (r.size >= part_size)
@@ -164,15 +164,14 @@ template<class key_type,
     */
     inline void receive_left(node &p, node &l, byte *p_cache){
         byte *left_cache;
-        load_cache(left_cache, r);
-        ++r.size;
+        load_cache(left_cache, l);
         for (size_t i = p.size;i > 0;i++){
-            *nth_element_key(right_cache, i) = *nth_element_key(right_cache, i - 1);
-            *nth_element_pointer(right_cache, i) = *nth_element_pointer(right_cache, i - 1);
+            *nth_element_key(p_cache, i) = *nth_element_key(p_cache, i - 1);
+            *nth_element_pointer(p_cache, i) = *nth_element_pointer(p_cache, i - 1);
         }
-        --p.size;
-        *nth_element_key(right_cache, 0) = *nth_element_key(p_cache, p.size);
-        *nth_element_pointer(right_cache, 0) = *nth_element_pointer(p_cache, p.size);
+        ++p.size;--l.size;
+        *nth_element_key(p_cache, 0)        = *nth_element_key(left_cache, p.size);
+        *nth_element_pointer(p_cache, 0)    = *nth_element_pointer(left_cache, p.size);
         // if (r.size >= part_size)
         // if (r.next){
         //     node tmp = load_node(r.next);
@@ -188,25 +187,27 @@ template<class key_type,
     inline void receive_right(node &p, node &r, byte *p_cache){
         byte *right_cache;
         load_cache(right_cache, r);
-        *nth_element_key(p_cache, p.size) = *nth_element_key(right_cache, 0);
-        *nth_element_pointer(p_cache, p.size) = *nth_element_pointer(right_cache, 0);
+        *nth_element_key(p_cache, p.size)       = *nth_element_key(right_cache, 0);
+        *nth_element_pointer(p_cache, p.size)   = *nth_element_pointer(right_cache, 0);
         ++p.size, --r.size;
-        for (size_t i = 0; i < right.size;i++){
-            *nth_element_key(right_cache, i) = *nth_element_key(right_cache, i + 1);
-            *nth_element_pointer(right_cache, i) = *nth_element_pointer(right_cache, i + 1);
+        for (size_t i = 0; i < r.size;i++){
+            *nth_element_key(right_cache, i)        = *nth_element_key(right_cache, i + 1);
+            *nth_element_pointer(right_cache, i)    = *nth_element_pointer(right_cache, i + 1);
         }
         // if (l.size >= part_size)
         // if (l.prior){
         //     node tmp = load_node(l.next);
         //     if (tmp.size < part_size) left_balance(l,tmp,left_cache);
         // }
-        save_cache(left_cache, l);
+        save_cache(right_cache, r);
         save_cache(p_cache, p);
     }
     /*
         * Find the quickest way to solve the problem of the size of a node, 
         * mode = 0 when the size is too big and 1 otherwise. 
         * Save p and its brother, save parent?
+        * another question is raised that do rebalance faster than split/merge?
+        * and do the result change considering further using ratial and its influence?
     */
     void consider(node &p, bool mode, node &par){
         node tmp;
@@ -225,7 +226,7 @@ template<class key_type,
                         }
                         else ++tried;
                     }
-                    else if (tmp.size < part_size) {
+                    else if (tmp.size < part_size - 1) {
                         left_balance(p, tmp, cache);
                         break;
                     }
@@ -239,6 +240,8 @@ template<class key_type,
                             tmp = load_node(p.parent);
                             if (tmp.parent != nullptr) consider(tmp, 1, load_node(tmp.parent));
                             //shall we save node p there?
+                            //or does this condition actually exist?
+                            //yep, unless a better solution that is to decrease the height is usen
                             break;
                         }
                         else{
@@ -250,7 +253,8 @@ template<class key_type,
                     }
                     else{
                         split(p, cache);
-                        ++par.size;
+                        //++par.size; in split function it is already checked
+                        save_node(par);
                         break;
                     }
                 }
@@ -259,16 +263,16 @@ template<class key_type,
                     if (mode){
                         byte *cache_tmp;
                         load_cache(cache_tmp, tmp);
-                        merge(p, cache, cache_tmp);
+                        merge(p, cache, cache_tmp, par);
                         break;
                     }
-                    else if (tmp.size < part_size){
+                    else if (tmp.size < part_size - 1){
                         right_balance(p, tmp, cache);
                         break;
                     }
                     else {
                         split(p,cache);
-                        ++par.size;
+                        //++par.size; in split function it is already checked
                         break;
                     }
                 }
@@ -276,7 +280,7 @@ template<class key_type,
         }
     }
     //waiting to complete
-    void split(node &now, byte *cache){
+    void split(node &now, byte *cache, node &p){
         size_t s = now.size / 2;
         now.size -= s;
         node tmp(key_value(), nullptr, now.parent, now, now.next, now.size / 2, now->type);
@@ -296,7 +300,6 @@ template<class key_type,
         }
         save_cache(cache_tmp, tmp);
         save_cache(cache, now);
-        node p = load_node(now.parent);
         ++p.size;
         if (p.size >= part_size){
             if (p.parent == nullptr){
@@ -322,8 +325,8 @@ template<class key_type,
             *nth_element_pointer(cache_a, s + i)    =   *nth_element_pointer(cache_b, i);
         }
         now.size += tmp.size;
-        if (now.size >= part_size) split(now, cache_a);
-        else --par.size;
+        --par.size;
+        if (now.size >= part_size) split(now, cache_a, par);
         save_cache(cache_a, now);
     }
     /*
