@@ -2,6 +2,11 @@
 //version 0.2 consider the input and output.
 //version 0.3 the alloc function
 //an alloc file for secondary storage is needed and can be greatly improved, writing at last
+//there have some inspiration about the alloc function: 
+//the only thing to alloc in index_file is always "a node and the list of its kids", 
+//the only thing to alloc in database_file is "a key and a value", the same is true when free in two files
+//OOOPS! if the ++ and -- function is required, the program will double, 
+//for all elements in the leaf will be considered differently(there are some words like"now.next == nullptr"). Shall we?
 #ifndef SJTU_BPLUSTREE_HPP
 #define SJTU_BPLUSTREE_HPP
 #include <cstddef>
@@ -283,24 +288,33 @@ template<class key_type,
     void split(node &now, byte *cache, node &p){
         size_t s = now.size / 2;
         now.size -= s;
-        node tmp(key_value(), nullptr, now.parent, now, now.next, now.size / 2, now->type);
+        size_t ns = now.size;
+        node tmp(*nth_element_key(ns), nullptr, now.parent, now, now.next, s, now->type);
         if (now.next != nullptr){
             node temp = load_node(now.next);
             temp.prior = tmp;
             save_node(temp);
         }
-        alloc_a_pointe_as_the_position_of_tmp_named_pos
+        alloc_a_part_for_the_cache_and_inf_of_tmp
         tmp.pos = pos;
         byte *cache_tmp;
-        size_t ns = now.size;
         for (size_t i = 0;i < s;i++){
-            *nth_element_key(cache_tmp, i)      = *nth_element_key(cache, ss + i);
-            *nth_element_pointer(cache_tmp, i)  = *nth_element_pointer(cache, ss + i);
+            *nth_element_key(cache_tmp, i)      = *nth_element_key(cache, ns + i);
+            *nth_element_pointer(cache_tmp, i)  = *nth_element_pointer(cache, ns + i);
             //or maybe it needs to add "+1"?
         }
         save_cache(cache_tmp, tmp);
-        save_cache(cache, now);
+        // save_cache(cache, now);
+        load_cache(cache_tmp, p);
+        ns = binary_search_key(cache_tmp, now.key, p.size);
+        for (size_t i = p.size;i > ns + 1;i++){
+            *nth_element_key(cahce_tmp, i)      = *nth_element_key(cache_tmp, i - 1);
+            *nth_element_pointer(cache_tmp, i)  = *nth_element_pointer(cache_tmp, i - 1);
+        }
+        *nth_element_key(cache_tmp, ns + 1) = tmp.key;
+        *nth_element_pointer(cache_tmp, ns + 1) = tmp.pos;
         ++p.size;
+        save_cache(cache_tmp, p);
         if (p.size >= part_size){
             if (p.parent == nullptr){
                 locate_a_new_node_as_the_root
@@ -325,8 +339,22 @@ template<class key_type,
             *nth_element_pointer(cache_a, s + i)    =   *nth_element_pointer(cache_b, i);
         }
         now.size += tmp.size;
+        free_the_storage_of_the_tmp_and_its_list
+        byte *cache_par;
+        load_cache(cache_par, par);
+        s = binary_search_key(cache_par, now.key, par.size);
         --par.size;
+        for (size_t i = s + 1;i < par.size;i++){
+            *nth_element_key(cahce_par, i)      = *nth_element_key(cache_par, i + 1);
+            *nth_element_pointer(cache_par, i)  = *nth_element_pointer(cache_par, i + 1);
+        }
+        save_cache(cache_par, par);
         if (now.size >= part_size) split(now, cache_a, par);
+        else {
+            if (par.size > part_size / 2 || par.parent == nullptr)
+                save_node(par);
+            else consider(par, 1, load_node(par.parent));
+        }
         save_cache(cache_a, now);
     }
     /*
