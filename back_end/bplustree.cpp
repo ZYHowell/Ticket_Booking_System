@@ -5,8 +5,7 @@
 //there have some inspiration about the alloc function: 
 //the only thing to alloc in index_file is always "a node and the list of its kids", 
 //the only thing to alloc in database_file is "a key and a value", the same is true when free in two files
-//OOOPS! if the ++ and -- function is required, the program will double, 
-//for all elements in the leaf will be considered differently(there are some words like"now.next == nullptr"). Shall we?
+//OOOPS! since ++ and -- functions are required, the program will double.(just paste it)
 #ifndef SJTU_BPLUSTREE_HPP
 #define SJTU_BPLUSTREE_HPP
 #include <cstddef>
@@ -111,9 +110,9 @@ template<class key_type,
         byte *cache;
         load_cache(cache, p);
         size_t ord = binary_search_key(cache, k, p.size);
-        pointer* tmp = nth_element_pointer(cache, ord);
+        pointer* tmp = *nth_element_pointer(cache, ord);
         if (!p.type){
-            if (equal(nth_element_key(cache, ord), k)) return nth_element_pointer(cache, ord);
+            if (equal(*nth_element_key(cache, ord), k)) return *nth_element_pointer(cache, ord);
             else return nullptr;
         }
         return _find(load_node(tmp), k);
@@ -214,14 +213,15 @@ template<class key_type,
         * another question is raised that do rebalance faster than split/merge?
         * and do the result change considering further using ratial and its influence?
     */
-    void consider(node &p, bool mode, node &par){
+    void consider(node &p, bool mode, node &par, byte *cache_par == nullptr){
         node tmp;
         int tried = 0;
         byte *cache;
         load_cache(cache, p);
+        if (cache_par == nullptr) load_cache(cache_par, par);
         while (tried < 2){
             if (!tried){
-                if (p.prior == nullptr) ++tried;
+                if (p.pos == *nth_element_pointer(cache_par, 0)) ++tried;
                 else{
                     tmp = load_node(p.prior);
                     if (mode){
@@ -239,11 +239,10 @@ template<class key_type,
                 }
             }
             else{
-                if (p.next == nullptr) {
+                if (p.pos == *nth_element_pointer(cache_par, par.size - 1)) {
                     if (mode){
                         if (p.prior == nullptr){
-                            tmp = load_node(p.parent);
-                            if (tmp.parent != nullptr) consider(tmp, 1, load_node(tmp.parent));
+                            if (par.parent != nullptr) consider(par, 1, load_node(par.parent));
                             //shall we save node p there?
                             //or does this condition actually exist?
                             //yep, unless a better solution that is to decrease the height is usen
@@ -295,6 +294,7 @@ template<class key_type,
             temp.prior = tmp;
             save_node(temp);
         }
+        now.next = tmp;
         alloc_a_part_for_the_cache_and_inf_of_tmp
         tmp.pos = pos;
         byte *cache_tmp;
@@ -335,8 +335,8 @@ template<class key_type,
         }
         size_t s = now.size;
         for (size_t i = 0;i < tmp.size;i++){
-            *nth_element_key(cache_a, s + i)        =   *nth_element_key(cache_b, i);
-            *nth_element_pointer(cache_a, s + i)    =   *nth_element_pointer(cache_b, i);
+            *nth_element_key(cache_a, s + i)        = *nth_element_key(cache_b, i);
+            *nth_element_pointer(cache_a, s + i)    = *nth_element_pointer(cache_b, i);
         }
         now.size += tmp.size;
         free_the_storage_of_the_tmp_and_its_list
@@ -365,75 +365,92 @@ template<class key_type,
     */
     bool _insert(node &p, const key_type &k, const value_type &v){
         byte *cache;load_cache(cache, p);
-        size_t ord = binary_search_key(cache, k, p.size);
-        pointer loc = nth_element_pointer(cache, ord);
+        size_t ord  = binary_search_key(cache, k, p.size);
+        pointer loc = *nth_element_pointer(cache, ord);
         if (p.type){
             node child_node = load_node(loc);
             //w...it will not actually clear the cache there, but clear it might be a good idea?
             //nonsense, the memory is not tested and will not be tooooo big.
             bool ret = _insert(child_node, k, v);
             if (child_node.size >= part_size) {
-                consider(child_node, 0, p);
+                consider(child_node, 0, p, cache);
                 save_node(p);//do we need this?
             }
+            else save_node(child_node);
             return ret;
         }
         else{
-            if (equal(nth_element_key(p, ord), k)) {
+            if (equal(*nth_element_key(p, ord), k)) {
                 pointer value_pointer = *nth_element_pointer(p, ord);
-                use_this_to_locate_the_value_in_the_database_file_and_change_it
+                fseek(datafile, value_pointer, SEEK_SET);
+                //shall we change it? or shall we simply throw something? or return the pointer waiting 
                 return false;
             }
+            num++;
             alloc_new_memory_in_database_file_and_return_its_postion_pos_which_is_a_pointer
             byte *cache;
             load_cache(cache, p);
             for (size_t i = p.size;i > ord + 1;i++){
-                *nth_element_key(p, i) = *nth_element_key(p, i - 1);
-                *nth_element_pointer(p, i) = *nth_element_pointer(p, i - 1);
+                *nth_element_key(p, i)      = *nth_element_key(p, i - 1);
+                *nth_element_pointer(p, i)  = *nth_element_pointer(p, i - 1);
             }
             ++p.size;
             *nth_element_key(p, ord + 1) = k;
             *nth_element_pointer(p, ord + 1) = pos;
             save_cache(cache, p);
-            //w......if it is oversized, this save function is surplus.
-            p.key = nth_element_key(p, 0);
+            // w......if it is oversized, this save function is surplus. can we improve it?
+            // p.key = *nth_element_key(p, 0); shall we add this?
             return true;
         }
     }
+    //mention that the root node is not saved in this function
     bool _remove(node &p, const key_type &k){
         byte *cache;
         load_cache(cache, p);
         size_t ord = binary_search_key(cache, k, p.size);
         if (p.type){
-            pointer loc = nth_element_pointer(cache, ord);
+            pointer loc = *nth_element_pointer(cache, ord);
             node child_node = load_node(loc);
             bool ret = _remove(child_node, k);
+            p.key = *nth_element_key(cache, 0);
             if (child_node.size < part_size / 2) {
-                consider(child_node, 1, p);
-                save_node(p);
+                consider(child_node, 1, p, cache);
             }
+            save_node(child_node);
             return ret;
         }
         else{
             if (*nth_element_key(cache, ord) == k){
                 delete_value_in_database_file
+                --num;
                 --p.size;
-                for (size_t i = ord - 1;i < p.size;i++){
+                for (size_t i = ord;i < p.size;i++){
                     *nth_element_key(cache, i)      = *nth_element_key(cache, i + 1);
                     *nth_element_pointer(cache, i)  = *nth_element_pointer(cache, i + 1);
                 }
                 save_cache(cache, p);
-                p.key = nth_element_key(cache, 0);
+                p.key = *nth_element_key(cache, 0);
                 return true;
             }
             else return false;
             //or throw something?
         }
     }
+    bool empty(){
+        return !num;
+    }
 public:
     bplustree(){}
-    value_type& find(const key_type &k){
-
+    void initialize(){
+        ??
+    }
+    value_type find(const key_type &k){
+        if (empty()) throw(container_is_empty());
+        pointer p = _find(load_node(root), k);
+        fseek(datafile, p, SEEK_SET);
+        value_type *v;
+        fread(v, sizeof(value_type), 1, datafile);
+        return *v;
     }
     bool insert(key_type k,value_type v){
         if (com(min_key, k)) _insert(root_node, k, v);
