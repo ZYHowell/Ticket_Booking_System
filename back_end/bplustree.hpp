@@ -5,7 +5,6 @@
 //there have some inspiration about the alloc function: 
 //the only thing to alloc in index_file is always "a node and the list of its kids", 
 //the only thing to alloc in database_file is "a key and a value", the same is true when free in two files
-//OOOPS! since ++ and -- functions are required, the program will double.(just paste it)
 #ifndef SJTU_BPLUSTREE_HPP
 #define SJTU_BPLUSTREE_HPP
 #include <cstddef>
@@ -34,7 +33,9 @@ template<class key_type,
     Compare com;
     size_t num;
     FILE *datafile, *bptfile;
-
+    size_t node_size;
+    key_type *min_key;
+    ALLOC alloc, alloc_data;
     inline bool equal(const key_type& k1,const key_type& k2){
         return !(com(k1, k2) || com(k2, k1));
     }
@@ -295,7 +296,7 @@ template<class key_type,
             save_node(temp);
         }
         now.next = tmp;
-        alloc_a_part_for_the_cache_and_inf_of_tmp;
+        pointer pos = alloc.alloc(node_size);
         tmp.pos = pos;
         byte *cache_tmp;
         for (size_t i = 0;i < s;i++){
@@ -317,7 +318,9 @@ template<class key_type,
         save_cache(cache_tmp, p);
         if (p.size >= part_size){
             if (p.parent == nullptr){
-                locate_a_new_node_as_the_root;
+                root = alloc.alloc(node_size);
+                fseek(bptfile, root + sizeof(node), SEEK_SET);
+                fwrite(&p.pos, sizeof(pointer), 1, bptfile);
                 p.parent = root;
             }
             consider(p, 0, load_node(p.parent));
@@ -339,7 +342,7 @@ template<class key_type,
             *nth_element_pointer(cache_a, s + i)    = *nth_element_pointer(cache_b, i);
         }
         now.size += tmp.size;
-        free_the_storage_of_the_tmp_and_its_list;
+        alloc.free(tmp.pos, node_size);
         byte *cache_par;
         load_cache(cache_par, par);
         s = binary_search_key(cache_par, now.key, par.size);
@@ -387,7 +390,10 @@ template<class key_type,
                 return false;
             }
             num++;
-            alloc_new_memory_in_database_file_and_return_its_postion_pos_which_is_a_pointer;
+            pointer pos = alloc_data.alloc(sizeof(key_type) + sizeof(value_type));
+            fseek(datafile, pos, SEEK_SET);
+            fwrite(&k, sizeof(key_type), 1, datafile);
+            fwrite(&v, sizeof(value_type), 1, datafile);
             byte *cache;
             load_cache(cache, p);
             for (size_t i = p.size;i > ord + 1;i++){
@@ -440,9 +446,10 @@ template<class key_type,
         return !num;
     }
 public:
-    bplustree(){}
-    void initialize(){
-        ;
+    bplustree():node_size(sizeof(node) + (sizeof(key_type) + sizeof(pointer)) * part_size), min_key(nullptr)
+    {}
+    void initialize()
+    {
     }
     value_type find(const key_type &k){
         if (empty()) throw(container_is_empty());
@@ -454,10 +461,12 @@ public:
     }
     bool insert(key_type k,value_type v){
         node root_node = load_node(root);
-        if (com(min_key, k)) _insert(root_node, k, v);
+        if (min_key != nullptr && com(*min_key, k)) _insert(root_node, k, v);
         else waiting_to_complete;
         if (root_node.size >= part_size){
-            alloc_a_new_node_and_return_its_position_pos;
+            pointer pos = alloc.alloc(node_size);
+            fseek(bptfile, pos + sizeof(node), SEEK_SET);
+            fwrite(&root_node.pos, sizeof(pointer), 1, bptfile);
             root_node.parent = pos;
             node now_root = load_node(pos);
             
