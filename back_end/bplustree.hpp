@@ -44,12 +44,12 @@ template<class key_type,
     */
     inline void load_cache(byte *start, node& p){
         fseek(bptfile, p.pos + sizeof(node), SEEK_SET);
-        fread(start, (sizeof(key) + sizeof(pointer)) * p.size, 1, bptfile);
+        fread(start, (sizeof(key_type) + sizeof(pointer)) * p.size, 1, bptfile);
     }
     //save the info in the cache
     inline void save_cache(byte *start, node &p){
         fseek(bptfile, p.pos + sizeof(node), SEEK_SET);
-        fwrite(start, (sizeof(key) + sizeof(pointer)) * p.size, 1, bptfile);
+        fwrite(start, (sizeof(key_type) + sizeof(pointer)) * p.size, 1, bptfile);
     }
     //get the value from the file with pointer l, 
     //the result cannot be value_type& (notice the '&')
@@ -176,12 +176,12 @@ template<class key_type,
         ++p.size;--l.size;
         *nth_element_key(p_cache, 0)        = *nth_element_key(left_cache, p.size);
         *nth_element_pointer(p_cache, 0)    = *nth_element_pointer(left_cache, p.size);
-        // if (r.size >= part_size)
-        // if (r.next){
-        //     node tmp = load_node(r.next);
-        //     if (tmp.size < part_size) right_balance(r, tmp);
+        // if (p.size >= part_size)
+        // if (p.next){
+        //     node tmp = load_node(p.next);
+        //     if (tmp.size < part_size) right_balance(p, tmp);
         // }
-        save_cache(right_cache, r);
+        save_cache(left_cache, l);
         save_cache(p_cache, p);
     }
     /*
@@ -213,7 +213,7 @@ template<class key_type,
         * another question is raised that do rebalance faster than split/merge?
         * and do the result change considering further using ratial and its influence?
     */
-    void consider(node &p, bool mode, node &par, byte *cache_par == nullptr){
+    void consider(node &p, bool mode, node &par, byte *cache_par = nullptr){
         node tmp;
         int tried = 0;
         byte *cache;
@@ -295,7 +295,7 @@ template<class key_type,
             save_node(temp);
         }
         now.next = tmp;
-        alloc_a_part_for_the_cache_and_inf_of_tmp
+        alloc_a_part_for_the_cache_and_inf_of_tmp;
         tmp.pos = pos;
         byte *cache_tmp;
         for (size_t i = 0;i < s;i++){
@@ -308,7 +308,7 @@ template<class key_type,
         load_cache(cache_tmp, p);
         ns = binary_search_key(cache_tmp, now.key, p.size);
         for (size_t i = p.size;i > ns + 1;i++){
-            *nth_element_key(cahce_tmp, i)      = *nth_element_key(cache_tmp, i - 1);
+            *nth_element_key(cache_tmp, i)      = *nth_element_key(cache_tmp, i - 1);
             *nth_element_pointer(cache_tmp, i)  = *nth_element_pointer(cache_tmp, i - 1);
         }
         *nth_element_key(cache_tmp, ns + 1) = tmp.key;
@@ -317,7 +317,7 @@ template<class key_type,
         save_cache(cache_tmp, p);
         if (p.size >= part_size){
             if (p.parent == nullptr){
-                locate_a_new_node_as_the_root
+                locate_a_new_node_as_the_root;
                 p.parent = root;
             }
             consider(p, 0, load_node(p.parent));
@@ -339,13 +339,13 @@ template<class key_type,
             *nth_element_pointer(cache_a, s + i)    = *nth_element_pointer(cache_b, i);
         }
         now.size += tmp.size;
-        free_the_storage_of_the_tmp_and_its_list
+        free_the_storage_of_the_tmp_and_its_list;
         byte *cache_par;
         load_cache(cache_par, par);
         s = binary_search_key(cache_par, now.key, par.size);
         --par.size;
         for (size_t i = s + 1;i < par.size;i++){
-            *nth_element_key(cahce_par, i)      = *nth_element_key(cache_par, i + 1);
+            *nth_element_key(cache_par, i)      = *nth_element_key(cache_par, i + 1);
             *nth_element_pointer(cache_par, i)  = *nth_element_pointer(cache_par, i + 1);
         }
         save_cache(cache_par, par);
@@ -387,7 +387,7 @@ template<class key_type,
                 return false;
             }
             num++;
-            alloc_new_memory_in_database_file_and_return_its_postion_pos_which_is_a_pointer
+            alloc_new_memory_in_database_file_and_return_its_postion_pos_which_is_a_pointer;
             byte *cache;
             load_cache(cache, p);
             for (size_t i = p.size;i > ord + 1;i++){
@@ -421,7 +421,7 @@ template<class key_type,
         }
         else{
             if (*nth_element_key(cache, ord) == k){
-                delete_value_in_database_file
+                delete_value_in_database_file;
                 --num;
                 --p.size;
                 for (size_t i = ord;i < p.size;i++){
@@ -442,7 +442,7 @@ template<class key_type,
 public:
     bplustree(){}
     void initialize(){
-        ??
+        ;
     }
     value_type find(const key_type &k){
         if (empty()) throw(container_is_empty());
@@ -453,10 +453,11 @@ public:
         return *v;
     }
     bool insert(key_type k,value_type v){
+        node root_node = load_node(root);
         if (com(min_key, k)) _insert(root_node, k, v);
-        else waiting_to_complete
+        else waiting_to_complete;
         if (root_node.size >= part_size){
-            alloc_a_new_node_and_return_its_position_pos
+            alloc_a_new_node_and_return_its_position_pos;
             root_node.parent = pos;
             node now_root = load_node(pos);
             
@@ -465,6 +466,8 @@ public:
     bool remove(key_type k){
         
     }
+    void listof(key_type k, bool (*comp)(key_type a, key_type b)){
 
+    }
 };
 #endif
