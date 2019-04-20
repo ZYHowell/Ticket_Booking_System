@@ -15,7 +15,7 @@
 #include "alloc.hpp"
 using pointer   =   long;
 using byte      =   char;
-constexpr pointer invalid_p = 0xdeadbeef;
+const pointer invalid_p = 0xdeadbeef;
 template<class key_type,
          class value_type, 
          size_t part_size, 
@@ -27,7 +27,8 @@ template<class key_type,
         pointer pos;
         size_t size;                    //the size of its brothers
         bool type;                      //0 for a leaf and 1 otherwise
-        node(key_type k = key_type(), pointer p = invalid_p, pointer par = invalid_p, 
+        node(key_type k = key_type(),
+        pointer p = invalid_p, pointer par = invalid_p, 
         pointer pre = invalid_p, pointer nex = invalid_p, 
         size_t s = 1, bool ty = 0)
         :key(k),pos(p),parent(par),prior(pre),next(nex),size(s),type(ty){}
@@ -36,10 +37,10 @@ template<class key_type,
     Compare com;
     size_t num;
     FILE *datafile, *bptfile;
-    size_t node_size;
-    key_type *min_key;
+    const size_t node_size;
+    const size_t inf_size;
     ALLOC alloc, alloc_data;
-    pointer root_pos, min_pos;
+    pointer root_pos;
     char *dfa_name, *ba_name;
 
     inline bool equal(const key_type& k1,const key_type& k2){
@@ -49,12 +50,12 @@ template<class key_type,
         * Load the info of node p and its brothers into the cache. 
         * The info of node p contains those keys greater than p.key but smaller than p.next.key
     */
-    inline void load_cache(byte *start, node& p){
+    inline void load_cache(byte *start,const node& p){
         fseek(bptfile, p.pos + sizeof(node), SEEK_SET);
         fread(start, (sizeof(key_type) + sizeof(pointer)) * p.size, 1, bptfile);
     }
     //save the info in the cache
-    inline void save_cache(byte *start, node &p){
+    inline void save_cache(byte *start,const node &p){
         fseek(bptfile, p.pos + sizeof(node), SEEK_SET);
         fwrite(start, (sizeof(key_type) + sizeof(pointer)) * p.size, 1, bptfile);
     }
@@ -102,25 +103,26 @@ template<class key_type,
     */
     inline size_t binary_search_key(byte *start,const key_type& k, size_t n){
         size_t l = 0, r = n, mid;
-        while (r - l > 1){
+        while (l < r){
             mid = (l + r) / 2;
-            if ( com(*nth_element_key(start, mid), k) ) l = mid;
+            if ( com(*nth_element_key(start, mid), k) ) l = mid + 1;
             else r = mid;
         }
-        if (r == n || !com(k, *nth_element_key(start, r))) return r;
-        else return l;
+        if (l >= n) return n - 1;
+        else if (equal(*nth_element_key(start, l), k)) return l;
+        else return l - 1;
     }
     /*
         * find the pointer of database file locating the value of key k. 
         * k must be not smaller than the smallest key 
     */
-    pointer _find(node &p,const key_type& k){
-        byte *cache;
+    pointer _find(const node &p,const key_type& k){
+        byte cache[inf_size];
         load_cache(cache, p);
         size_t ord = binary_search_key(cache, k, p.size);
-        pointer* tmp = *nth_element_pointer(cache, ord);
+        pointer tmp = *nth_element_pointer(cache, ord);
         if (!p.type){
-            if (equal(*nth_element_key(cache, ord), k)) return *nth_element_pointer(cache, ord);
+            if (equal(*nth_element_key(cache, ord), k)) return tmp;
             else return invalid_p;
         }
         return _find(load_node(tmp), k);
@@ -130,8 +132,8 @@ template<class key_type,
         * make the first of p become the last of l while the size of p equals to pars_size and that of l is less. 
         * save them both
     */
-    inline void left_balance(const node &p, const node &l, byte *p_cache){
-        byte *left_cache;
+    inline void left_balance(node &p, node &l, byte *p_cache){
+        byte left_cache[inf_size];
         load_cache(left_cache, l);
         *nth_element_key(left_cache, l.size) = *nth_element_key(p_cache, 0);
         *nth_element_pointer(left_cache, l.size) = *nth_element_pointer(p_cache, 0);
@@ -153,7 +155,7 @@ template<class key_type,
         * Save them both. do we need so?
     */
     inline void right_balance(node &p, node &r, byte *p_cache){
-        byte *right_cache;
+        byte right_cache[inf_size];
         load_cache(right_cache, r);
         for (size_t i = r.size;i > 0;i++){
             *nth_element_key(right_cache, i) = *nth_element_key(right_cache, i - 1);
@@ -175,7 +177,7 @@ template<class key_type,
         * Save them both
     */
     inline void receive_left(node &p, node &l, byte *p_cache){
-        byte *left_cache;
+        byte left_cache[inf_size];
         load_cache(left_cache, l);
         for (size_t i = p.size;i > 0;i++){
             *nth_element_key(p_cache, i) = *nth_element_key(p_cache, i - 1);
@@ -197,7 +199,7 @@ template<class key_type,
         * Save them both
     */
     inline void receive_right(node &p, node &r, byte *p_cache){
-        byte *right_cache;
+        byte right_cache[inf_size];
         load_cache(right_cache, r);
         *nth_element_key(p_cache, p.size)       = *nth_element_key(right_cache, 0);
         *nth_element_pointer(p_cache, p.size)   = *nth_element_pointer(right_cache, 0);
@@ -224,7 +226,7 @@ template<class key_type,
     void consider(node &p, bool mode, node &par, byte *cache_par = nullptr){
         node tmp;
         int tried = 0;
-        byte *cache;
+        byte cache[inf_size];
         load_cache(cache, p);
         if (cache_par == nullptr) load_cache(cache_par, par);
         while (tried < 2){
@@ -250,21 +252,24 @@ template<class key_type,
                 if (p.pos == *nth_element_pointer(cache_par, par.size - 1)) {
                     if (mode){
                         if (p.prior == invalid_p){
-                            if (par.parent != invalid_p) consider(par, 1, load_node(par.parent));
+                            if (par.parent != invalid_p) {
+                                node pp = load_node(p.parent);
+                                consider(par, 1, pp);
+                            }
                             //shall we save node p there?
                             //or does this condition actually exist?
                             //yep, unless a better solution that is to decrease the height is usen
                             break;
                         }
                         else{
-                            byte *cache_tmp;
+                            byte cache_tmp[inf_size];
                             load_cache(cache_tmp, tmp);
                             merge(tmp, cache_tmp, cache, par);
                             break;
                         }
                     }
                     else{
-                        split(p, cache);
+                        split(p, cache, par);
                         //++par.size; in split function it is already checked
                         save_node(par);
                         break;
@@ -273,7 +278,7 @@ template<class key_type,
                 else{
                     tmp = load_node(p.next);
                     if (mode){
-                        byte *cache_tmp;
+                        byte cache_tmp[inf_size];
                         load_cache(cache_tmp, tmp);
                         merge(p, cache, cache_tmp, par);
                         break;
@@ -283,7 +288,7 @@ template<class key_type,
                         break;
                     }
                     else {
-                        split(p,cache);
+                        split(p,cache, par);
                         //++par.size; in split function it is already checked
                         break;
                     }
@@ -299,16 +304,16 @@ template<class key_type,
         size_t s = now.size / 2;
         now.size -= s;
         size_t ns = now.size;
-        node tmp(*nth_element_key(ns), invalid_p, now.parent, now, now.next, s, now->type);
+        node tmp = node(*nth_element_key(cache, ns), invalid_p, now.parent, now.pos, now.next, s, now.type);
         if (now.next != invalid_p){
             node temp = load_node(now.next);
-            temp.prior = tmp;
+            temp.prior = tmp.pos;
             save_node(temp);
         }
-        now.next = tmp;
+        now.next = tmp.pos;
         pointer pos = alloc.alloc(node_size);
         tmp.pos = pos;
-        byte *cache_tmp;
+        byte cache_tmp[inf_size];
         for (size_t i = 0;i < s;i++){
             *nth_element_key(cache_tmp, i)      = *nth_element_key(cache, ns + i);
             *nth_element_pointer(cache_tmp, i)  = *nth_element_pointer(cache, ns + i);
@@ -333,7 +338,8 @@ template<class key_type,
                 fwrite(&p.pos, sizeof(pointer), 1, bptfile);
                 p.parent = root.pos;
             }
-            consider(p, 0, load_node(p.parent));
+            node par = load_node(p.parent);
+            consider(p, 0, par);
         }
         else save_node(p);
     }
@@ -353,7 +359,7 @@ template<class key_type,
         }
         now.size += tmp.size;
         alloc.free(tmp.pos, node_size);
-        byte *cache_par;
+        byte cache_par[inf_size];
         load_cache(cache_par, par);
         s = binary_search_key(cache_par, now.key, par.size);
         --par.size;
@@ -366,7 +372,10 @@ template<class key_type,
         else {
             if (par.size > part_size / 2 || par.parent == invalid_p)
                 save_node(par);
-            else consider(par, 1, load_node(par.parent));
+            else {
+                node pp = load_node(par.parent);
+                consider(par, 1, pp);
+            }
         }
         save_cache(cache_a, now);
     }
@@ -377,7 +386,7 @@ template<class key_type,
         * But mention to judge the size of the root.(actually, it does need to be specially treated)
     */
     bool _insert(node &p, const key_type &k, const value_type &v){
-        byte *cache;load_cache(cache, p);
+        byte cache[inf_size];load_cache(cache, p);
         size_t ord  = binary_search_key(cache, k, p.size);
         pointer loc = *nth_element_pointer(cache, ord);
         if (p.type){
@@ -393,8 +402,8 @@ template<class key_type,
             return ret;
         }
         else{
-            if (equal(*nth_element_key(p, ord), k)) {
-                pointer value_pointer = *nth_element_pointer(p, ord);
+            if (equal(*nth_element_key(cache, ord), k)) {
+                pointer value_pointer = *nth_element_pointer(cache, ord);
                 fseek(datafile, value_pointer, SEEK_SET);
                 //shall we change it? or shall we simply throw something? or return the pointer waiting 
                 return false;
@@ -404,15 +413,13 @@ template<class key_type,
             fseek(datafile, pos, SEEK_SET);
             fwrite(&k, sizeof(key_type), 1, datafile);
             fwrite(&v, sizeof(value_type), 1, datafile);
-            byte *cache;
-            load_cache(cache, p);
-            for (size_t i = p.size;i > ord + 1;i++){
-                *nth_element_key(p, i)      = *nth_element_key(p, i - 1);
-                *nth_element_pointer(p, i)  = *nth_element_pointer(p, i - 1);
+            for (size_t i = p.size;i > ord + 1;i--){
+                *nth_element_key(cache, i)      = *nth_element_key(cache, i - 1);
+                *nth_element_pointer(cache, i)  = *nth_element_pointer(cache, i - 1);
             }
             ++p.size;
-            *nth_element_key(p, ord + 1) = k;
-            *nth_element_pointer(p, ord + 1) = pos;
+            *nth_element_key(cache, ord + 1) = k;
+            *nth_element_pointer(cache, ord + 1) = pos;
             save_cache(cache, p);
             // w......if it is oversized, this save function is surplus. can we improve it?
             // p.key = *nth_element_key(p, 0); shall we add this?
@@ -421,7 +428,7 @@ template<class key_type,
     }
     //mention that the root node is not saved in this function
     bool _remove(node &p, const key_type &k){
-        byte *cache;
+        byte cache[inf_size];
         load_cache(cache, p);
         size_t ord = binary_search_key(cache, k, p.size);
         if (p.type){
@@ -456,7 +463,8 @@ template<class key_type,
         return !num;
     }
 public:
-    bplustree():node_size(sizeof(node) + (sizeof(key_type) + sizeof(pointer)) * part_size), min_key(nullptr), 
+    bplustree():node_size(sizeof(node) + (sizeof(key_type) + sizeof(pointer)) * part_size), 
+    inf_size((sizeof(key_type) + sizeof(pointer)) * part_size), 
     root(), num(0), root_pos(0){}
     void initialize(const char *datafile_name, const char *bptfile_name, const char *data_alloc, const char *bpt_alloc){
         ba_name = new char[strlen(bpt_alloc) + 1];
@@ -468,12 +476,6 @@ public:
         bptfile = fopen(bptfile_name, "rb+");
         datafile = fopen(datafile_name, "rb+");
         fseek(bptfile, 0, SEEK_SET);
-        if (!fread(&min_pos, sizeof(pointer), 1, bptfile)){
-            min_pos = invalid_p;
-            min_key = nullptr;
-            alloc.alloc(sizeof(key_type));
-        }
-        else *min_key = load_node(min_pos).key;
         if (!fread(&root_pos, sizeof(pointer), 1, bptfile)){
             alloc.alloc(sizeof(pointer));
             root_pos = alloc.alloc(node_size);
@@ -487,29 +489,28 @@ public:
         alloc_data.save(dfa_name);
         save_node(root);
         fseek(bptfile, 0, SEEK_SET);
-        fwrite(&min_pos, sizeof(pointer), 1, bptfile);
         if (root.pos != invalid_p) root_pos = root.pos;
         fwrite(&root_pos, sizeof(pointer), 1, bptfile);
         if (bptfile) fclose(bptfile);
         if (datafile) fclose(datafile);
         delete ba_name;delete dfa_name;
-        if (min_key != nullptr) delete min_key;
+        printf("\n%d\n", sizeof(node));
     }
     value_type find(const key_type &k){
         if (empty()) throw(container_is_empty());
         pointer p = _find(root, k);
-        fseek(datafile, p, SEEK_SET);
-        value_type *v;
-        fread(v, sizeof(value_type), 1, datafile);
-        return *v;
+        fseek(datafile, p + sizeof(key_type), SEEK_SET);
+        value_type v;
+        fread(&v, sizeof(value_type), 1, datafile);
+        return v;
     }
     bool insert(const key_type &k,const value_type &v){
         if (root.pos == invalid_p){
             if (!bptfile) throw(runtime_error());
-            root.pos = alloc.alloc(node_size);
-            byte *cache;
+            root.pos = root_pos;
+            root.size = num = 1;root.key = k;root.type = 0;
+            byte cache[inf_size];
             load_cache(cache, root);
-            root.size = num = 1;root.key = k;root.type = 1;
             *nth_element_key(cache, 0) = k;
             *nth_element_pointer(cache, 0) = alloc_data.alloc(sizeof(key_type) + sizeof(value_type));
             fseek(datafile, *nth_element_pointer(cache, 0), SEEK_SET);
@@ -517,22 +518,21 @@ public:
             save_cache(cache, root);
             return true;
         };
-        node root_node = load_node(root);
-        if (min_key != nullptr && com(*min_key, k)) _insert(root_node, k, v);
+        if (com(root.key, k)) _insert(root, k, v);
         else{
-            *min_key = k;
+            
         };//waiting_to_complete;
-        if (root_node.size >= part_size){
+        if (root.size >= part_size){
             pointer pos = alloc.alloc(node_size);
             fseek(bptfile, pos + sizeof(node), SEEK_SET);
-            fwrite(&root_node.pos, sizeof(pointer), 1, bptfile);
-            root_node.parent = pos;
+            fwrite(&root.pos, sizeof(pointer), 1, bptfile);
+            root.parent = pos;
             node now_root;
-            now_root.pos = pos, now_root.type = 1, now_root.size = 1, now_root.key = root_node.key;
-            byte *cache;
-            load_cache(cache, root_node);
-            split(root_node, cache, now_root);
-            root_node = now_root;root_pos = pos;
+            now_root.pos = pos, now_root.type = 1, now_root.size = 1, now_root.key = root.key;
+            byte cache[inf_size];
+            load_cache(cache, root);
+            split(root, cache, now_root);
+            root = now_root;root_pos = pos;
         }
     }
     bool remove(key_type k){
