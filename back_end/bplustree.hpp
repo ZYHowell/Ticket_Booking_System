@@ -41,7 +41,7 @@ template<class key_type,
     const size_t inf_size;
     ALLOC alloc, alloc_data;
     pointer root_pos;
-    char *dfa_name, *ba_name;
+    char *dfa_name, *ba_name, *b_name, *df_name;
 
     inline bool equal(const key_type& k1,const key_type& k2){
         return !(com(k1, k2) || com(k2, k1));
@@ -471,10 +471,16 @@ public:
         strcpy(ba_name, bpt_alloc);
         dfa_name = new char[strlen(data_alloc) + 1];
         strcpy(dfa_name, data_alloc);
+        b_name = new char[strlen(bptfile_name) + 1];
+        strcpy(b_name, bptfile_name);
+        df_name = new char[strlen(datafile_name) + 1];
+        strcpy(df_name, datafile_name);
         alloc.initialize(ba_name);
         alloc_data.initialize(dfa_name);
         bptfile = fopen(bptfile_name, "rb+");
+        if (!bptfile) bptfile = fopen(bptfile_name, "wb+");
         datafile = fopen(datafile_name, "rb+");
+        if (!datafile) datafile = fopen(datafile_name, "wb+");
         fseek(bptfile, 0, SEEK_SET);
         if (!fread(&root_pos, sizeof(pointer), 1, bptfile)){
             alloc.alloc(sizeof(pointer));
@@ -482,7 +488,16 @@ public:
             fseek(bptfile, root_pos, SEEK_SET);
             fwrite(&root, sizeof(node), 1, bptfile);
         }
-        printf("\n%d\n", root_pos);
+        // printf("\n%d\n", root_pos);
+    }
+    void clear(){
+        if (bptfile) fclose(bptfile);
+        if (datafile) fclose(datafile);
+        bptfile = fopen(b_name, "wb+");
+        datafile = fopen(df_name, "wb+");
+        delete b_name;delete df_name;
+        alloc.refill(ba_name);
+        alloc_data.refill(dfa_name);
     }
     ~bplustree(){
         alloc.save(ba_name);
@@ -493,12 +508,12 @@ public:
         fwrite(&root_pos, sizeof(pointer), 1, bptfile);
         if (bptfile) fclose(bptfile);
         if (datafile) fclose(datafile);
-        delete ba_name;delete dfa_name;
-        printf("\n%d\n", sizeof(node));
+        delete ba_name;delete dfa_name;delete b_name;delete df_name;
     }
     value_type find(const key_type &k){
         if (empty()) throw(container_is_empty());
         pointer p = _find(root, k);
+        if (p == invalid_p) return value_type();
         fseek(datafile, p + sizeof(key_type), SEEK_SET);
         value_type v;
         fread(&v, sizeof(value_type), 1, datafile);

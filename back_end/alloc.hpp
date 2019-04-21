@@ -46,26 +46,30 @@ public:
     ~ALLOC(){
         clear_node(head);
     }
+    void refill(const char *filename){
+        file_end = 0;
+        head = new node;
+        new_mem(head);
+        head = head->next;
+        delete head->prior;
+        head->prior = nullptr;
+        save(filename);
+    }
     void initialize(const char *filename){
         FILE *file;
         file = fopen(filename, "rb");
         if (!file) {
-            file = fopen(filename, "wb");
-            fclose(file);
-            file_end = 0;
-            head = new node;
-            new_mem(head);
-            head = head->next;
-            delete head->prior;
-            head->prior = nullptr;
-            save(filename);
+            refill(filename);
             return;
         }
-        fread(&file_end, sizeof(pointer), 1, file);
+        if (!fread(&file_end, sizeof(pointer), 1, file)){
+            refill(filename);
+            return;
+        }
         node *temp = head = new node;
         while(!feof(file)){
             fread(temp->loc, sizeof(pointer), 2, file);
-            printf("%d %d ",temp->loc[0], temp->loc[1]);
+            // printf("%d %d ",temp->loc[0], temp->loc[1]);
             temp->next = new node;
             temp->next->prior = temp;
             temp = temp->next;
@@ -82,7 +86,7 @@ public:
         node *temp = head;
         while(temp != nullptr){
             fwrite(temp->loc, sizeof(pointer), 2, file);
-            printf("%d %d ",temp->loc[0], temp->loc[1]);
+            // printf("%d %d ",temp->loc[0], temp->loc[1]);
             temp = temp->next;
         }
         fclose(file);
