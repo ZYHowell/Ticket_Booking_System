@@ -397,9 +397,6 @@ template<class key_type,
             //or throw something?
         }
     }
-    bool empty(){
-        return !num;
-    }
 public:
     bplustree():node_size(sizeof(node) + (sizeof(key_type) + sizeof(pointer)) * part_size), 
     inf_size((sizeof(key_type) + sizeof(pointer)) * part_size), 
@@ -441,6 +438,7 @@ public:
         alloc.refill(ba_name);
         alloc_data.refill(dfa_name);
         fseek(bptfile, 0, SEEK_SET);
+        num = 0;
         // printf("clear_root_pointer_seek: %d\n", 0);
         if (!fread(&root_pos, sizeof(pointer), 1, bptfile)){
             alloc.alloc(sizeof(pointer));
@@ -450,6 +448,9 @@ public:
             fwrite(&root, sizeof(node), 1, bptfile);
             // printf("which is: pos:%d size:%d key:%d\n", root.pos, root.size, root.key);
         }
+    }
+    bool empty(){
+        return !num;
     }
     ~bplustree(){
         alloc.save(ba_name);
@@ -464,6 +465,12 @@ public:
         if (datafile) fclose(datafile);
         delete ba_name;delete dfa_name;delete b_name;delete df_name;
     }
+    int count(const key_type &k){
+        if (empty()) return 0;
+        pointer p = _find(root, k);
+        if (p == invalid_p) return 0;
+        return 1;
+    }
     value_type find(const key_type &k){
         if (empty()) throw(container_is_empty());
         pointer p = _find(root, k);
@@ -473,6 +480,14 @@ public:
         fread(&v, sizeof(value_type), 1, datafile);
         // printf("find_seek_in_database: %d\nwhich is: %d\n", p + sizeof(key_type),v);
         return v;
+    }
+    bool set(const key_type &k, const value_type &v){
+        if (empty()) throw(container_is_empty());
+        pointer p = _find(root, k);
+        if (p == invalid_p) return 0;
+        fseek(datafile, p + sizeof(key_type), SEEK_SET);
+        fwrite(&v, sizeof(value_type), 1, datafile);
+        return 1;
     }
     bool insert(const key_type &k,const value_type &v){
         if (root.pos == invalid_p){
@@ -529,7 +544,8 @@ public:
         return true;
     }
     void listof(key_type k, bool (*comp)(key_type a, key_type b)){
-
+        if (empty()) throw(container_is_empty());
+        pointer p = _find(root, k);
     }
 };
 #endif
