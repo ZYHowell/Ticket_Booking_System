@@ -9,7 +9,7 @@ int main(){
         if (i % 2)
         test.insert(i, i * 2);
     }
-    printf("\n\nwrong_part_now\n");
+    printf("\nwrong_part_now\n");
     for (int i = 1;i <= 20;i++)
         if (! (i % 2)) test.insert(i, i * 2);
     for (int i = 1;i < 15;i++) {

@@ -46,42 +46,42 @@ template<class key_type,
     }
     inline void load_cache(byte *start,const node& p){
         fseek(bptfile, p.pos + sizeof(node), SEEK_SET);
-        // printf("load_cache_seek: %d\n", p.pos + sizeof(node));
+        printf("load_cache_seek: %d\n", p.pos + sizeof(node));
         fread(start, 1, (sizeof(key_type) + sizeof(pointer)) * p.size, bptfile);
-        // printf("which are:\n");
-        // for (int i = 0;i < p.size;i++) // printf("key: %d, pointer: %d; ", *nth_key(start, i), *nth_pointer(start, i));
-        // printf("\n");
+        printf("which are:\n");
+        for (int i = 0;i < p.size;i++) printf("key: %d, pointer: %d; ", *nth_key(start, i), *nth_pointer(start, i));
+        printf("\n");
     }
     inline void save_cache(byte *start,const node &p){
         fseek(bptfile, p.pos + sizeof(node), SEEK_SET);
-        // printf("save_cache_seek: %d\n", p.pos + sizeof(node));
+        printf("save_cache_seek: %d\n", p.pos + sizeof(node));
         fwrite(start, 1, (sizeof(key_type) + sizeof(pointer)) * p.size, bptfile);
-        // printf("which are:\n");
-        // for (int i = 0;i < p.size;i++)// printf("key: %d, pointer: %d; ", *nth_key(start, i), *nth_pointer(start, i));
-        // printf("\n");
+        printf("which are:\n");
+        for (int i = 0;i < p.size;i++)printf("key: %d, pointer: %d; ", *nth_key(start, i), *nth_pointer(start, i));
+        printf("\n");
     }
     inline value_type load_value(pointer l){
         fseek(datafile, l, SEEK_SET);
-        // printf("load_value_seek: %d\n", l);
+        printf("load_value_seek: %d\n", l);
         value_type tmp;
         fread(&tmp, sizeof(value_type), 1, datafile);
         return tmp;
     }
     inline node load_node(pointer l){
         fseek(bptfile, l, SEEK_SET);
-        // printf("load_node_seek: %d\n", l);
+        printf("load_node_seek: %d\n", l);
         node tmp;
         fread(&tmp, sizeof(node), 1, bptfile);
-        // printf("which is: pos:%d size:%d key:%d\n", tmp.pos, tmp.size, tmp.key);
+        printf("which is: pos:%d size:%d key:%d\n", tmp.pos, tmp.size, tmp.key);
         return tmp;
     }
     inline bool save_node(const node &p){
         if (p.pos == invalid_p) return false;
         try{
             fseek(bptfile, p.pos, SEEK_SET);
-            // printf("save_node_seek: %d\n", p.pos);
+            printf("save_node_seek: %d\n", p.pos);
             fwrite(&p, sizeof(node), 1, bptfile);
-            // printf("which is: pos:%d size:%d key:%d\n", p.pos, p.size, p.key);
+            printf("which is: pos:%d size:%d key:%d\n", p.pos, p.size, p.key);
             return true;
         }
         catch(...){
@@ -243,7 +243,7 @@ template<class key_type,
         now.size -= s;
         size_t ns = now.size;
         pointer pos = alloc.alloc(node_size);
-        // printf("ask_for_bpt: %d where %d\n", node_size, pos);
+        printf("ask_for_bpt: %d where %d\n", node_size, pos);
         node tmp = node(*nth_key(cache, ns), pos, now.pos, now.next, s, now.type);
         if (now.next != invalid_p){
             node temp = load_node(now.next);
@@ -313,18 +313,18 @@ template<class key_type,
             if (equal(*nth_key(cache, ord), k)) {
                 pointer value_pointer = *nth_pointer(cache, ord);
                 fseek(datafile, value_pointer, SEEK_SET);
-                // printf("_insert_value_seek: %d\n", value_pointer);
+                printf("_insert_value_seek: %d\n", value_pointer);
                 //shall we change it? or shall we simply throw something? or return the pointer waiting 
                 return false;
             }
             num++;
             pointer pos = alloc_data.alloc(sizeof(key_type) + sizeof(value_type));
-            // printf("ask_for_data: at %d\n", pos);
+            printf("ask_for_data: at %d\n", pos);
             fseek(datafile, pos, SEEK_SET);
-            // printf("_insert_new_value_seek: %d\n", pos);
+            printf("_insert_new_value_seek: %d\n", pos);
             fwrite(&k, sizeof(key_type), 1, datafile);
             fwrite(&v, sizeof(value_type), 1, datafile);
-            // printf("which is: key: %d value: %d\n", k, v);
+            printf("which is: key: %d value: %d\n", k, v);
             for (size_t i = now.size;i > ord + 1;i--){
                 *nth_key(cache, i)      = *nth_key(cache, i - 1);
                 *nth_pointer(cache, i)  = *nth_pointer(cache, i - 1);
@@ -396,17 +396,17 @@ public:
         datafile = fopen(datafile_name, "rb+");
         if (!datafile) datafile = fopen(datafile_name, "wb+");
         fseek(bptfile, 0, SEEK_SET);
-        // printf("size_of_node: %d node_size_with_cache: %d\n", sizeof(node), node_size);
-        // printf("ini_root_pointer_seek: %d\n", 0);
+        printf("size_of_node: %d node_size_with_cache: %d\n", sizeof(node), node_size);
+        printf("ini_root_pointer_seek: %d\n", 0);
         if (!fread(&root_pos, sizeof(pointer), 1, bptfile)){
             alloc.alloc(sizeof(pointer));
             root_pos = alloc.alloc(node_size);
             fseek(bptfile, root_pos, SEEK_SET);
-            // printf("ini_root_seek: %d\n", root_pos);
+            printf("ini_root_seek: %d\n", root_pos);
             fwrite(&root, sizeof(node), 1, bptfile);
-            // printf("which is: pos:%d size:%d key:%d\n", root.pos, root.size, root.key);
+            printf("which is: pos:%d size:%d key:%d\n", root.pos, root.size, root.key);
         }
-        // printf("\n%d\n", root_pos);
+        printf("\n%d\n", root_pos);
     }
     void clear(){
         if (bptfile) fclose(bptfile);
@@ -417,14 +417,14 @@ public:
         alloc.refill(ba_name);
         alloc_data.refill(dfa_name);
         fseek(bptfile, 0, SEEK_SET);
-        // printf("clear_root_pointer_seek: %d\n", 0);
+        printf("clear_root_pointer_seek: %d\n", 0);
         if (!fread(&root_pos, sizeof(pointer), 1, bptfile)){
             alloc.alloc(sizeof(pointer));
             root_pos = alloc.alloc(node_size);
             fseek(bptfile, root_pos, SEEK_SET);
-            // printf("clear_root_seek: %d\n", 0);
+            printf("clear_root_seek: %d\n", 0);
             fwrite(&root, sizeof(node), 1, bptfile);
-            // printf("which is: pos:%d size:%d key:%d\n", root.pos, root.size, root.key);
+            printf("which is: pos:%d size:%d key:%d\n", root.pos, root.size, root.key);
         }
     }
     ~bplustree(){
@@ -433,9 +433,9 @@ public:
         save_node(root);
         fseek(bptfile, 0, SEEK_SET);
         if (root.pos != invalid_p) root_pos = root.pos;
-        // printf("decode_root_pointer_seek: %d\nwhich is: %d\n", 0, root_pos);
+        printf("decode_root_pointer_seek: %d\nwhich is: %d\n", 0, root_pos);
         fwrite(&root_pos, sizeof(pointer), 1, bptfile);
-        // printf("which is: %d\n", root_pos);
+        printf("which is: %d\n", root_pos);
         if (bptfile) fclose(bptfile);
         if (datafile) fclose(datafile);
         delete ba_name;delete dfa_name;delete b_name;delete df_name;
@@ -447,7 +447,7 @@ public:
         fseek(datafile, p + sizeof(key_type), SEEK_SET);
         value_type v;
         fread(&v, sizeof(value_type), 1, datafile);
-        // printf("find_seek_in_database: %d\nwhich is: %d\n", p + sizeof(key_type),v);
+        printf("find_seek_in_database: %d\nwhich is: %d\n", p + sizeof(key_type),v);
         return v;
     }
     bool insert(const key_type &k,const value_type &v){
@@ -460,9 +460,9 @@ public:
             *nth_key(cache, 0) = k;
             *nth_pointer(cache, 0) = alloc_data.alloc(sizeof(key_type) + sizeof(value_type));
             fseek(datafile, *nth_pointer(cache, 0), SEEK_SET);
-            // printf("insert_no_root_seek: %d\n", *nth_pointer(cache, 0));
+            printf("insert_no_root_seek: %d\n", *nth_pointer(cache, 0));
             fwrite(&k, sizeof(key_type), 1, datafile);fwrite(&v, sizeof(value_type), 1, datafile);
-            // printf("which is: key: %d value: %d\n", k, v);
+            printf("which is: key: %d value: %d\n", k, v);
             save_cache(cache, root);
             return true;
         };
@@ -475,25 +475,25 @@ public:
         //a save_node(root) is needed after this
         if (root.size >= part_size){
             pointer pos = alloc.alloc(node_size);
-            // printf("ask_for_bpt: at %d\n", pos);
+            printf("ask_for_bpt: at %d\n", pos);
             node now_root(root.key, pos);
             now_root.type = 1, now_root.size = 1;
             size_t s = root.size / 2;
             root.size -= s;
-            pos = alloc.alloc(node_size);
-            // printf("ask_for_bpt: at %d\n", pos);
+            root.next = pos = alloc.alloc(node_size);
+            printf("ask_for_bpt: at %d\n", pos);
             node temp(*nth_key(cache, root.size), pos, root.pos);
             temp.type = root.type, temp.size = s;
             save_cache((byte *)nth_key(cache, root.size), temp);
             save_node(temp);
             pos = now_root.pos;
             fseek(bptfile, pos + sizeof(node), SEEK_SET);
-            // printf("extend_root_seek: %d\n", pos + sizeof(node));
+            printf("extend_root_seek: %d\n", pos + sizeof(node));
             fwrite(&root.key, sizeof(key_type), 1, bptfile);
             fwrite(&root.pos, sizeof(pointer), 1, bptfile);
             fwrite(&temp.key, sizeof(key_type), 1, bptfile);
             fwrite(&temp.pos, sizeof(pointer), 1, bptfile);
-            // printf("which are: first_key: %d first_pos: %d second_key: %d second_pos: %d\n", root.key, root.pos, temp.key, temp.pos);
+            printf("which are: first_key: %d first_pos: %d second_key: %d second_pos: %d\n", root.key, root.pos, temp.key, temp.pos);
             save_node(root);
             root = now_root;root_pos = root.pos;root.size = 2;
         }
