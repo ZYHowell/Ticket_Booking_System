@@ -1,20 +1,21 @@
 #ifndef SJTU_BPLUSTREE_HPP
 #define SJTU_BPLUSTREE_HPP
-
 #include <cstddef>
 #include <functional>
 #include <stdio.h>
 #include <cstring>
 #include "exceptions.h"
 #include "alloc.hpp"
-using pointer = long;
-using byte = char;
+#include "vector.hpp"
 const pointer invalid_p = 0xdeadbeef;
 template<class key_type,
 	class value_type,
 	size_t part_size,
 	class Compare = std::less<key_type>
 >   class bplustree {
+	using pointer = long;
+	using byte = char;
+	using list_type = std::pair<key_type, value_type>;
 	struct node {
 		key_type key;
 		pointer prior, next;
@@ -40,7 +41,7 @@ template<class key_type,
 	inline bool equal(const key_type& k1, const key_type& k2) {
 		return !(com(k1, k2) || com(k2, k1));
 	}
-	inline void load_cache_n(byte *start, const node& p) {
+	inline void load_cache(byte *start, const node& p) {
 		fseek(bptfile, p.pos + sizeof(node), SEEK_SET);
 		// printf("load_cache_seek: %d\n", p.pos + sizeof(node));
 		fread(start, 1, (sizeof(key_type) + sizeof(pointer)) * p.size, bptfile);
@@ -48,15 +49,7 @@ template<class key_type,
 		// for (int i = 0;i < p.size;i++) // printf("key: %d, pointer: %d; ", *nth_key(start, i), *nth_pointer(start, i));
 		// printf("\n");
 	}
-	inline void load_cache_l(byte *start, const node& p) {
-		fseek(bptfile, p.pos + sizeof(node), SEEK_SET);
-		// printf("load_cache_seek: %d\n", p.pos + sizeof(node));
-		fread(start, 1, (sizeof(key_type) + sizeof(value_type)) * p.size, bptfile);
-		// printf("which are:\n");
-		// for (int i = 0;i < p.size;i++) // printf("key: %d, pointer: %d; ", *nth_key(start, i), *nth_pointer(start, i));
-		// printf("\n");
-	}
-	inline void save_cache_n(byte *start, const node &p) {
+	inline void save_cache(byte *start, const node &p) {
 		fseek(bptfile, p.pos + sizeof(node), SEEK_SET);
 		// printf("save_cache_seek: %d\n", p.pos + sizeof(node));
 		fwrite(start, 1, (sizeof(key_type) + sizeof(pointer)) * p.size, bptfile);
@@ -64,13 +57,12 @@ template<class key_type,
 		// for (int i = 0;i < p.size;i++)// printf("key: %d, pointer: %d; ", *nth_key(start, i), *nth_pointer(start, i));
 		// printf("\n");
 	}
-	inline void save_cache_l(byte *start, const node &p) {
-		fseek(bptfile, p.pos + sizeof(node), SEEK_SET);
-		// printf("save_cache_seek: %d\n", p.pos + sizeof(node));
-		fwrite(start, 1, (sizeof(key_type) + sizeof(value_type)) * p.size, bptfile);
-		// printf("which are:\n");
-		// for (int i = 0;i < p.size;i++)// printf("key: %d, pointer: %d; ", *nth_key(start, i), *nth_pointer(start, i));
-		// printf("\n");
+	inline value_type load_value(pointer l) {
+		fseek(datafile, l, SEEK_SET);
+		// printf("load_value_seek: %d\n", l);
+		value_type tmp;
+		fread(&tmp, sizeof(value_type), 1, datafile);
+		return tmp;
 	}
 	inline node load_node(pointer l) {
 		fseek(bptfile, l, SEEK_SET);
@@ -93,61 +85,59 @@ template<class key_type,
 			return false;
 		}
 	}
-	inline key_type* nth_key_n(byte *start, size_t n = 0) {
+	inline key_type* nth_key(byte *start, size_t n) {
 		return (key_type *)(start + (sizeof(key_type) + sizeof(pointer)) * n);
-	}
-	inline key_type* nth_key_l(byte *start, size_t n = 0) {
-		return (key_type *)(start + (sizeof(key_type) + sizeof(value_type)) * n);
 	}
 	inline pointer* nth_pointer(byte *start, size_t n = 0) {
 		return (pointer *)(start + sizeof(key_type) * (n + 1) + sizeof(pointer) * n);
 	}
-	inline pointer nth_value_loc(const node &now, size_t n = 0) {
-		return now.pos + sizeof(node) + (sizeof(key_type) + sizeof(value_type)) * n + sizeof(key_type);
-	}
-	inline value_type get_value(pointer loc) {
-		value_type v;
-		fseek(bptfile, loc, SEEK_SET);
-		fread(&v, sizeof(value_type), 1, bptfile);
-		return v;
-	}
-	inline size_t binary_search_key_n(byte *start, const key_type& k, size_t n) {
+	inline size_t binary_search_key(byte *start, const key_type& k, size_t n) {
 		size_t l = 0, r = n, mid;
 		while (l < r) {
 			mid = (l + r) / 2;
-			if (com(*nth_key_n(start, mid), k)) l = mid + 1;
+			if (com(*nth_key(start, mid), k)) l = mid + 1;
 			else r = mid;
 		}
 		if (l >= n) return n - 1;
-		else if (equal(*nth_key_n(start, l), k)) return l;
-		else return l - 1;
-	}
-	inline size_t binary_search_key_l(byte *start, const key_type& k, size_t n) {
-		size_t l = 0, r = n, mid;
-		while (l < r) {
-			mid = (l + r) / 2;
-			if (com(*nth_key_l(start, mid), k)) l = mid + 1;
-			else r = mid;
-		}
-		if (l >= n) return n - 1;
-		else if (equal(*nth_key_l(start, l), k)) return l;
+		else if (equal(*nth_key(start, l), k)) return l;
 		else return l - 1;
 	}
 	pointer _find(const node &p, const key_type& k) {
 		byte cache[inf_size];
-		size_t ord;
-		if (p.type) {
-			load_cache_n(cache, p);
-			ord = binary_search_key_n(cache, k, p.size);
-			pointer tmp = *nth_pointer(cache, ord);
-			return _find(load_node(tmp), k);
-		}
-		else {
-			load_cache_l(cache, p);
-			ord = binary_search_key_l(cache, k, p.size);
-			if (equal(*nth_key(cache, ord), k)) return nth_value_loc(p, ord);
+		load_cache(cache, p);
+		size_t ord = binary_search_key(cache, k, p.size);
+		pointer tmp = *nth_pointer(cache, ord);
+		if (!p.type) {
+			if (equal(*nth_key(cache, ord), k)) return tmp;
 			else return invalid_p;
 		}
+		return _find(load_node(tmp), k);
+	}
+	vector<list_type> _listof(const node &p, key_type k, bool(*comp)(key_type a, key_type b)) {
+		byte cache[inf_size];
+		load_cache(cache, p);
+		size_t ord = binary_search_key(cache, k, p.size);
+		pointer tmp = *nth_pointer(cache, ord);
+		if (!p.type) {
+			vector<list_type> ret;
+			node now = p;
+			while (!comp(*nth_key(cache, ord), k) && !comp(k, *nth_key(cache, ord))) {
+				ret.push_back(
+					list_type(*nth_key(cache, ord),
+						load_value(*nth_pointer(cache, ord) + sizeof(key_type))
+					)
+				);
+				if (ord + 1 < now.size) ++ord;
+				else {
+					if (now.next == invalid_p) break;
+					now = load_node(now.next);
+					load_cache(cache, now);
+					ord = 0;
+				}
+			}
+			return ret;
+		}
+		return _listof(load_node(tmp), k, comp);
 	}
 	/*
 		* make the first of p become the last of l while the size of p equals to part_size and that of l is less.
@@ -576,10 +566,11 @@ public:
 	bool remove(key_type k) {
 		return true;
 	}
-	void listof(key_type k, bool(*comp)(key_type a, key_type b)) {
+	vector<list_type> listof(key_type k, bool(*comp)(const key_type& a,const key_type& b))const  {
 		if (empty()) throw(container_is_empty());
-		pointer p = _find(root, k);
+		return _listof(root, k, comp);
 	}
+
 	int size() const { return num; }
 };
 #endif

@@ -1,5 +1,18 @@
 #include "ticket.h"
 
+std::ostream &operator << (std::ostream &os, const Seat &s) {
+	os << s.type << ' ' << s.num << ' ' << s.price;
+	return os;
+}
+
+std::ostream &operator << (std::ostream &os, const ticket &t) {
+	os << t.tID << ' ' << t.from << ' ' << t.Date << ' ' << t.leave
+		<< t.to << ' ' << t.arrive << ' ';
+	for (int i = 0; i < t.seat.size(); i++)
+		os << t.seat[i] << ' ';
+	return os;
+}
+
 bool cmpByFirstDim(const std::pair<String,String> &lhs, const std::pair<String,String>& rhs) {
 	return lhs.first < rhs.first;
 }
@@ -30,15 +43,15 @@ void ticketSystem::add(const vector<String> &stations, const String &id) {
 }
 
 vector<ticket> ticketSystem::query(const String &from, const String &to,const date &d) {
-	vector<String> V = B.listof(from, cmpByFirstDim);
-	vector<String> U = B.listof(from, cmpByFirstDim);
+	auto  V = B.listof(std::make_pair(from,String()), cmpByFirstDim);
+	auto  U = B.listof(std::make_pair(to, String()), cmpByFirstDim);
 	vector<String> C;
 	int i = 0, j = 0;
 	while (i <= V.size()) {
-		while (U[j] < V[i] && j < U.size()) j++;
+		while (U[j].second < V[i].second && j < U.size()) j++;
 		if (j == U.size()) break;
-		if (V[i] == U[j]) 
-			C.push_back(V[i]);
+		if (V[i].second == U[j].second) 
+			C.push_back(V[i].second);
 		i++;
 	}
 	vector<ticket> ret;
@@ -50,13 +63,13 @@ vector<ticket> ticketSystem::query(const String &from, const String &to,const da
 }
 
 ticketPair ticketSystem::transfer(const String &from, const String &to, const date &d) {
-	vector<String> V = B.listof(from, cmpByFirstDim);
-	vector<String> U = B.listof(from, cmpByFirstDim);
+	auto  V = B.listof(std::make_pair(from, String()), cmpByFirstDim);
+	auto  U = B.listof(std::make_pair(to, String()), cmpByFirstDim);
 	ticketPair ret;
 	for (int i = 0; i < V.size(); i++)
 		for (int j = 0; j < U.size(); j++) {
-			train T1 = TS->query(V[i]).second;
-			train T2 = TS->query(U[j]).second;
+			train T1 = TS->query(V[i].second).second;
+			train T2 = TS->query(U[j].second).second;
 			auto check = checkTransfer(T1, T2, from, to);
 			if (check.first)
 				ret = myMin(ret, 

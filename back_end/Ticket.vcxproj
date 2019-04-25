@@ -115,10 +115,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Ticket_Booking_System\back_end\bplustree.hpp" />
     <ClInclude Include="..\..\Ticket_Booking_System\back_end\exceptions.h" />
     <ClInclude Include="alloc.hpp" />
     <ClInclude Include="bookingSystem.h" />
+    <ClInclude Include="bplustree.hpp" />
     <ClInclude Include="log.h" />
     <ClInclude Include="ticket.h" />
     <ClInclude Include="tool.h" />
@@ -130,6 +130,7 @@
   <ItemGroup>
     <ClCompile Include="bookingSystem.cpp" />
     <ClCompile Include="log.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="ticket.cpp" />
     <ClCompile Include="tool.cpp" />
     <ClCompile Include="train.cpp" />
