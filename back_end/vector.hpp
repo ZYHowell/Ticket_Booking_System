@@ -1,16 +1,11 @@
 #ifndef SJTU_VECTOR_HPP
 #define SJTU_VECTOR_HPP
 
-#include "exceptions.hpp"
-
+#include "exceptions.h"
+#include "utility.hpp"
 #include <climits>
 #include <cstddef>
 
-namespace sjtu {
-/**
- * a data container like std::vector
- * store data in a successive memory and support random access.
- */
 template<typename T>
 class vector {
 	size_t maxsize;
@@ -354,8 +349,5 @@ public:
 		(head + len)->~T();
 	}
 };
-
-
-}
 
 #endif

@@ -3,8 +3,6 @@
 
 #include <utility>
 
-namespace sjtu {
-
 template<class T1, class T2>
 class pair {
 public:
@@ -20,8 +18,11 @@ public:
 	pair(const pair<U1, U2> &other) : first(other.first), second(other.second) {}
 	template<class U1, class U2>
 	pair(pair<U1, U2> &&other) : first(other.first), second(other.second) {}
+	pair operator=(const pair &other){
+		first = other.first;
+		second = other.second;
+		return *this;
+	}
 };
-
-}
 
 #endif
