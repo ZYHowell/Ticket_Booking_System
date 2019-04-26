@@ -46,7 +46,7 @@ template<class key_type,
         // printf("load_cache_seek: %d\n", p.pos + sizeof(node));
         fread(start, 1, (sizeof(key_type) + sizeof(pointer)) * p.size, datafile);
         // printf("which are:\n");
-        // for (int i = 0;i < p.size;i++) // printf("key: %d, pointer: %d; ", *nth_key(start, i), *nth_pointer(start, i));
+        // for (int i = 0;i < p.size;i++) // printf("key: %d, pointer: %d; ", *nth_key_n(start, i), *nth_pointer(start, i));
         // printf("\n");
     }
     inline void load_cache_l(byte *start,const node& p){
@@ -54,7 +54,7 @@ template<class key_type,
         // printf("load_cache_seek: %d\n", p.pos + sizeof(node));
         fread(start, 1, (sizeof(key_type) + sizeof(value_type)) * p.size, datafile);
         // printf("which are:\n");
-        // for (int i = 0;i < p.size;i++) // printf("key: %d, pointer: %d; ", *nth_key(start, i), *nth_pointer(start, i));
+        // for (int i = 0;i < p.size;i++) // printf("key: %d, value: %d; ", *nth_key_l(start, i), *nth_value(start, i));
         // printf("\n");
     }
     inline void save_cache_n(byte *start,const node &p){
@@ -62,7 +62,7 @@ template<class key_type,
         // printf("save_cache_seek: %d\n", p.pos + sizeof(node));
         fwrite(start, 1, (sizeof(key_type) + sizeof(pointer)) * p.size, datafile);
         // printf("which are:\n");
-        // for (int i = 0;i < p.size;i++)// printf("key: %d, pointer: %d; ", *nth_key(start, i), *nth_pointer(start, i));
+        // for (int i = 0;i < p.size;i++)// printf("key: %d, pointer: %d; ", *nth_key_n(start, i), *nth_pointer(start, i));
         // printf("\n");
     }
     inline void save_cache_l(byte *start,const node &p){
@@ -70,7 +70,7 @@ template<class key_type,
         // printf("save_cache_seek: %d\n", p.pos + sizeof(node));
         fwrite(start, 1, (sizeof(key_type) + sizeof(value_type)) * p.size, datafile);
         // printf("which are:\n");
-        // for (int i = 0;i < p.size;i++)// printf("key: %d, pointer: %d; ", *nth_key(start, i), *nth_pointer(start, i));
+        // for (int i = 0;i < p.size;i++)// printf("key: %d, value: %d; ", *nth_key_l(start, i), *nth_value(start, i));
         // printf("\n");
     }
     inline node load_node(pointer l){
@@ -165,13 +165,13 @@ template<class key_type,
             byte cache[leaf_inf_size];
             load_cache_l(cache, p);
             ord = binary_search_key_l(cache, k, p.size);
-            tmp = nth_value_loc(cache, ord);
+            tmp = nth_value_loc(p, ord);
             vector<list_type> ret;
             node now = p;
             while (!comp(*nth_key_l(cache, ord), k) && !comp(k, *nth_key_l(cache, ord))){
                 ret.push_back(
                     list_type(*nth_key_l(cache, ord), 
-                        nth_value(cache, ord)
+                        *nth_value(cache, ord)
                     )
                 );
                 if (ord + 1 < now.size) ++ord;
@@ -737,7 +737,7 @@ public:
             root.pos = root_pos;
             root.size = num = 1;root.key = k;root.type = 0;
             fseek(datafile, root.pos + sizeof(node), SEEK_SET);
-            // printf("insert_no_root_seek: %d\n", *nth_pointer(cache));
+            // printf("insert_no_root_seek\n");
             fwrite(&k, sizeof(key_type), 1, datafile);fwrite(&v, sizeof(value_type), 1, datafile);
             // printf("which is: key: %d value: %d\n", k, v);
             return true;
