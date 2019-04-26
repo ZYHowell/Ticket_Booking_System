@@ -1,7 +1,7 @@
 #ifndef SJTU_ALLOC_HPP
 #define SJTU_ALLOC_HPP
 #include <stdio.h>
-#include "exceptions.h"
+#include "exceptions.hpp"
 using pointer = long;
 class ALLOC{
     struct node{
@@ -55,7 +55,7 @@ public:
         head->prior = nullptr;
         save(filename);
     }
-    void initialize(const char *filename){
+    void init(const char *filename){
         FILE *file;
         file = fopen(filename, "rb");
         if (!file) {

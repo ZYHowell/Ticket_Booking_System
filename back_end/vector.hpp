@@ -1,7 +1,7 @@
 #ifndef SJTU_VECTOR_HPP
 #define SJTU_VECTOR_HPP
 
-#include "exceptions.h"
+#include "exceptions.hpp"
 #include "utility.hpp"
 #include <climits>
 #include <cstddef>
