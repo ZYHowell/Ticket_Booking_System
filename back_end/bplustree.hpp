@@ -168,7 +168,8 @@ template<class key_type,
             tmp = nth_value_loc(p, ord);
             vector<list_type> ret;
             node now = p;
-            while (!comp(*nth_key_l(cache, ord), k) && !comp(k, *nth_key_l(cache, ord))){
+            while ( !comp(k, *nth_key_l(cache, ord)) ){
+                if (!comp(*nth_key_l(cache, ord), k) )
                 ret.push_back(
                     list_type(*nth_key_l(cache, ord), 
                         *nth_value(cache, ord)
