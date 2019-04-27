@@ -343,7 +343,7 @@ template<class key_type,
             tmp = load_node(now.prior);
             if (tmp.size < part_size - 1) {
                 left_balance_l(now, tmp, cache);
-                *nth_key_l(cache_par, ord) = now.key;
+                *nth_key_n(cache_par, ord) = now.key;
                 return;
             }
         }
@@ -351,7 +351,7 @@ template<class key_type,
             tmp = load_node(now.next);
             if (tmp.size < part_size - 1){
                 right_balance_l(now, tmp, cache);
-                *nth_key_l(cache_par, ord + 1) = tmp.key;
+                *nth_key_n(cache_par, ord + 1) = tmp.key;
                 return;
             }
             else split_l(now, cache, par, cache_par, ord);
@@ -388,7 +388,7 @@ template<class key_type,
             tmp = load_node(now.next);
             if (tmp.size >= part_size / 2){
                 receive_right_l(now, tmp, cache);
-                *nth_key_l(cache_par, ord + 1) = tmp.key;
+                *nth_key_n(cache_par, ord + 1) = tmp.key;
                 return;
             }
             else merge_l(now, cache, par, cache_par, tmp);
@@ -397,7 +397,7 @@ template<class key_type,
             tmp = load_node(now.prior);
             if (tmp.size >= part_size / 2){
                 receive_left_l(now, tmp, cache);
-                *nth_key_l(cache_par, ord) = now.key;
+                *nth_key_n(cache_par, ord) = now.key;
                 return;
             }
             else{
@@ -455,10 +455,10 @@ template<class key_type,
         save_cache_l(cache, now);
         ns = order;
         for (size_t i = par.size;i > ns + 1;i--){
-            *nth_key_l(cache_par, i)    = *nth_key_l(cache_par, i - 1);
+            *nth_key_n(cache_par, i)    = *nth_key_n(cache_par, i - 1);
             *nth_pointer(cache_par, i)  = *nth_pointer(cache_par, i - 1);
         }
-        *nth_key_l(cache_par, ns + 1) = tmp.key;
+        *nth_key_n(cache_par, ns + 1) = tmp.key;
         *nth_pointer(cache_par, ns + 1) = tmp.pos;
         ++par.size;
         save_node(now);save_node(tmp);
