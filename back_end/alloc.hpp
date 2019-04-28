@@ -7,12 +7,10 @@ class ALLOC{
     struct node{
         node *next, *prior;
         pointer loc[2];
+		size_t size;
         // int type;
         node(int l1 = 0, int l2 = 0, node *p = nullptr, node *n = nullptr):next(n), prior(p){
-            loc[0] = l1, loc[1] = l2;
-        }
-        size_t size(){
-            return loc[1] - loc[0];
+            loc[0] = l1, loc[1] = l2;size = l2 - l1;
         }
     };
     node *head;
@@ -42,12 +40,13 @@ class ALLOC{
         }
     }
 public:
-    ALLOC(){}
+    ALLOC():head(nullptr),file_end(){}
     ~ALLOC(){
         clear_node(head);
     }
     void refill(const char *filename){
         file_end = 0;
+		clear_node(head);
         head = new node;
         new_mem(head);
         head = head->next;
@@ -96,7 +95,7 @@ public:
         pointer p;
         if (s > node_size){
             p = file_end;
-            file_end += s + 1;
+            file_end += s;
             return p;
         }
         if (temp == nullptr){
@@ -105,16 +104,19 @@ public:
             temp = head = temp->next;
             delete temp->prior;
         }
-        while(temp->next != nullptr && temp->size() <= s) temp = temp->next;
-        if (temp->size() <= s){
+        while(temp->next != nullptr && temp->size <= s) temp = temp->next;
+        if (temp->size <= s){
             new_mem(temp);
-            p = temp->next->loc[0];
-            temp->next->loc[0] += s;
+			temp = temp->next;
+            p = temp->loc[0];
+            temp->loc[0] += s;
+			temp->size -=s;
         }
         else{
             p = temp->loc[0];
             temp->loc[0] += s;
-            if (!(temp->size())) remove(temp);
+			temp->size -= s;
+            if (!(temp->size)) remove(temp);
         }
         return p;
     }
@@ -122,13 +124,14 @@ public:
         node *temp = head;
         for (;temp != nullptr;temp = temp->next){
             if (temp->loc[1] >= p + s){
-                if (temp->loc[0] == p + s) temp->loc[0] = p;
+                if (temp->loc[0] == p + s) {temp->loc[0] = p;temp->size += s;}
                 else{
                     node *n = new node(p, p + s, temp->prior, temp);
                     if (temp->prior == nullptr) head = n;
                     else {
                         if (temp->prior->loc[1] == p) {
                             temp->prior->loc[1] = p + s;
+							temp->prior->size += s;
                             delete n;
                             return;
                         }

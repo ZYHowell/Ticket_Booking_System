@@ -30,11 +30,9 @@ template<class key_type,
     };
     node root;
     Compare com;
-    byte *cache_root;
     size_t num;
     FILE *datafile;
-    const size_t part_size;
-    const size_t leaf_size, non_leaf_size;
+	const size_t part_size_l, part_size_n;
     const size_t leaf_inf_size, non_leaf_inf_size;
     ALLOC alloc;
     pointer root_pos;
@@ -45,79 +43,86 @@ template<class key_type,
     }
     inline void load_cache_n(byte *start,const node& p){
         fseek(datafile, p.pos + sizeof(node), SEEK_SET);
-        // printf("load_cache_seek: %d\n", p.pos + sizeof(node));
         fread(start, 1, (sizeof(key_type) + sizeof(pointer)) * p.size, datafile);
-        // printf("which are:\n");
-        // for (int i = 0;i < p.size;i++) // printf("key: %d, pointer: %d; ", *nth_key_n(start, i), *nth_pointer(start, i));
-        // printf("\n");
+		#ifdef DEBUG_MODE
+		printf("load_cache_seek: %d\n", p.pos + sizeof(node));
+		printf("which are:\n");
+        for (int i = 0;i < p.size;i++) printf("key: %d, pointer: %d; ", *nth_key_n(start, i), *nth_pointer(start, i));
+        printf("\n");
+		#endif
     }
     inline void load_cache_l(byte *start,const node& p){
         fseek(datafile, p.pos + sizeof(node), SEEK_SET);
-        // printf("load_cache_seek: %d\n", p.pos + sizeof(node));
         fread(start, 1, (sizeof(key_type) + sizeof(value_type)) * p.size, datafile);
-        // printf("which are:\n");
-        // for (int i = 0;i < p.size;i++) // printf("key: %d, value: %d; ", *nth_key_l(start, i), *nth_value(start, i));
-        // printf("\n");
+		#ifdef DEBUG_MODE
+		printf("load_cache_seek: %d\n", p.pos + sizeof(node));
+		printf("which are:\n");
+        for (int i = 0;i < p.size;i++) printf("key: %d, value: %d; ", *nth_key_l(start, i), *nth_value(start, i));
+        printf("\n");
+        #endif
     }
     inline void save_cache_n(byte *start,const node &p){
         fseek(datafile, p.pos + sizeof(node), SEEK_SET);
-        // printf("save_cache_seek: %d\n", p.pos + sizeof(node));
         fwrite(start, 1, (sizeof(key_type) + sizeof(pointer)) * p.size, datafile);
-        // printf("which are:\n");
-        // for (int i = 0;i < p.size;i++)// printf("key: %d, pointer: %d; ", *nth_key_n(start, i), *nth_pointer(start, i));
-        // printf("\n");
+		#ifdef DEBUG_MODE
+		printf("save_cache_seek: %d\n", p.pos + sizeof(node));
+        printf("which are:\n");
+        for (int i = 0;i < p.size;i++) printf("key: %d, pointer: %d; ", *nth_key_n(start, i), *nth_pointer(start, i));
+        printf("\n");
+		#endif
     }
     inline void save_cache_l(byte *start,const node &p){
         fseek(datafile, p.pos + sizeof(node), SEEK_SET);
-        // printf("save_cache_seek: %d\n", p.pos + sizeof(node));
         fwrite(start, 1, (sizeof(key_type) + sizeof(value_type)) * p.size, datafile);
-        // printf("which are:\n");
-        // for (int i = 0;i < p.size;i++)// printf("key: %d, value: %d; ", *nth_key_l(start, i), *nth_value(start, i));
-        // printf("\n");
+		#ifdef DEBUG_MODE
+		printf("save_cache_seek: %d\n", p.pos + sizeof(node));
+        printf("which are:\n");
+        for (int i = 0;i < p.size;i++) printf("key: %d, value: %d; ", *nth_key_l(start, i), *nth_value(start, i));
+        printf("\n");
+		#endif
     }
     inline node load_node(pointer l){
         fseek(datafile, l, SEEK_SET);
-        // printf("load_node_seek: %d\n", l);
         node tmp;
         fread(&tmp, sizeof(node), 1, datafile);
-        // printf("which is: pos:%d size:%d key:%d\n", tmp.pos, tmp.size, tmp.key);
+		#ifdef DEBUG_MODE
+		printf("load_node_seek: %d\n", l);
+        printf("which is: pos:%d size:%d key:%d\n", tmp.pos, tmp.size, tmp.key);
+		#endif
         return tmp;
     }
     inline bool save_node(const node &p){
         if (p.pos == invalid_p) return false;
-        try{
-            fseek(datafile, p.pos, SEEK_SET);
-            // printf("save_node_seek: %d\n", p.pos);
-            fwrite(&p, sizeof(node), 1, datafile);
-            // printf("which is: pos:%d size:%d key:%d\n", p.pos, p.size, p.key);
-            return true;
-        }
-        catch(...){
-            return false;
-        }
+        fseek(datafile, p.pos, SEEK_SET);
+        fwrite(&p, sizeof(node), 1, datafile);
+		#ifdef DEBUG_MODE
+		printf("save_node_seek: %d\n", p.pos);
+        printf("which is: pos:%d size:%d key:%d\n", p.pos, p.size, p.key);
+		#endif
+		return true;
     }
-    inline key_type* nth_key_n(const byte *start, size_t n = 0){
+    inline key_type* nth_key_n(byte *start, size_t n = 0){
         return (key_type *)(start + (sizeof(key_type) + sizeof(pointer)) * n);
     }
-    inline key_type* nth_key_l(const byte *start, size_t n = 0){
+    inline key_type* nth_key_l(byte *start, size_t n = 0){
         return (key_type *)(start + (sizeof(key_type) + sizeof(value_type)) * n);
     }
-    inline pointer* nth_pointer(const byte *start, size_t n = 0){
+    inline pointer* nth_pointer(byte *start, size_t n = 0){
         return (pointer *)(start + sizeof(key_type) * (n + 1) + sizeof(pointer) * n);
     }
-    inline value_type* nth_value(const byte *start, size_t n = 0){
+    inline value_type* nth_value(byte *start, size_t n = 0){
         return (value_type *)(start + sizeof(key_type) * (n + 1) + sizeof(value_type) * n);
     }
     inline pointer nth_value_loc(const node &now, size_t n = 0){
         return now.pos + sizeof(node) + (sizeof(key_type) + sizeof(value_type)) * n + sizeof(key_type);
     }
-    inline value_type get_value(const pointer loc){
+    inline value_type get_value(pointer loc){
         value_type v;
         fseek(datafile, loc, SEEK_SET);
         fread(&v, sizeof(value_type), 1, datafile);
         return v;
     }
-    inline size_t binary_search_key_n(const byte *start,const key_type& k, size_t n){
+    inline size_t binary_search_key_n(byte *start,const key_type& k, size_t n){
         size_t l = 0, r = n, mid;
         while (l < r){
             mid = (l + r) / 2;
@@ -128,7 +133,7 @@ template<class key_type,
         else if (equal(*nth_key_n(start, l), k)) return l;
         else return l - 1;
     }
-    inline size_t binary_search_key_l(const byte *start,const key_type& k, size_t n){
+    inline size_t binary_search_key_l(byte *start,const key_type& k, size_t n){
         size_t l = 0, r = n, mid;
         while (l < r){
             mid = (l + r) / 2;
@@ -140,29 +145,23 @@ template<class key_type,
         else return l - 1;
     }
     //OR, SHALL WE RETURN A VALUE_TYPE?waiting
-    pointer _find(const node &p,const key_type& k, const byte *cache){
+    pointer _find(const node &p,const key_type& k){
         size_t ord;
         pointer tmp;
         if (!p.type){
+            byte cache[leaf_inf_size];
+            load_cache_l(cache, p);
             ord = binary_search_key_l(cache, k, p.size);
             tmp = nth_value_loc(p, ord);
             if (equal(*nth_key_l(cache, ord), k)) return tmp;
             else return invalid_p;
         }
         else{
+            byte cache[non_leaf_inf_size];
+            load_cache_n(cache, p);
             ord = binary_search_key_n(cache, k, p.size);
             tmp = *nth_pointer(cache, ord);
-            node node_child = load_node(tmp);
-            if (node_child.type) {
-                byte cache_child[non_leaf_inf_size];
-                load_cache_n(cache_child, node_child);
-                return _find(node_child, k, cache_child);
-            }
-            else{
-                byte cache_child[leaf_inf_size];
-                load_cache_l(cache_child, node_child);
-                return _find(node_child, k, cache_child);
-            }
+            return _find(load_node(tmp), k);
         }
     }
     //waiting
@@ -328,7 +327,7 @@ template<class key_type,
         node tmp;
         if (now.pos != *nth_pointer(cache_par)){
             tmp = load_node(now.prior);
-            if (tmp.size < part_size - 1) {
+            if (tmp.size < part_size_n - 1) {
                 left_balance_n(now, tmp, cache);
                 *nth_key_n(cache_par, ord) = now.key;
                 return;
@@ -336,7 +335,7 @@ template<class key_type,
         }
         if (now.pos != *nth_pointer(cache_par, par.size - 1)){
             tmp = load_node(now.next);
-            if (tmp.size < part_size - 1){
+            if (tmp.size < part_size_n - 1){
                 right_balance_n(now, tmp, cache);
                 *nth_key_n(cache_par, ord + 1) = tmp.key;
                 return;
@@ -349,7 +348,7 @@ template<class key_type,
         node tmp;
         if (now.pos != *nth_pointer(cache_par)){
             tmp = load_node(now.prior);
-            if (tmp.size < part_size - 1) {
+            if (tmp.size < part_size_l - 1) {
                 left_balance_l(now, tmp, cache);
                 *nth_key_n(cache_par, ord) = now.key;
                 return;
@@ -357,7 +356,7 @@ template<class key_type,
         }
         if (now.pos != *nth_pointer(cache_par, par.size - 1)){
             tmp = load_node(now.next);
-            if (tmp.size < part_size - 1){
+            if (tmp.size < part_size_l - 1){
                 right_balance_l(now, tmp, cache);
                 *nth_key_n(cache_par, ord + 1) = tmp.key;
                 return;
@@ -370,7 +369,7 @@ template<class key_type,
         node tmp;
         if (now.pos != *nth_pointer(cache_par, par.size - 1)){
             tmp = load_node(now.next);
-            if (tmp.size >= part_size / 2){
+            if (tmp.size >= part_size_n / 2){
                 receive_right_n(now, tmp, cache);
                 *nth_key_n(cache_par, ord + 1) = tmp.key;
                 return;
@@ -379,7 +378,7 @@ template<class key_type,
         }
         if (now.pos != *nth_pointer(cache_par)){
             tmp = load_node(now.prior);
-            if (tmp.size >= part_size / 2){
+            if (tmp.size >= part_size_n / 2){
                 receive_left_n(now, tmp, cache);
                 *nth_key_n(cache_par, ord) = now.key;
                 return;
@@ -394,7 +393,7 @@ template<class key_type,
         node tmp;
         if (now.pos != *nth_pointer(cache_par, par.size - 1)){
             tmp = load_node(now.next);
-            if (tmp.size >= part_size / 2){
+            if (tmp.size >= part_size_l / 2){
                 receive_right_l(now, tmp, cache);
                 *nth_key_n(cache_par, ord + 1) = tmp.key;
                 return;
@@ -403,7 +402,7 @@ template<class key_type,
         }
         if (now.pos != *nth_pointer(cache_par)){
             tmp = load_node(now.prior);
-            if (tmp.size >= part_size / 2){
+            if (tmp.size >= part_size_l / 2){
                 receive_left_l(now, tmp, cache);
                 *nth_key_n(cache_par, ord) = now.key;
                 return;
@@ -419,11 +418,11 @@ template<class key_type,
         * save now and its cache but do not save any info of parent into storage,
         * though we have changed it in memory
     */
-    inline void split_n(node &now, byte *cache, node &par, byte *cache_par, size_t order){
+    void split_n(node &now, byte *cache, node &par, byte *cache_par, size_t order){
         size_t s = now.size / 2;
         now.size -= s;
         size_t ns = now.size;
-        pointer pos = alloc.alloc(non_leaf_size);
+        pointer pos = alloc.alloc(node_size);
         // printf("ask_for_bpt: %d where %d\n", non_leaf_size, pos);
         node tmp = node(*nth_key_n(cache, ns), pos, now.pos, now.next, s, now.type);
         if (now.next != invalid_p){
@@ -445,11 +444,11 @@ template<class key_type,
         ++par.size;
         save_node(now);save_node(tmp);
     }
-    inline void split_l(node &now, byte *cache, node &par, byte *cache_par, size_t order){
+    void split_l(node &now, byte *cache, node &par, byte *cache_par, size_t order){
         size_t s = now.size / 2;
         now.size -= s;
         size_t ns = now.size;
-        pointer pos = alloc.alloc(leaf_size);
+        pointer pos = alloc.alloc(node_size);
         // printf("ask_for_bpt: %d where %d\n", leaf_size, pos);
         node tmp = node(*nth_key_l(cache, ns), pos, now.pos, now.next, s, now.type);
         if (now.next != invalid_p){
@@ -482,14 +481,14 @@ template<class key_type,
         size_t s = now.size;
         load_cache_n(cache + now.size, tmp.size);
         now.size += tmp.size;
-        alloc.free(tmp.pos, non_leaf_size);
+        alloc.free(tmp.pos, node_size);
         s = binary_search_key_n(cache_par, now.key, par.size);
         --par.size;
         for (size_t i = s + 1;i < par.size;i++){
             *nth_key_n(cache_par, i)    = *nth_key_n(cache_par, i + 1);
             *nth_pointer(cache_par, i)  = *nth_pointer(cache_par, i + 1);
         }
-        if (now.size >= part_size) split_n(now, cache, par, cache_par);
+        if (now.size >= part_size_n) split_n(now, cache, par, cache_par);
         save_cache_n(cache, now);
         save_node(now);
     }
@@ -503,14 +502,14 @@ template<class key_type,
         size_t s = now.size;
         load_cache_l(cache + now.size, tmp.size);
         now.size += tmp.size;
-        alloc.free(tmp.pos, leaf_size);
+        alloc.free(tmp.pos, node_size);
         s = binary_search_key_l(cache_par, now.key, par.size);
         --par.size;
         for (size_t i = s + 1;i < par.size;i++){
             *nth_key_n(cache_par, i)    = *nth_key_n(cache_par, i + 1);
             *nth_pointer(cache_par, i)  = *nth_pointer(cache_par, i + 1);
         }
-        if (now.size >= part_size) split_l(now, cache, par, cache_par);
+        if (now.size >= part_size_l) split_l(now, cache, par, cache_par);
         save_cache_l(cache, now);
         save_node(now);
     }
@@ -529,7 +528,7 @@ template<class key_type,
             byte cache_child[non_leaf_inf_size];
             load_cache_n(cache_child, child_node);
             ret = _insert_n(child_node, k, v, cache_child);
-            if (child_node.size >= part_size) {
+            if (child_node.size >= part_size_n) {
                 deal_surplus_n(child_node, now, cache_child, cache, ord);
             }
             else {
@@ -541,7 +540,7 @@ template<class key_type,
             byte cache_child[leaf_inf_size];
             load_cache_l(cache_child, child_node);
             ret = _insert_l(child_node, k, v, cache_child);
-            if (child_node.size >= part_size) {
+            if (child_node.size >= part_size_l) {
                 deal_surplus_l(child_node, now, cache_child, cache, ord);
             }
             else {
@@ -573,7 +572,7 @@ template<class key_type,
             load_cache_n(cache_child, node_child);
             _insert_head_n(node_child, k, v, cache_child);
             *nth_key_n(cache, 0) = now.key = k;
-            if (node_child.size >= part_size){
+            if (node_child.size >= part_size_n){
                 deal_surplus_n(node_child, now, cache_child, cache, 0);
             }
             else{
@@ -586,7 +585,7 @@ template<class key_type,
             load_cache_l(cache_child, node_child);
             _insert_head_l(node_child, k, v, cache_child);
             *nth_key_l(cache, 0) = now.key = k;
-            if (node_child.size >= part_size){
+            if (node_child.size >= part_size_l){
                 deal_surplus_l(node_child, now, cache_child, cache, 0);
             }
             else {
@@ -614,7 +613,7 @@ template<class key_type,
             byte cache_child[non_leaf_inf_size];
             load_cache_n(cache_child, child_node);
             ret = _remove_n(child_node, k, cache_child);
-            if (child_node.size < part_size / 2){
+            if (child_node.size < part_size_n / 2){
                 deal_deficit_n(child_node, p, cache_child, cache, ord);
             }
             else{
@@ -626,7 +625,7 @@ template<class key_type,
             byte cache_child[leaf_inf_size];
             load_cache_l(cache_child, child_node);
             ret = _remove_l(child_node, k, cache_child);
-            if (child_node.size < part_size / 2){
+            if (child_node.size < part_size_l / 2){
                 deal_deficit_l(child_node, p, cache_child, cache, ord);
             }
             else{
@@ -652,12 +651,11 @@ template<class key_type,
         else return false;
     }
 public:
-    bplustree():part_size((node_size - sizeof(node)) / (sizeof(key_type) + sizeof(pointer))),
-                non_leaf_size(sizeof(node) + (sizeof(key_type) + sizeof(pointer)) * part_size), 
-                leaf_size(sizeof(node) + (sizeof(key_type) + sizeof(value_type)) * part_size), 
-                non_leaf_inf_size((sizeof(key_type) + sizeof(pointer)) * part_size), 
-                leaf_inf_size((sizeof(key_type) + sizeof(value_type)) * part_size), 
-                root(), num(0), root_pos(0), cache_root(nullptr){}
+    bplustree():part_size_n((node_size - sizeof(node)) / (sizeof(key_type) + sizeof(pointer))),
+	part_size_l((node_size - sizeof(node)) / (sizeof(key_type) + sizeof(value_type))),
+	non_leaf_inf_size((sizeof(key_type) + sizeof(pointer)) * part_size_n), 
+    leaf_inf_size((sizeof(key_type) + sizeof(value_type)) * part_size_l), 
+    root(), num(0), root_pos(0){}
     void init(const char *datafile_name, const char *alloc_name){
         index_name = new char[strlen(alloc_name) + 1];
         strcpy(index_name, alloc_name);
@@ -666,13 +664,13 @@ public:
         alloc.init(index_name);
         datafile = fopen(data_name, "rb+");
         if (!datafile) datafile = fopen(data_name, "wb+");
-        fseek(datafile, 0, SEEK_SET);
-        // printf("size_of_node: %d; leaf_size: %d; non_leaf_size: %d\n", sizeof(node), leaf_size, non_leaf_size);
-        // printf("ini_root_pointer_seek: %d\n", 0);
+		#ifdef DEBUG_MODE
+        printf("size_of_node: %d; leaf_size: %d; non_leaf_size: %d\n", sizeof(node), leaf_size, non_leaf_size);
+        printf("ini_root_pointer_seek: %d\n", 0);
+		#endif
         if (!fread(&root_pos, sizeof(pointer), 1, datafile)){
-            alloc.alloc(sizeof(pointer));
-            alloc.alloc(sizeof(size_t));
-            root_pos = alloc.alloc(leaf_size);
+            alloc.alloc(node_size);
+            root_pos = alloc.alloc(node_size);
             fseek(datafile, root_pos, SEEK_SET);
             // printf("ini_root_seek: %d\n", root_pos);
             fwrite(&root, sizeof(node), 1, datafile);
@@ -681,8 +679,6 @@ public:
         else{
             fread(&num, sizeof(size_t), 1, datafile);
             root = load_node(root_pos);
-            if (root.type) {cache_root = new byte[non_leaf_inf_size];load_cache_n(cache_root, root);}
-            else {cache_root = new byte[leaf_inf_size];load_cache_l(cache_root, root);}
         }
         // printf("\n%d\n", root_pos);
     }
@@ -690,41 +686,37 @@ public:
         if (datafile) fclose(datafile);
         datafile = fopen(data_name, "wb+");
         alloc.refill(index_name);
-        fseek(datafile, 0, SEEK_SET);
         num = 0;
-        alloc.alloc(sizeof(pointer));
-        alloc.alloc(sizeof(size_t));;
-        root_pos = alloc.alloc(leaf_size);
+        alloc.alloc(node_size);
+        root_pos = alloc.alloc(node_size);
         root = node();
-        // printf("clear_root_pointer_seek: %d\n", 0);
-        if (!fread(&root_pos, sizeof(pointer), 1, datafile)){
-            fseek(datafile, root_pos, SEEK_SET);
-            // printf("clear_root_seek: %d\n", 0);
-            fwrite(&root, sizeof(node), 1, datafile);
-            // printf("which is: pos:%d size:%d key:%d\n", root.pos, root.size, root.key);
-        }
-        if (cache_root != nullptr) delete []cache_root;
-        cache_root = new byte[leaf_inf_size];
+		#ifdef DEBUG_MODE
+        printf("clear_root_pointer_seek: %d\n", 0);
+		#endif
+        fseek(datafile, root_pos, SEEK_SET);
+		fwrite(&root, sizeof(node), 1, datafile);
+		#ifdef DEBUG_MODE
+		printf("clear_root_seek: %d\n", 0);printf("which is: pos:%d size:%d key:%s\n", root.pos, root.size, root.key.inf);
+		#endif
     }
-    inline bool empty(){
+    bool empty(){
         return !num;
     }
     ~bplustree(){
         alloc.save(index_name);
         save_node(root);
         fseek(datafile, 0, SEEK_SET);
-        if (root.pos != invalid_p) {
-            root_pos = root.pos;
-            if (root.type) save_cache_n(cache_root, root);
-            else save_cache_l(cache_root, root);
-            delete []cache_root;
-        }
-        // printf("decode_root_pointer_seek: %d\nwhich is: %d\n", 0, root_pos);
+        if (root.pos != invalid_p) root_pos = root.pos;
+		#ifdef DEBUG_MODE
+        printf("decode_root_pointer_seek: %d\nwhich is: %d\n", 0, root_pos);printf("which is: %d\n", root_pos);
+		#endif
         fwrite(&root_pos, sizeof(pointer), 1, datafile);
         fwrite(&num, sizeof(size_t), 1, datafile);
-        // printf("which is: %d\n", root_pos);
         if (datafile) fclose(datafile);
-        delete index_name;delete data_name;
+		if (index_name != nullptr)        
+			delete []index_name;
+		if (data_name != nullptr)
+			delete []data_name;
     }
     bool count(const key_type &k){
         if (empty()) return 0;
@@ -734,22 +726,19 @@ public:
     }
     value_type find(const key_type &k){
         if (empty()) throw(container_is_empty());
-        if (!root.type){
-            size_t ord = binary_search_key_l(cache_root, k, root.size);
-            if (equal(*nth_key_l(cache_root, ord), k)) return *nth_value(cache_root, ord);
-            else return value_type();
-        }
-        pointer p = _find(root, k, cache_root);
+        pointer p = _find(root, k);
         if (p == invalid_p) return value_type();
         fseek(datafile, p, SEEK_SET);
         value_type v;
         fread(&v, sizeof(value_type), 1, datafile);
-        // printf("find_seek_in_database: %d\nwhich is: %d\n", p + sizeof(key_type),v);
+		#ifdef DEBUG_MODE
+        printf("find_seek_in_database: %d\nwhich is: %d\n", p + sizeof(key_type),v);
+		#endif
         return v;
     }
     bool set(const key_type &k, const value_type &v){
         if (empty()) throw(container_is_empty());
-        pointer p = _find(root, k, cache_root);
+        pointer p = _find(root, k);
         if (p == invalid_p) return 0;
         fseek(datafile, p + sizeof(key_type), SEEK_SET);
         fwrite(&v, sizeof(value_type), 1, datafile);
@@ -763,80 +752,76 @@ public:
             fseek(datafile, root.pos + sizeof(node), SEEK_SET);
             // printf("insert_no_root_seek\n");
             fwrite(&k, sizeof(key_type), 1, datafile);fwrite(&v, sizeof(value_type), 1, datafile);
-                cache_root = new byte[leaf_inf_size];
-                *nth_key_l(cache_root, 0) = k;*nth_value(cache_root, 0) = v;
             // printf("which is: key: %d value: %d\n", k, v);
             return true;
         }
         bool ret = true;
         if (root.type){
-            // byte cache[non_leaf_inf_size];
-            // load_cache_n(cache, root);
-            if (com(root.key, k)) ret = _insert_n(root, k, v, cache_root);
-            else _insert_head_n(root, k, v, cache_root);
-            // save_cache_n(cache, root);
-            if (root.size >= part_size){
-                pointer pos = alloc.alloc(non_leaf_size);
-                // printf("ask_for_bpt: at %d\n", pos);
+            byte cache[non_leaf_inf_size];
+            load_cache_n(cache, root);
+            if (com(root.key, k)) ret = _insert_n(root, k, v, cache);
+            else _insert_head_n(root, k, v, cache);
+            save_cache_n(cache, root);
+            if (root.size >= part_size_n){
+                pointer pos = alloc.alloc(node_size);
+				#ifdef DEBUG_MODE
+                printf("ask_for_bpt: at %d\n", pos);
+				#endif
                 node now_root(root.key, pos);
                 now_root.type = 1, now_root.size = 1;
                 size_t s = root.size / 2;
                 root.size -= s;
-                root.next = pos = alloc.alloc(non_leaf_size);
-                // printf("ask_for_bpt: at %d\n", pos);
-                node temp(*nth_key_n(cache_root, root.size), pos, root.pos);
+                root.next = pos = alloc.alloc(node_size);
+				#ifdef DEBUG_MODE
+                printf("ask_for_bpt: at %d\n", pos);
+				#endif
+                node temp(*nth_key_n(cache, root.size), pos, root.pos);
                 temp.type = root.type, temp.size = s;
-                save_cache_n((byte *)nth_key_n(cache_root, root.size), temp);
+                save_cache_n((byte *)nth_key_n(cache, root.size), temp);
                 save_node(temp);
                 pos = now_root.pos;
                 fseek(datafile, pos + sizeof(node), SEEK_SET);
-                // printf("extend_root_seek: %d\n", pos + sizeof(node));
-                fwrite(&root.key, sizeof(key_type), 1, datafile);
-                fwrite(&root.pos, sizeof(pointer), 1, datafile);
-                fwrite(&temp.key, sizeof(key_type), 1, datafile);
-                fwrite(&temp.pos, sizeof(pointer), 1, datafile);
-                // printf("which are: first_key: %d first_pos: %d second_key: %d second_pos: %d\n", root.key, root.pos, temp.key, temp.pos);
+				#ifdef DEBUG_MODE                
+				printf("extend_root_seek: %d\n", pos + sizeof(node));
+				#endif
+                    fwrite(&root.key, sizeof(key_type), 1, datafile);
+                    fwrite(&root.pos, sizeof(pointer), 1, datafile);
+                    fwrite(&temp.key, sizeof(key_type), 1, datafile);
+                    fwrite(&temp.pos, sizeof(pointer), 1, datafile);
+				#ifdef DEBUG_MODE                
+				printf("which are: first_key: %d first_pos: %d second_key: %d second_pos: %d\n", root.key, root.pos, temp.key, temp.pos);
+				#endif
                 save_node(root);
-                    save_cache_n(cache_root, root);
-                    delete []cache_root;
-                    cache_root = new byte[non_leaf_inf_size];
-                    *nth_key_n(cache_root, 0) = root.key;*nth_key_n(cache_root, 1) = temp.key;
-                    *nth_pointer(cache_root, 0) = root.pos;*nth_pointer(cache_root, 1) = temp.pos;
                 root = now_root;root_pos = root.pos;root.size = 2;
             }
         }
         else{
-            // byte cache[leaf_inf_size];
-            // load_cache_l(cache, root);
-            if (com(root.key, k)) ret = _insert_l(root, k, v, cache_root);
-            else _insert_head_l(root, k, v, cache_root);
-            // save_cache_l(cache, root);
-            if (root.size >= part_size){
-                pointer pos = alloc.alloc(non_leaf_size);
+            byte cache[leaf_inf_size];
+            load_cache_l(cache, root);
+            if (com(root.key, k)) ret = _insert_l(root, k, v, cache);
+            else _insert_head_l(root, k, v, cache);
+            save_cache_l(cache, root);
+            if (root.size >= part_size_l){
+                pointer pos = alloc.alloc(node_size);
                 // printf("ask_for_bpt: at %d\n", pos);
                 node now_root(root.key, pos);
                 now_root.type = 1, now_root.size = 1;
                 size_t s = root.size / 2;
                 root.size -= s;
-                root.next = pos = alloc.alloc(leaf_size);
+                root.next = pos = alloc.alloc(node_size);
                 // printf("ask_for_bpt: at %d\n", pos);
-                node temp(*nth_key_l(cache_root, root.size), pos, root.pos);
+                node temp(*nth_key_l(cache, root.size), pos, root.pos);
                 temp.type = root.type, temp.size = s;
-                save_cache_l((byte *)nth_key_l(cache_root, root.size), temp);save_node(temp);
+                save_cache_l((byte *)nth_key_l(cache, root.size), temp);save_node(temp);
                 pos = now_root.pos;
                 fseek(datafile, pos + sizeof(node), SEEK_SET);
                 // printf("extend_root_seek: %d\n", pos + sizeof(node));
-                fwrite(&root.key, sizeof(key_type), 1, datafile);
-                fwrite(&root.pos, sizeof(pointer), 1, datafile);
-                fwrite(&temp.key, sizeof(key_type), 1, datafile);
-                fwrite(&temp.pos, sizeof(pointer), 1, datafile);
+                    fwrite(&root.key, sizeof(key_type), 1, datafile);
+                    fwrite(&root.pos, sizeof(pointer), 1, datafile);
+                    fwrite(&temp.key, sizeof(key_type), 1, datafile);
+                    fwrite(&temp.pos, sizeof(pointer), 1, datafile);
                 // printf("which are: first_key: %d first_pos: %d second_key: %d second_pos: %d\n", root.key, root.pos, temp.key, temp.pos);
                 save_node(root);
-                    save_cache_l(cache_root, root);
-                    delete []cache_root;
-                    cache_root = new byte[non_leaf_inf_size];
-                    *nth_key_n(cache_root, 0) = root.key;*nth_key_n(cache_root, 1) = temp.key;
-                    *nth_pointer(cache_root, 0) = root.pos;*nth_pointer(cache_root, 1) = temp.pos;
                 root = now_root;root_pos = root.pos;root.size = 2;
             }
         }
