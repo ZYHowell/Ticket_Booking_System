@@ -33,7 +33,6 @@ template<class key_type,
     size_t num;
     FILE *datafile;
 	const size_t part_size_l, part_size_n;
-    const size_t leaf_inf_size, non_leaf_inf_size;
     ALLOC alloc;
     pointer root_pos;
     char *index_name, *data_name;
@@ -149,7 +148,7 @@ template<class key_type,
         size_t ord;
         pointer tmp;
         if (!p.type){
-            byte cache[leaf_inf_size];
+            byte cache[node_size];
             load_cache_l(cache, p);
             ord = binary_search_key_l(cache, k, p.size);
             tmp = nth_value_loc(p, ord);
@@ -157,7 +156,7 @@ template<class key_type,
             else return invalid_p;
         }
         else{
-            byte cache[non_leaf_inf_size];
+            byte cache[node_size];
             load_cache_n(cache, p);
             ord = binary_search_key_n(cache, k, p.size);
             tmp = *nth_pointer(cache, ord);
@@ -165,11 +164,12 @@ template<class key_type,
         }
     }
     //waiting
-    vector<list_type> _listof(const node &p, key_type k, bool (*comp)(key_type a, key_type b)){
+    vector<list_type> _listof(const node &p, const key_type &k, 
+                            bool (*comp)(const key_type &a, const key_type &b)){
         size_t ord;
         pointer tmp;
         if (!p.type){
-            byte cache[leaf_inf_size];
+            byte cache[node_size];
             load_cache_l(cache, p);
             ord = binary_search_key_l(cache, k, p.size);
             tmp = nth_value_loc(p, ord);
@@ -193,7 +193,7 @@ template<class key_type,
             return ret;
         }
         else {
-            byte cache[non_leaf_inf_size];
+            byte cache[node_size];
             load_cache_n(cache, p);
             ord = binary_search_key_n(cache, k, p.size);
             tmp = *nth_pointer(cache, ord);
@@ -205,7 +205,7 @@ template<class key_type,
         * save them both
     */
     inline void Lbalance_n(node &p, node &l, byte *cache_p){
-        byte cache_l[non_leaf_inf_size];
+        byte cache_l[node_size];
         load_cache_n(cache_l, l);
         size_t mov = p.size - (p.size + l.size) / 2;
         for (int i = 0;i < mov;i++){
@@ -219,7 +219,7 @@ template<class key_type,
         save_node(l), save_node(p);
     }
     inline void Lbalance_l(node &p, node &l, byte *cache_p){
-        byte cache_l[leaf_inf_size];
+        byte cache_l[node_size];
         load_cache_l(cache_l, l);
         size_t mov = p.size - (p.size + l.size) / 2;
         for (int i = 0;i < mov;i++){
@@ -237,7 +237,7 @@ template<class key_type,
         * Save them both. do we need so?
     */
     inline void Rbalance_n(node &p, node &r, byte *cache_p){
-        byte cache_r[non_leaf_inf_size];
+        byte cache_r[node_size];
         load_cache_n(cache_r, r);
         size_t mov = p.size - (p.size + r.size) / 2;
         for (size_t i = r.size + mov - 1;i > mov - 1;i--){
@@ -255,7 +255,7 @@ template<class key_type,
         save_node(r), save_node(p);
     }
     inline void Rbalance_l(node &p, node &r, byte *cache_p){
-        byte cache_r[leaf_inf_size];
+        byte cache_r[node_size];
         load_cache_l(cache_r, r);
         size_t mov = p.size - (p.size + r.size) / 2;
         for (size_t i = r.size + mov - 1;i > mov - 1;i--){
@@ -277,7 +277,7 @@ template<class key_type,
         * Save them both
     */
     inline void Lreceive_n(node &p, node &l, byte *cache_p){
-        byte cache_l[non_leaf_inf_size];
+        byte cache_l[node_size];
         load_cache_n(cache_l, l);
         for (size_t i = p.size;i > 0;i--){
             *nth_key_n(cache_p, i)  = *nth_key_n(cache_p, i - 1);
@@ -291,7 +291,7 @@ template<class key_type,
         save_node(l), save_node(p);
     }
     inline void Lreceive_l(node &p, node &l, byte *cache_p){
-        byte cache_l[leaf_inf_size];
+        byte cache_l[node_size];
         load_cache_l(cache_l, l);
         for (size_t i = p.size;i > 0;i--){
             *nth_key_l(cache_p, i) = *nth_key_l(cache_p, i - 1);
@@ -309,7 +309,7 @@ template<class key_type,
         * Save them both
     */
     inline void Rreceive_n(node &p, node &r, byte *cache_p){
-        byte cache_r[non_leaf_inf_size];
+        byte cache_r[node_size];
         load_cache_n(cache_r, r);
         *nth_key_n(cache_p, p.size)     = *nth_key_n(cache_r, 0);
         *nth_pointer(cache_p, p.size)   = *nth_pointer(cache_r);
@@ -320,7 +320,7 @@ template<class key_type,
         save_node(r), save_node(p);
     }
     inline void Rreceive_l(node &p, node &r, byte *cache_p){
-        byte cache_r[leaf_inf_size];
+        byte cache_r[node_size];
         load_cache_l(cache_r, r);
         *nth_key_l(cache_p, p.size) = *nth_key_l(cache_r, 0);
         *nth_value(cache_p, p.size) = *nth_value(cache_r);
@@ -396,7 +396,7 @@ template<class key_type,
                 return;
             }
             else{
-                byte cache_tmp[non_leaf_inf_size];load_cache_n(cache_tmp, tmp);
+                byte cache_tmp[node_size];load_cache_n(cache_tmp, tmp);
                 merge_n(tmp, cache_tmp, par, cache_par, now);
             }
         }
@@ -420,7 +420,7 @@ template<class key_type,
                 return;
             }
             else{
-                byte cache_tmp[leaf_inf_size];load_cache_l(cache_tmp, tmp);
+                byte cache_tmp[node_size];load_cache_l(cache_tmp, tmp);
                 merge_l(tmp, cache_tmp, par, cache_par, now);
             }
         }
@@ -537,7 +537,7 @@ template<class key_type,
         node node_child = load_node(loc);
         bool ret;
         if (node_child.type){
-            byte cache_child[non_leaf_inf_size];
+            byte cache_child[node_size];
             load_cache_n(cache_child, node_child);
             ret = _insert_n(node_child, k, v, cache_child);
             if (node_child.size >= part_size_n) {
@@ -549,7 +549,7 @@ template<class key_type,
             }
         }
         else{
-            byte cache_child[leaf_inf_size];
+            byte cache_child[node_size];
             load_cache_l(cache_child, node_child);
             ret = _insert_l(node_child, k, v, cache_child);
             if (node_child.size >= part_size_l) {
@@ -580,7 +580,7 @@ template<class key_type,
     void _insert_head_n(node &now, const key_type &k, const value_type &v, byte *cache){
         node node_child = load_node(*nth_pointer(cache));
         if (node_child.type){
-            byte cache_child[non_leaf_inf_size];
+            byte cache_child[node_size];
             load_cache_n(cache_child, node_child);
             _insert_head_n(node_child, k, v, cache_child);
             *nth_key_n(cache, 0) = now.key = k;
@@ -593,7 +593,7 @@ template<class key_type,
             }
         }
         else{
-            byte cache_child[leaf_inf_size];
+            byte cache_child[node_size];
             load_cache_l(cache_child, node_child);
             _insert_head_l(node_child, k, v, cache_child);
             *nth_key_l(cache, 0) = now.key = k;
@@ -622,7 +622,7 @@ template<class key_type,
         node node_child = load_node(loc);
         bool ret;
         if (node_child.type){
-            byte cache_child[non_leaf_inf_size];
+            byte cache_child[node_size];
             load_cache_n(cache_child, node_child);
             ret = _remove_n(node_child, k, cache_child);
             if (node_child.size < part_size_n / 2){
@@ -634,7 +634,7 @@ template<class key_type,
             }
         }
         else{
-            byte cache_child[leaf_inf_size];
+            byte cache_child[node_size];
             load_cache_l(cache_child, node_child);
             ret = _remove_l(node_child, k, cache_child);
             if (node_child.size < part_size_l / 2){
@@ -664,9 +664,7 @@ template<class key_type,
     }
 public:
     bplustree():part_size_n((node_size - sizeof(node)) / (sizeof(key_type) + sizeof(pointer))),
-	part_size_l((node_size - sizeof(node)) / (sizeof(key_type) + sizeof(value_type))),
-	non_leaf_inf_size((sizeof(key_type) + sizeof(pointer)) * part_size_n), 
-    leaf_inf_size((sizeof(key_type) + sizeof(value_type)) * part_size_l), 
+	part_size_l((node_size - sizeof(node)) / (sizeof(key_type) + sizeof(value_type))), 
     root(), num(0), root_pos(0){}
     void init(const char *datafile_name, const char *alloc_name){
         index_name = new char[strlen(alloc_name) + 1];
@@ -730,7 +728,7 @@ public:
 		if (data_name != nullptr)
 			delete []data_name;
     }
-    bool count(const key_type &k){
+    bool count(const key_type &k)const{
         if (empty()) return 0;
         pointer p = _find(root, k);
         if (p == invalid_p) return 0;
@@ -769,7 +767,7 @@ public:
         }
         bool ret = true;
         if (root.type){
-            byte cache[non_leaf_inf_size];
+            byte cache[node_size];
             load_cache_n(cache, root);
             if (com(root.key, k)) ret = _insert_n(root, k, v, cache);
             else _insert_head_n(root, k, v, cache);
@@ -808,7 +806,7 @@ public:
             }
         }
         else{
-            byte cache[leaf_inf_size];
+            byte cache[node_size];
             load_cache_l(cache, root);
             if (com(root.key, k)) ret = _insert_l(root, k, v, cache);
             else _insert_head_l(root, k, v, cache);
@@ -839,10 +837,20 @@ public:
         }
         return ret;
     }
-    bool remove(key_type k){
+    bool remove(const key_type &k){
+        // if (root.pos == invalid_p) return false;
+        // bool ret = true;
+        // if (root.type){
+
+        // }
+        // else{
+        //     if (equal(root.key, k)){
+        //         byte *cahce = load_cache_l(root,)
+        //     }
+        // }
         return true;
     }
-    vector<list_type> listof(key_type k, bool (*comp)(key_type a, key_type b)){
+    vector<list_type> listof(key_type k, bool (*comp)(const key_type &a, const key_type &b)){
         if (empty()) throw(container_is_empty());
         return _listof(root, k, comp);
     }
