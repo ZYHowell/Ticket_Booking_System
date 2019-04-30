@@ -2,10 +2,13 @@
 #include <algorithm>
 #include <iostream>
 #include <random>
+//#define OUTPUT_INIT
+//#define DEBUG_MODE
+#define TEST_INT_MODE
 #include "bplustree.hpp"
 #include <Windows.h>
-
 const int maxn = 100000 + 5;
+const int test_size = 1000;
 
 #ifdef TEST_INT_MODE
 const unsigned Ta = 33333331, Tb = 1 << 16 | 3;
@@ -29,8 +32,12 @@ using value_t = int;
 bool judgement(const test_t &a, const test_t &b){
     return a.a < b.a;
 }
+bool comp(const test_t &a, const test_t &b){
+    if (a.b != b.b) return a.b < b.b;
+    return a.a < b.a;
+}
 #endif
-#ifndef TEST_INT_MODE
+#ifdef TEST_STRING_MODE
 struct test_t{
     char inf[100];
     test_t (const char *aa = ""){
@@ -51,45 +58,97 @@ test_t randstr(){
 }
 using value_t = test_t;
 #endif
+#ifdef TEST_EASY_MODE
+const unsigned Ta = 33333331, Tb = 1 << 16 | 3;
+unsigned Tc;
+inline unsigned randint(){
+    return Tc = (Tc * Ta + Tb);
+}
+using test_t = long long;
+using value_t = long long;
+#endif
 test_t its[maxn];
 int main(){
     DWORD k = ::GetTickCount();
 	FILE *file = fopen("data.txt", "wb");fclose(file);
 	file = fopen("alloc.txt", "wb");fclose(file);
     srand(214748364);
-    bplustree <test_t, value_t> test;
+    bplustree <test_t, value_t, 82> test;
     test.init("data.txt", "alloc.txt");
     test.clear();
-#ifdef TEST_MODE
+#ifdef DEBUG_MODE
 	printf("\n\n");
 #endif
-    int i = 0;
-    for (i = 0;i < 10000;i++){
-    #ifdef TEST_INT_MODE
-        its[i] = test_t(randint() % 20, i);
-        test.insert(its[i], i);
-        //to test the listof function, change randint() to "randint() % 20"
+    for (int i = 1;i <= test_size;i++){
+#ifdef TEST_INT_MODE
+        its[i] = test_t(randint(), i);
+    }
+    std::sort(its + 1, its + test_size + 1);
+    for (int i = 1; i <= test_size;i++) {
+        its[i].a = i;
+    #ifdef DEBUG_MODE
+        printf("%d %d; ", its[i].a, its[i].b);
     #endif
-    #ifndef TEST_INT_MODE
+    }
+    std::sort(its + 1, its + test_size + 1, comp);
+    #ifdef DEBUG_MODE
+    printf("\n");
+    for (int i = 1;i <= test_size;i++) printf("%d %d; ", its[i].a, its[i].b);
+    printf("\n");
+    #endif
+    for (int i = 1;i <= test_size;i++) test.insert(its[i], i);
+#endif
+    #ifdef TEST_STRING_MODE
         its[i] = randstr();
         test.insert(its[i], its[i]);
-    #endif
     }
-    for (int i = 0;i < 10000;i++){
-    #ifdef TEST_INT_MODE
-        if (test.find(its[i]) != i) printf("wrong\n");
     #endif
-    #ifndef TEST_INT_MODE
+    #ifdef TEST_EASY_MODE
+        its[i] = i;//randint();
+        test.insert(its[i], i);
+        printf("%lld;",its[i]);
+    }
+    #endif
+    //printf("remove now\n");
+    for (int i = 1; i < test_size / 2;i++)
+    #ifdef TEST_EASY_MODE
+        test.remove(its[i]);
+    #endif
+    #ifdef TEST_INT_MODE
+    {
+        #ifdef DEBUG_MODE
+        printf("\n\n");
+        printf("remove: %d %d\n", its[i].a, its[i].b);
+        #endif
+        test.remove(its[i]);
+        if (test.find(its[i])) printf("wrong_have %d;\n", i);
+    } 
+    #endif
+    //printf("find_now\n");
+    for (int i = 1;i <= test_size;i++){
+    #ifdef TEST_INT_MODE
+        //printf("%d ",its[i].a);
+        //printf("\n");
+        if (test.find(its[i]) == i) 
+            if (i < test_size / 2) printf("wrong_have %d %d;\n", its[i].a, its[i].b);
+            else;
+        else if (i > test_size / 2) printf("wrong_not_have %d %d;\n", its[i].a, its[i].b);
+    #endif
+    #ifdef TEST_STRING_MODE
 		if(strcmp(test.find(its[i]).inf, its[i].inf) != 0) printf("wrong\n");
     #endif
+    #ifdef TEST_EASY_MODE
+        if (test.find(its[i]) == i) 
+            if (i < test_size / 2) printf("wrong\n");
+            else;
+        else if (i > test_size / 2) printf("wrong\n");
+    #endif
     }
     #ifdef TEST_INT_MODE
-    std::sort(its, its + 10000);
-    for (int i = 0;i < 10000;i++)
-        std::cout << test.find(its[i]) << std::endl;
-    vector<pair<test_t, value_t>> v = test.listof(test_t(15, 0), judgement);
-    for (int i = 0;i < v.size();i++) printf("%d %d %d; ", v[i].first.a, v[i].first.b, v[i].second);
+    //vector<pair<test_t, value_t>> v = test.listof(test_t(15, 0), judgement);
+    //for (int i = 0;i < v.size();i++) printf("%d %d %d; ", v[i].first.a, v[i].first.b, v[i].second);
     #endif
-    std::cout << std::endl << ::GetTickCount() - k << std::endl;
+    std::cout << std::endl << ::GetTickCount() - k;
+    printf("\n");
     return 0;
 }
