@@ -20,6 +20,8 @@ struct ticket {
 	vector<Seat> seat;
 
 	ticket():tID("DEFAULT"){}
+	
+	bool valid() { return tID != "DEFAULT"; }
 	ticket(const train &T, const String &_from, const String &_to,const date &_d)
 		:from(_from), to(_to), tID(T.ID),Date(_d){
 		int x = T.getStationID(from), y = T.getStationID(to);
@@ -42,7 +44,7 @@ typedef std::pair<ticket, ticket> ticketPair;
 class ticketSystem {
 	trainSystem *TS;
 	bplustree< std::pair<String, String>, String, 4096 > B;
-	void _add(const String &st, const String &id);
+
 
 public:
 	ticketSystem() {
@@ -50,10 +52,18 @@ public:
 	}
 	void init(trainSystem *_TS) { TS = _TS; }
 
-	void add(const vector<String> &stations, const String &id);
-
-	vector<ticket> query(const String &from, const String &to,const date &d);
+	void add(const String &st, const String &id);
+	vector<ticket> query(const String &from, const String &to,
+		const date &d, const String &catalog);
 	
-	ticketPair transfer(const String &from, const String &to,const date &d);
-
+	ticketPair transfer(const String &from, const String &to,
+		const date &d, const String &catalog);
+	void clear() {
+		B.clear();
+	}
 }; 
+
+std::ostream &operator << (std::ostream &os, const Seat &s);
+
+
+std::ostream &operator << (std::ostream &os, const ticket &t);

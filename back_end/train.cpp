@@ -1,4 +1,18 @@
-#include "train.h"
+﻿#include "train.h"
+
+
+std::ostream &operator << (std::ostream &os, const train &t) {
+	os << t.ID << ' ' << t.name << ' ' << t.catalog << ' '
+		<< t.n << ' ' << t.classN << ' ';
+	for (int i = 0; i < t.classN; i++) os << t.seatClass[i] << ' ';
+	for (int i = 0; i < t.n; i++) {
+		os << t.s[i].name << ' ' << t.s[i].arrive << ' ' << t.s[i].leave << ' ' << t.s[i].stop() << ' ';
+		for (int j = 0; j < t.classN; j++)
+			os << '¥' << t.s[i].price[j] << ' ';
+		os << '\n';
+	}
+	return os;
+}
 
 int train::getStationID(const String &target)const {
 	int i = 0;
@@ -17,9 +31,11 @@ bool train::ok(const String &from, const String &to)const {
 }
 
 
-void trainSystem::add(const String &id, const String &name, const String catalog,
+bool trainSystem::add(const String &id, const String &name, const String catalog,
 	const vector<String> &classes, const vector<station> &V) {
+	if (B.count(id)) return false;
 	B.insert(id,train(id,name,catalog,classes,V));
+	return true;
 }
 
 bool trainSystem::sale(const String &id) {
@@ -45,17 +61,24 @@ bool trainSystem::modify(const String &id, const String &name, const String cata
 	const vector<String> &classes, const vector<station> &V) {
 	if (!B.count(id) || B.find(id).onsale) return false;
 	B.set(id,train(id,name,catalog,classes,V));
+	return true;
 }
 
-void trainSystem::modifyTicket(const String &id, const String &Station,
-	const String &cls, int d,int delta) {
-	if (d < 0 || d > 30) throw std::string("Date out of bound");
-	if (!B.count(id)) throw std::string("Train ID does not exist.");
-	train t = B.find(id);
-	int i = 0,c = t.getClassID(cls);
-	if (c == t.classN) throw std::string("Seat class does not exist.");
-	while (t.s[i].name != Station && i < t.n) i++;
-	if (i == t.n) throw std::string("This train does not pass by the given station.");
-	t.s[i].num[d][c] += delta;
-}
+bool trainSystem::modifyTicket(purchaseLog *log, const vector<token> &V,int f) {
 
+	train t = B.find(V[2].second);
+	date Date = V[5].second.asdate();
+	int d = Date.asint();
+	int c = t.getClassID(V[6].second);
+	int st = t.getStationID(V[3].second), ed = t.getStationID(V[4].second);
+	int delta = V[1].second.asint() * f;
+	if (st == -1 || ed == -1 || st >= ed) throw wrong_parameter();
+	for (int i = st; i <= ed; i++)
+		if (t.s[i].num[d][c] + delta < 0) return false;
+	for (int i = st; i <= ed; i++)
+		t.s[i].num[d][c];
+	if (f == 1)
+		log->buy(keyInfo(V[0].second.asint(), Date, t.catalog, t.ID, V[3].second, V[4].second), t, V[6].second, delta);
+	else
+		log->refund(keyInfo(V[0].second.asint(), Date, t.catalog, t.ID, V[3].second, V[4].second), t, V[6].second, -delta);
+}

@@ -3,6 +3,7 @@
 
 const int numOfCommands = 16;
 
+
 const std::string CMD[numOfCommands] = {
 	"register","query_profile","modify_profile","modify_privilege",
 	"query_ticket,", "query_transfer",
@@ -50,4 +51,119 @@ void ticketBookingSystem::profile(const vector<token> &V) {
 	auto result = User.query(V[0].second.asint());
 	if (result.first) os << result.second << endl;
 	else os << 0 << endl;
+}
+
+void ticketBookingSystem::modifyProfile(const vector<token> &V) {
+	os << (User.modify(V)) << endl;
+}
+
+void ticketBookingSystem::modifyType(const vector<token> &V) {
+	if (V.size() != 3) throw wrong_parameter();
+	for (int i = 0; i < 3; i++)
+		if (V[i].first != INT) throw wrong_parameter();
+	os << User.modifyPrivilege(V[0].second.asint(), V[1].second.asint, V[2].second.asint()) << endl;
+}
+
+void  ticketBookingSystem::queryTicket(const vector<token> &V) {
+	if (V.size() != 4 || V[2].first != DATE ||
+		V[0].first != STRING || V[1].first != STRING || V[3].first != STRING)
+		throw wrong_parameter();
+	auto U = Ticket.query(V[0].second, V[1].second, V[2].second.asdate(),V[3].second);
+	for (int i = 0; i < U.size(); i++)
+		os << U[i] << endl;
+}
+
+void ticketBookingSystem::transfer(const vector<token> &V) {
+	if (V.size() != 4 || V[2].first != DATE ||
+		V[0].first != STRING || V[1].first != STRING || V[3].first != STRING)
+		throw wrong_parameter();
+	auto t = Ticket.transfer(V[0].second, V[1].second, V[2].second.asdate(), V[3].second);
+	if (t.first.valid()) os << t.first << '\n' << t.second << endl;
+	else os << -1 << endl;
+}
+
+void ticketBookingSystem::buy(const vector<token> &V) {
+	if (V.size() != 7 ||
+		V[0].first != INT || V[1].first != INT || V[5].first != DATE)
+		throw wrong_parameter();
+	if (!Train.modifyTicket(&Log, V))
+		throw wrong_parameter();
+}
+
+void ticketBookingSystem::queryOrder(const vector<token> &V) {
+	auto U = Log.query(V);
+	os << U.size() << endl;
+	for (int i = 0; i < U.size(); i++) os << U[i] << endl;
+}
+
+void ticketBookingSystem::refund(const vector<token> &V) {
+	if (V.size() != 7 ||
+		V[0].first != INT || V[1].first != INT || V[5].first != DATE)
+		throw wrong_parameter();
+	Train.modifyTicket(&Log, V, -1);
+}
+
+void ticketBookingSystem::sale(const vector<token> &V) {
+	if (V.size() != 1 || V[0].first != STRING) throw wrong_parameter();
+	bool sale = Train.sale(V[0].second);
+	os << sale << endl;
+	if (sale) {
+		train t = Train.query(V[0].second).second;
+		vector<String> V;
+		for (int i = 0; i < t.n; i++) Ticket.add(t.s[i].name, t.ID);
+	}
+}
+
+void ticketBookingSystem::remove(const vector<token> &V) {
+	if (V.size() != 1 || V[0].first != STRING) throw wrong_parameter();
+	os << Train.remove(V[0].second)<< endl;
+}
+
+void ticketBookingSystem::clear() {
+	Log.clear();
+	Train.clear();
+	Ticket.clear();
+	User.clear();
+}
+
+void ticketBookingSystem::queryTrain(const vector<token> &V) {
+	if (V.size() != 1 || V[0].first != STRING) throw wrong_parameter();
+	auto result = Train.query(V[0].second);
+	if (!result.first) os << 0 << endl;
+	else os << result.second << endl;
+}
+
+void ticketBookingSystem::addTrain(const vector<token> &V) {
+	vector<String> classes;
+	vector<station> S;
+	if (V[3].first != INT || V[4].first != INT) throw wrong_parameter();
+	int n = V[3].second.asint(),m = V[4].second.asint();
+	if (V.size() != 5 + m + n * (m + 4)) throw wrong_parameter();
+	for (int i = 0; i < m; i++) classes.push_back(V[i+5].second);
+	for (int i = 0; i < n; i++) {
+		int st = 4 + m + i * (4 + m) + 1;
+		vector<double> price;
+		for (int j = 0; j < m; j++) price.push_back(V[st + 4 + j].second.asdouble());
+		S.push_back(station(V[st].second,
+			V[st + 1].second.asTime(), V[st + 2].second.asTime(), V[st + 3].second.asTime(), price));
+	}
+	os << Train.add(V[0].second, V[1].second, V[2].second, classes, S) << endl;
+}
+
+void ticketBookingSystem::modifyTrain(const vector<token> &V) {
+	vector<String> classes;
+	vector<station> S;
+	if (V[3].first != INT || V[4].first != INT) throw wrong_parameter();
+	int n = V[3].second.asint(), m = V[4].second.asint();
+	if (V.size() != 5 + m + n * (m + 4)) throw wrong_parameter();
+
+	for (int i = 0; i < m; i++) classes.push_back(V[i + 5].second);
+	for (int i = 0; i < n; i++) {
+		int st = 4 + m + i * (4 + m) + 1;
+		vector<double> price;
+		for (int j = 0; j < m; j++) price.push_back(V[st + 4 + j].second.asdouble());
+		S.push_back(station(V[st].second,
+			V[st + 1].second.asTime(), V[st + 2].second.asTime(), V[st + 3].second.asTime(), price));
+	}
+	os << Train.modify(V[0].second, V[1].second, V[2].second, classes, S) << endl;
 }

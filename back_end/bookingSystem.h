@@ -7,8 +7,7 @@
 #include "tool.h"
 #include "exceptions.h"
 
-
-typedef std::pair<TYPE, String> token;
+using std::endl;
 
 class ticketBookingSystem{
 	
@@ -56,4 +55,5 @@ private:
 	void modifyTrain(const vector<token> &V);
 
 	void clear();
+	/**************************************************************************/
 };

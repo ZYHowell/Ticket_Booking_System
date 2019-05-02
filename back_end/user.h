@@ -44,4 +44,10 @@ public:
 	bool modify(const vector<parameter> &V);
 
 	bool modifyPrivilege(const int &master, const int &id, int p);
+
+	void clear() {
+		B.clear();
+	}
 };
+
+std::ostream &operator << (std::ostream &os, const user &u);

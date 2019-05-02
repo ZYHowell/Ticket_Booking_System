@@ -5,6 +5,7 @@
 */
 #include "bplustree.hpp"
 #include "tool.h"
+#include "log.h"
 
 static const int maxDate = 31;
 static const int maxClassN = 5;
@@ -12,9 +13,16 @@ static const int maxClassN = 5;
 struct station {
 	static const int INITIAL_QUANTITY = 2000;
 	String name;
-	Time arrive, leave;
+	Time arrive, leave,stop;
 	int num[maxDate][maxClassN]; // 2018-06-01 到2018-06-30每一天的余票数
 	double price[maxClassN];
+
+	station() = default;
+
+	station(const String &str,const Time &_arrive,const Time &Leave, const Time &_stop,
+		const vector<double> &V):name(str),arrive(_arrive),leave(Leave),stop(_stop){
+		for (int i = 0; i < V.size(); i++) price[i] = V[i];
+	}
 
 	void init(int classN) {
 		for (int i = 0; i < maxDate; i++)
@@ -63,7 +71,7 @@ public:
 		B.initialize("trainData", "trainBptFile", "trainAlloc", "trainBptAlloc");
 	}
 
-	void add(const String &id, const String &name, const String catalog,
+	bool add(const String &id, const String &name, const String catalog,
 		const vector<String> &classes, const vector<station> &V);
 
 	bool sale(const String &id);
@@ -75,7 +83,11 @@ public:
 	bool modify(const String &id, const String &name, const String catalog,
 		const vector<String> &classes, const vector<station> &V);
 
-	void modifyTicket(const String &id, const String &Station, const String &cls, int d, int delta);
+	bool modifyTicket(purchaseLog *log, const vector<token> &V,int f = 1);
 
-	
+	void clear() {
+		B.clear();
+	}
 };
+
+std::ostream &operator << (std::ostream &os, const train &t);

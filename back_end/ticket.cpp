@@ -33,16 +33,13 @@ ticketPair myMin(const ticketPair &p1,const ticketPair &p2) {
 	return p1.second.arrive < p2.second.arrive ? p1:p2;
 }
 
-void ticketSystem::_add(const String &st, const String &id) {
+void ticketSystem::add(const String &st, const String &id) {
 	B.insert(std::make_pair(st,id),id);
 }
 
-void ticketSystem::add(const vector<String> &stations, const String &id) {
-	for (int i = 0; i < stations.size(); i++)
-		_add(stations[i],id);
-}
 
-vector<ticket> ticketSystem::query(const String &from, const String &to,const date &d) {
+vector<ticket> ticketSystem::query(const String &from, const String &to,
+	const date &d,const String &catalog) {
 	auto  V = B.listof(std::make_pair(from,String()), cmpByFirstDim);
 	auto  U = B.listof(std::make_pair(to, String()), cmpByFirstDim);
 	vector<String> C;
@@ -57,24 +54,28 @@ vector<ticket> ticketSystem::query(const String &from, const String &to,const da
 	vector<ticket> ret;
 	for (i = 0; i < C.size(); i++) {
 		train t = TS->query(C[i]).second;
-		if (t.ok(from, to)) ret.push_back(ticket(t,from,to,d));
+		if (t.ok(from, to) && t.catalog == catalog) ret.push_back(ticket(t,from,to,d));
 	}
 	return ret;
 }
 
-ticketPair ticketSystem::transfer(const String &from, const String &to, const date &d) {
+ticketPair ticketSystem::transfer(const String &from, const String &to,
+	const date &d,const String &catalog) {
 	auto  V = B.listof(std::make_pair(from, String()), cmpByFirstDim);
 	auto  U = B.listof(std::make_pair(to, String()), cmpByFirstDim);
 	ticketPair ret;
-	for (int i = 0; i < V.size(); i++)
+	for (int i = 0; i < V.size(); i++) {
+		train T1 = TS->query(V[i].second).second;
+		if (T1.catalog != catalog) continue;
 		for (int j = 0; j < U.size(); j++) {
-			train T1 = TS->query(V[i].second).second;
 			train T2 = TS->query(U[j].second).second;
-			auto check = checkTransfer(T1, T2, from, to);
+			if (T2.catalog != catalog) continue;
+				auto check = checkTransfer(T1, T2, from, to);
 			if (check.first)
-				ret = myMin(ret, 
-					ticketPair(ticket(T1,from,check.second,d),ticket(T2,check.second,to,d))
-					);
+				ret = myMin(ret,
+					ticketPair(ticket(T1, from, check.second, d), ticket(T2, check.second, to, d))
+				);
 		}
+	}
 	return ret;
 }

@@ -67,7 +67,10 @@ public:
 
 	void buy(const keyInfo &info,const train &T,const String &seatClass,const int &n);
 	void refund(const keyInfo &info,const train &T,const String &seatClass,const int &n);
-	vector<record> query(vector< std::pair<TYPE, String> > &V) const;
-
+	vector<record> query(const vector< std::pair<TYPE, String> > &V) const;
+	void clear() {
+		B.clear();
+	}
 };
 
+std::ostream &operator << (std::ostream &os, const record &t);

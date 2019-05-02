@@ -33,7 +33,7 @@ void purchaseLog::refund(const keyInfo &info, const train &T, const String &seat
 	else B.set(info, rec);
 }
 
-vector<record> purchaseLog::query(vector< std::pair<TYPE,String> > &V)  const {
+vector<record> purchaseLog::query(const vector< std::pair<TYPE,String> > &V)  const {
 	if (V.size() != 3 || V[0].first != INT || V[1].first != DATE || V[2].first != STRING)
 		throw wrong_parameter();
 	keyInfo key(V[0].second.asint(),V[1].second.asdate(),V[2].second);
