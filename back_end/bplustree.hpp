@@ -821,9 +821,10 @@ public:
     }
     bool set(const key_t &k, const value_type &v){
         if (empty()) throw(container_is_empty());
+        if (com(k, root.key)) return false;
         point p = _find(root, k);
-        if (p == invalid_p) return 0;
-        fseek(datafile, p + sizeof(key_t), SEEK_SET);
+        if (p == invalid_p) return false;
+        fseek(datafile, p, SEEK_SET);
         fwrite(&v, sizeof(value_type), 1, datafile);
         return 1;
     }
