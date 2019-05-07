@@ -5,18 +5,18 @@
 using point = long;
 class ALLOC{
     struct node{
-        node *next, *prior;
-        point loc[2];
-		size_t size;
+        node            *next, *prior;
+        point           loc[2];
+		size_t          size;
         // int type;
         node(int l1 = 0, int l2 = 0, node *p = nullptr, node *n = nullptr):next(n), prior(p){
             loc[0] = l1, loc[1] = l2;size = l2 - l1;
         }
     };
-    node *head;
-    point file_end;
-    const int new_node_num = 8;
-    const int node_size = 65536;
+    node                *head;
+    point               file_end;
+    const int           new_node_num = 8;
+    const int           node_size = 65536;
     void remove(node *n){
         if (n->prior != nullptr) n->prior->next = n->next;
         else head = n->next;

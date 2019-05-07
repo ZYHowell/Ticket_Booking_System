@@ -13,28 +13,28 @@ template<class key_t,
          size_t node_size = 4096, 
          class Compare = std::less<key_t>
 >   class bplustree{
-    using point   =   long;
+    using point     =   long;
     using byte      =   char;
     using list_type =   pair<key_t, value_type>;
     struct node{
-        key_t key;
-        point prior, next;
-        point pos;
-        size_t size;                    //the size of its brothers
-        bool type;                      //0 for a leaf and 1 otherwise
+        key_t       key;
+        point       prior, next;
+        point       pos;
+        size_t      size;                    //the size of its brothers
+        bool        type;                    //0 for a leaf and 1 otherwise
         node(key_t k = key_t(),
         point p = invalid_p, size_t s = 1, bool ty = 0, 
         point pre = invalid_p, point nex = invalid_p)
         :key(k),pos(p),prior(pre),next(nex),size(s),type(ty){}
     };
-    node root;
-    Compare com;
-    size_t num;
-    FILE *datafile;
-	const size_t part_size_l, part_size_n;
-    ALLOC alloc;
-    point root_pos;
-    char *index_name, *data_name;
+    node                    root;
+    Compare                 com;
+    size_t                  num;
+    FILE                    *datafile;
+	const size_t            part_size_l, part_size_n;
+    ALLOC                   alloc;
+    point                   root_pos;
+    char                    *index_name, *data_name;
 
     inline bool equal(const key_t& k1,const key_t& k2){
         return !(com(k1, k2) || com(k2, k1));
@@ -802,6 +802,7 @@ public:
     }
     bool count(const key_t &k){
         if (empty()) return 0;
+        if (com(k, root.key)) return 0;
         point p = _find(root, k);
         if (p == invalid_p) return 0;
         return 1;
@@ -888,6 +889,7 @@ public:
     }
     bool remove(const key_t &k){
         if (empty()) return false;
+        if (com(k, root.key)) return 0;
         bool ret = true;
         byte cache[node_size];
         if (root.type) {
@@ -913,6 +915,9 @@ public:
     }
     vector<list_type> listof(key_t k, bool (*comp)(const key_t &a, const key_t &b)){
         if (empty()) throw(container_is_empty());
+        if (com(k, root.key)){
+            return vector<list_type>();
+        }
         return _listof(root, k, comp);
     }
 };
