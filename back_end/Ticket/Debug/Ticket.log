@@ -1,12 +1,39 @@
-﻿  bookingSystem.cpp
-c:\users\lenovo\source\repos\ticket\ticket\alloc.hpp(100): warning C4018: “>”: 有符号/无符号不匹配
-c:\users\lenovo\source\repos\ticket\ticket\alloc.hpp(130): warning C4018: “>=”: 有符号/无符号不匹配
+﻿  main.cpp
+c:\users\lenovo\source\repos\ticket\ticket\alloc.hpp(97): warning C4018: “>”: 有符号/无符号不匹配
+c:\users\lenovo\source\repos\ticket\ticket\alloc.hpp(127): warning C4018: “>=”: 有符号/无符号不匹配
 c:\users\lenovo\source\repos\ticket\ticket\trainbase.h(19): warning C4018: “<”: 有符号/无符号不匹配
-c:\users\lenovo\source\repos\ticket\ticket\bookingsystem.cpp(76): warning C4018: “<”: 有符号/无符号不匹配
-c:\users\lenovo\source\repos\ticket\ticket\bookingsystem.cpp(99): warning C4018: “<”: 有符号/无符号不匹配
-  main.cpp
-c:\users\lenovo\source\repos\ticket\ticket\alloc.hpp(100): warning C4018: “>”: 有符号/无符号不匹配
-c:\users\lenovo\source\repos\ticket\ticket\alloc.hpp(130): warning C4018: “>=”: 有符号/无符号不匹配
+  train.cpp
+c:\users\lenovo\source\repos\ticket\ticket\alloc.hpp(97): warning C4018: “>”: 有符号/无符号不匹配
+c:\users\lenovo\source\repos\ticket\ticket\alloc.hpp(127): warning C4018: “>=”: 有符号/无符号不匹配
 c:\users\lenovo\source\repos\ticket\ticket\trainbase.h(19): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\lenovo\source\repos\ticket\ticket\train.cpp(11): warning C4566: 由通用字符名称“\u00A5”表示的字符不能在当前代码页(936)中表示出来
+c:\users\lenovo\source\repos\ticket\ticket\bplustree.hpp(259): warning C4018: “<”: 有符号/无符号不匹配
+  c:\users\lenovo\source\repos\ticket\ticket\bplustree.hpp(255): note: 编译 类 模板 成员函数 "void bplustree<String,train,4096,std::less<key_t>>::Lbalance_l(bplustree<key_t,train,4096,std::less<key_t>>::node &,bplustree<key_t,train,4096,std::less<key_t>>::node &,bplustree<key_t,train,4096,std::less<key_t>>::byte *)" 时
+          with
+          [
+              key_t=String
+          ]
+  c:\users\lenovo\source\repos\ticket\ticket\bplustree.hpp(398): note: 参见对正在编译的函数 模板 实例化“void bplustree<String,train,4096,std::less<key_t>>::Lbalance_l(bplustree<key_t,train,4096,std::less<key_t>>::node &,bplustree<key_t,train,4096,std::less<key_t>>::node &,bplustree<key_t,train,4096,std::less<key_t>>::byte *)”的引用
+          with
+          [
+              key_t=String
+          ]
+  c:\users\lenovo\source\repos\ticket\ticket\train.h(12): note: 参见对正在编译的 类 模板 实例化 "bplustree<String,train,4096,std::less<key_t>>" 的引用
+          with
+          [
+              key_t=String
+          ]
+c:\users\lenovo\source\repos\ticket\ticket\bplustree.hpp(245): warning C4018: “<”: 有符号/无符号不匹配
+  c:\users\lenovo\source\repos\ticket\ticket\bplustree.hpp(241): note: 编译 类 模板 成员函数 "void bplustree<String,train,4096,std::less<key_t>>::Lbalance_n(bplustree<key_t,train,4096,std::less<key_t>>::node &,bplustree<key_t,train,4096,std::less<key_t>>::node &,bplustree<key_t,train,4096,std::less<key_t>>::byte *)" 时
+          with
+          [
+              key_t=String
+          ]
+  c:\users\lenovo\source\repos\ticket\ticket\bplustree.hpp(377): note: 参见对正在编译的函数 模板 实例化“void bplustree<String,train,4096,std::less<key_t>>::Lbalance_n(bplustree<key_t,train,4096,std::less<key_t>>::node &,bplustree<key_t,train,4096,std::less<key_t>>::node &,bplustree<key_t,train,4096,std::less<key_t>>::byte *)”的引用
+          with
+          [
+              key_t=String
+          ]
   正在生成代码...
+c:\users\lenovo\source\repos\ticket\ticket\train.cpp(85): warning C4715: “trainSystem::modifyTicket”: 不是所有的控件路径都返回值
   Ticket.vcxproj -> C:\Users\lenovo\source\repos\Ticket\Debug\Ticket.exe

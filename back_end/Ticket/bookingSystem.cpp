@@ -35,7 +35,7 @@ void ticketBookingSystem::process
 	case 12: remove(V); break;
 	case 13: modifyTrain(V); break;
 	case 14: clear(); break;
-	case 15: Exit();
+	case 15: Exit(); break;
 	case 16: login(V); break;
 	default: break;
 
@@ -44,6 +44,7 @@ void ticketBookingSystem::process
 
 void ticketBookingSystem::Exit() {
 	os << "BYE" << endl;
+	exit(0);
 }
 
 void ticketBookingSystem::Register(const vector<token> &V) {
@@ -127,6 +128,7 @@ void ticketBookingSystem::clear() {
 	Train.clear();
 	Ticket.clear();
 	User.clear();
+	os << 1 << endl;
 }
 
 void ticketBookingSystem::queryTrain(const vector<token> &V) {

@@ -5,7 +5,7 @@
 
 
 struct user {
-	enum userType {COMMON,ADMIN};
+	enum userType {COMMON=1,ADMIN};
 
 	int id;
 	userType type;

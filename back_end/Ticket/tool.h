@@ -2,14 +2,15 @@
 
 #include <string>
 #include <iostream>
-#include <windows.h>
 #include "vector.hpp"
 #include <sstream>
+#include <algorithm>
 
 struct Time;
 struct date;
 using sjtu::vector;
 using std::endl;
+using std::min;
 class String;
 
 enum TYPE{STRING,_DATE,TIME,_INT,_DOUBLE};
@@ -26,10 +27,7 @@ class String {
 
 	int cmp(const String &a) const {
 		if (l != a.l) return l < a.l ? -1 : 1;
-		for (int i = 0; i < l; i++)
-			if (s[i] != a.s[i])
-				return  s[i] < a.s[i] ? -1 : 1;
-		return 0;
+		return strcmp(s, a.s);
 	}
 public:
 	String() :l(0) {}
@@ -55,10 +53,10 @@ public:
 		return *this;
 	}
 
-	bool operator < (const String &a) const { return cmp(a) == -1; }
+	bool operator < (const String &a) const { return cmp(a) < 0; }
 	bool operator == (const String &a) const { return cmp(a) == 0; }
 	bool operator != (const String &a) const { return cmp(a) != 0; }
-	bool operator > (const String &a) const { return cmp(a) == 1; }
+	bool operator > (const String &a) const { return cmp(a) > 0; }
 	char operator [] (const int &idx) {
 		return s[idx];
 	}

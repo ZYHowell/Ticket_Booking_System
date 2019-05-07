@@ -47,8 +47,8 @@ bool userSystem::modifyPrivilege(const int &admin, const int &id, int p) {
 	if (!B.count(admin) || !B.count(id)) return false;
 	if (B.find(admin).type != user::ADMIN) return false;
 	user u = B.find(id);
-	if (u.type == user::ADMIN) return p == 1;
-	u.type = user::ADMIN;
+	if (u.type == user::ADMIN) return p == 2;
+	u.type = user::userType(p);
 	B.set(id,u);
 	return true;
 }

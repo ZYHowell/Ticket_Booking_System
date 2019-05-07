@@ -1,5 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 #ifndef SJTU_BPLUSTREE_HPP
 #define SJTU_BPLUSTREE_HPP
 #include <cstddef>
@@ -10,35 +8,34 @@
 #include "alloc.hpp"
 #include "vector.hpp"
 #include "tool.h"
-
 const point invalid_p = 0xdeadbeef;
 template<class key_t,
          class value_type, 
          size_t node_size = 4096, 
          class Compare = std::less<key_t>
 >   class bplustree{
-    using point   =   long;
+    using point     =   long;
     using byte      =   char;
-    using list_type =   std::pair<key_t, value_type>;
+    using list_type =  std:: pair<key_t, value_type>;
     struct node{
-        key_t key;
-        point prior, next;
-        point pos;
-        size_t size;                    //the size of its brothers
-        bool type;                      //0 for a leaf and 1 otherwise
+        key_t       key;
+        point       prior, next;
+        point       pos;
+        size_t      size;                    //the size of its brothers
+        bool        type;                    //0 for a leaf and 1 otherwise
         node(key_t k = key_t(),
         point p = invalid_p, size_t s = 1, bool ty = 0, 
         point pre = invalid_p, point nex = invalid_p)
         :key(k),pos(p),prior(pre),next(nex),size(s),type(ty){}
     };
-    node root;
-    Compare com;
-    size_t num;
-    FILE *datafile;
-	const size_t part_size_l, part_size_n;
-    ALLOC alloc;
-    point root_pos;
-    char *index_name, *data_name;
+    node                    root;
+    Compare                 com;
+    size_t                  num;
+    FILE                    *datafile;
+	const size_t            part_size_l, part_size_n;
+    ALLOC                   alloc;
+    point                   root_pos;
+    char                    *index_name, *data_name;
 
     inline bool equal(const key_t& k1,const key_t& k2)const {
         return !(com(k1, k2) || com(k2, k1));
@@ -50,7 +47,7 @@ template<class key_t,
 		printf("load_cache_seek: %d\n", p.pos + sizeof(node));
 		printf("which are:\n");
         for (int i = 0;i < p.size;i++)
-        #ifdef TEST__INT_MODE
+        #ifdef TEST_INT_MODE
             printf("key: %d, point: %d; ", nth_key_n(start, i)->a, *nth_point(start, i));
         #endif
         #ifdef TEST_STRING_MODE
@@ -66,7 +63,7 @@ template<class key_t,
 		printf("load_cache_seek: %d\n", p.pos + sizeof(node));
 		printf("which are:\n");
         for (int i = 0;i < p.size;i++)
-        #ifdef TEST__INT_MODE
+        #ifdef TEST_INT_MODE
             printf("key: %d, value: %d; ", nth_key_l(start, i)->a, *nth_value(start, i));
         #endif
         #ifdef TEST_STRING_MODE
@@ -75,14 +72,14 @@ template<class key_t,
         printf("\n");
         #endif
     }
-    inline void save_cache_n(byte *start,const node &p){
+    inline void save_cache_n(byte *start,const node &p)const {
         fseek(datafile, p.pos + sizeof(node), SEEK_SET);
         fwrite(start, 1, (sizeof(key_t) + sizeof(point)) * p.size, datafile);
 		#ifdef DEBUG_MODE
 		printf("save_cache_seek: %d\n", p.pos + sizeof(node));
         printf("which are:\n");
         for (int i = 0;i < p.size;i++)
-        #ifdef TEST__INT_MODE
+        #ifdef TEST_INT_MODE
             printf("key: %d, point: %d; ", nth_key_n(start, i)->a, *nth_point(start, i));
         #endif
         #ifdef TEST_STRING_MODE
@@ -91,14 +88,14 @@ template<class key_t,
         printf("\n");
 		#endif
     }
-    inline void save_cache_l(byte *start,const node &p){
+    inline void save_cache_l(byte *start,const node &p)const {
         fseek(datafile, p.pos + sizeof(node), SEEK_SET);
         fwrite(start, 1, (sizeof(key_t) + sizeof(value_type)) * p.size, datafile);
 		#ifdef DEBUG_MODE
 		printf("save_cache_seek: %d\n", p.pos + sizeof(node));
         printf("which are:\n");
         for (int i = 0;i < p.size;i++)
-        #ifdef TEST__INT_MODE
+        #ifdef TEST_INT_MODE
             printf("key: %d, value: %d; ", nth_key_l(start, i)->a, *nth_value(start, i));
         #endif
         #ifdef TEST_STRING_MODE
@@ -113,7 +110,7 @@ template<class key_t,
         fread(&tmp, sizeof(node), 1, datafile);
 		#ifdef DEBUG_MODE
 		printf("load_node_seek: %d\n", l);
-        #ifdef TEST__INT_MODE
+        #ifdef TEST_INT_MODE
         printf("which is: pos:%d size:%d key:%d\n", tmp.pos, tmp.size, tmp.key.a);
 		#endif
         #ifdef TEST_STRING_MODE
@@ -122,13 +119,13 @@ template<class key_t,
         #endif
         return tmp;
     }
-    inline bool save_node(const node &p){
+    inline bool save_node(const node &p)const {
         if (p.pos == invalid_p) return false;
         fseek(datafile, p.pos, SEEK_SET);
         fwrite(&p, sizeof(node), 1, datafile);
 		#ifdef DEBUG_MODE
 		printf("save_node_seek: %d\n", p.pos);
-        #ifdef TEST__INT_MODE
+        #ifdef TEST_INT_MODE
         printf("which is: pos:%d size:%d key:%d\n", p.pos, p.size, p.key.a);
 		#endif
         #ifdef TEST_STRING_MODE
@@ -146,7 +143,7 @@ template<class key_t,
     inline point* nth_point(byte *start, size_t n = 0)const {
         return (point *)(start + sizeof(key_t) * (n + 1) + sizeof(point) * n);
     }
-    inline value_type* nth_value(byte *start, size_t n = 0)const{
+    inline value_type* nth_value(byte *start, size_t n = 0)const {
         return (value_type *)(start + sizeof(key_t) * (n + 1) + sizeof(value_type) * n);
     }
     inline point nth_value_loc(const node &now, size_t n = 0)const {
@@ -201,7 +198,7 @@ template<class key_t,
         }
     }
     //waiting
-   vector<list_type> _listof(const node &p, const key_t &k, 
+    vector<list_type> _listof(const node &p, const key_t &k, 
                             bool (*comp)(const key_t &a, const key_t &b))const {
         size_t ord;
         point tmp;
@@ -777,7 +774,7 @@ public:
 		fwrite(&root, sizeof(node), 1, datafile);
 		#ifdef DEBUG_MODE
 		printf("clear_root_seek: %d\n", 0);
-        #ifdef TEST__INT_MODE
+        #ifdef TEST_INT_MODE
         printf("which is: pos:%d size:%d key:%s\n", root.pos, root.size, root.key.a);
 		#endif
         #ifdef TEST_STRING_MODE
@@ -806,6 +803,7 @@ public:
     }
     bool count(const key_t &k)const {
         if (empty()) return 0;
+        if (com(k, root.key)) return 0;
         point p = _find(root, k);
         if (p == invalid_p) return 0;
         return 1;
@@ -825,9 +823,10 @@ public:
     }
     bool set(const key_t &k, const value_type &v){
         if (empty()) throw(container_is_empty());
+        if (com(k, root.key)) return false;
         point p = _find(root, k);
-        if (p == invalid_p) return 0;
-        fseek(datafile, p , SEEK_SET);
+        if (p == invalid_p) return false;
+        fseek(datafile, p, SEEK_SET);
         fwrite(&v, sizeof(value_type), 1, datafile);
         return 1;
     }
@@ -891,6 +890,7 @@ public:
     }
     bool remove(const key_t &k){
         if (empty()) return false;
+        if (com(k, root.key)) return 0;
         bool ret = true;
         byte cache[node_size];
         if (root.type) {
@@ -916,9 +916,11 @@ public:
     }
     vector<list_type> listof(key_t k, bool (*comp)(const key_t &a, const key_t &b))const {
         if (empty()) throw(container_is_empty());
+        if (com(k, root.key)){
+            return vector<list_type>();
+        }
         return _listof(root, k, comp);
     }
-
 	int size() const { return num; }
 };
 #endif

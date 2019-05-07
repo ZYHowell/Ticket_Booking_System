@@ -33,6 +33,7 @@ bool train::ok(const String &from, const String &to)const {
 
 bool trainSystem::add(const String &id, const String &name, const String catalog,
 	const vector<String> &classes, const vector<station> &V) {
+	//std::cout << "add: " << id << endl;
 	if (B.count(id)) return false;
 	B.insert(id,train(id,name,catalog,classes,V));
 	return true;

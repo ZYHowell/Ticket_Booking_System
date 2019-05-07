@@ -1,7 +1,8 @@
 #include "tool.h"
 
 std::ostream &operator << (std::ostream &os,const Time &t){
-	os << t.hour << ':' << t.minute;
+	if (t.hour == -1) os << "xx:xx";
+	else os << t.hour << ':' << t.minute;
 	return os;
 }
 
@@ -36,5 +37,6 @@ date String::asdate() const {
 
 Time String::asTime() const {
 	if (l != 5) throw wrong_parameter();
+	if (s[0] == 'x') return Time(-1, -1);
 	return Time((s[0] - '0') * 10 + s[1] - '0', (s[3] - '0') * 10 + s[4] - '0');
 }

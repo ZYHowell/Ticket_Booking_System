@@ -33,19 +33,10 @@
     <ClInclude Include="bookingSystem.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="alloc.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="vector.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="bplustree.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="utility.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="bufferpool.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="parser.hpp">
@@ -58,6 +49,15 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="trainBase.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="alloc.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="bplustree.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="bufferpool.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

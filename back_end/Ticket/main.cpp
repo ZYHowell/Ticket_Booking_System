@@ -1,6 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-
 #include <iostream>
 #include "parser.hpp"
 #include "bookingSystem.h"
@@ -15,10 +14,9 @@ int main() {
 		std::stringstream ss(str);
 		ss >> s;
 		if (s == "add_train" || s == "modify_train") {
-			ss >> s >> s >> s >> s;
-			std::stringstream sss(s);
+			ss >> s >> s >> s;
 			int n;
-			sss >> n;
+			ss >> n;
 			while (n--) {
 				std::getline(std::cin, s);
 				str = str + '\n' + s;
