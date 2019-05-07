@@ -1,0 +1,12 @@
+﻿  bookingSystem.cpp
+c:\users\lenovo\source\repos\ticket\ticket\alloc.hpp(100): warning C4018: “>”: 有符号/无符号不匹配
+c:\users\lenovo\source\repos\ticket\ticket\alloc.hpp(130): warning C4018: “>=”: 有符号/无符号不匹配
+c:\users\lenovo\source\repos\ticket\ticket\trainbase.h(19): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\lenovo\source\repos\ticket\ticket\bookingsystem.cpp(76): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\lenovo\source\repos\ticket\ticket\bookingsystem.cpp(99): warning C4018: “<”: 有符号/无符号不匹配
+  main.cpp
+c:\users\lenovo\source\repos\ticket\ticket\alloc.hpp(100): warning C4018: “>”: 有符号/无符号不匹配
+c:\users\lenovo\source\repos\ticket\ticket\alloc.hpp(130): warning C4018: “>=”: 有符号/无符号不匹配
+c:\users\lenovo\source\repos\ticket\ticket\trainbase.h(19): warning C4018: “<”: 有符号/无符号不匹配
+  正在生成代码...
+  Ticket.vcxproj -> C:\Users\lenovo\source\repos\Ticket\Debug\Ticket.exe

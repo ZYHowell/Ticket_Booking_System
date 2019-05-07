@@ -31,22 +31,23 @@ class userSystem {
 	int currentID;
 public:
 	userSystem() {
-		B.initialize("userData", "userBptFile", "userAlloc", "userBptAlloc");
+		B.init("userData", "userAlloc");
 		currentID = B.size() + 2019;
 	}
 
-	int add(const vector<parameter> &V);
+	int add(const vector<token> &V);
 
-	bool login(const int &id, const String pswd) const;
+	bool login(const int &id, const String &pswd) const;
 
 	std::pair<bool, user> query(const int &id) const;
 
-	bool modify(const vector<parameter> &V);
+	bool modify(const vector<token> &V);
 
 	bool modifyPrivilege(const int &master, const int &id, int p);
 
 	void clear() {
 		B.clear();
+		currentID = 2019;
 	}
 };
 

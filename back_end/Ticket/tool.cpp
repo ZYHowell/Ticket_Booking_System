@@ -1,7 +1,7 @@
 #include "tool.h"
 
 std::ostream &operator << (std::ostream &os,const Time &t){
-	os << t.hour << ':' << t.minuite;
+	os << t.hour << ':' << t.minute;
 	return os;
 }
 

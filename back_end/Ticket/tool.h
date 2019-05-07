@@ -5,17 +5,16 @@
 #include <windows.h>
 #include "vector.hpp"
 #include <sstream>
+
 struct Time;
 struct date;
 using sjtu::vector;
-
+using std::endl;
 class String;
 
-enum TYPE{STRING,DATE,TIME,INT,DOUBLE};
+enum TYPE{STRING,_DATE,TIME,_INT,_DOUBLE};
+
 typedef std::pair<TYPE, String> token;
-
-
-typedef std::pair<TYPE,String> parameter;
 
 
 class String {
@@ -37,11 +36,11 @@ public:
 	String(std::string str) {
 		l = str.length();
 		if (l > SIZE) throw std::string("Name is too long.");
-		for (int i = 0; i < l; i++) s[i] = l;
+		for (int i = 0; i < l; i++) s[i] = str[i];
 		s[l] = '\0';
 	}
 	String(const char *c) {
-		l = strlen(c) + 1;
+		l = strlen(c);
 		for (int i = 0; i < l; i++) s[i] = c[i];
 		s[l] = '\0';
 	}
@@ -49,10 +48,21 @@ public:
 		l = other.l;
 		for (int i = 0; i <= l; i++) s[i] = other.s[i];
 	}
+	String &operator = (const String &str) {
+		l = str.l;
+		for (int i = 0; i < l; i++) s[i] = str.s[i];
+		s[l] = '\0';
+		return *this;
+	}
+
 	bool operator < (const String &a) const { return cmp(a) == -1; }
 	bool operator == (const String &a) const { return cmp(a) == 0; }
 	bool operator != (const String &a) const { return cmp(a) != 0; }
 	bool operator > (const String &a) const { return cmp(a) == 1; }
+	char operator [] (const int &idx) {
+		return s[idx];
+	}
+	int legnth() { return l; }
 	int asint() const ;
 	double asdouble() const;
 	date asdate() const;
@@ -94,7 +104,7 @@ struct date {
 	}
 
 	int asint() { 
-		if (month != 6)  throw wrong_parameter();
+		if (month != 6)  throw wrong_token();
 		return day-1; 
 	}
 };

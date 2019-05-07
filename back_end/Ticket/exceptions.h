@@ -31,6 +31,9 @@ class wrong_parameter : public exception {
 class wrong_command :public exception {
 };
 
+class wrong_token :public exception {
+};
+
 #ifndef SJTU_EXCEPTIONS_HPP
 #define SJTU_EXCEPTIONS_HPP
 

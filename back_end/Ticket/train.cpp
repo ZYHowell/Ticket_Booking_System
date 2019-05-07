@@ -6,7 +6,7 @@ std::ostream &operator << (std::ostream &os, const train &t) {
 		<< t.n << ' ' << t.classN << ' ';
 	for (int i = 0; i < t.classN; i++) os << t.seatClass[i] << ' ';
 	for (int i = 0; i < t.n; i++) {
-		os << t.s[i].name << ' ' << t.s[i].arrive << ' ' << t.s[i].leave << ' ' << t.s[i].stop() << ' ';
+		os << t.s[i].name << ' ' << t.s[i].arrive << ' ' << t.s[i].leave << ' ' << t.s[i].stop << ' ';
 		for (int j = 0; j < t.classN; j++)
 			os << '¥' << t.s[i].price[j] << ' ';
 		os << '\n';
@@ -72,7 +72,7 @@ bool trainSystem::modifyTicket(purchaseLog *log, const vector<token> &V,int f) {
 	int c = t.getClassID(V[6].second);
 	int st = t.getStationID(V[3].second), ed = t.getStationID(V[4].second);
 	int delta = V[1].second.asint() * f;
-	if (st == -1 || ed == -1 || st >= ed) throw wrong_parameter();
+	if (st == -1 || ed == -1 || st >= ed) throw wrong_token();
 	for (int i = st; i <= ed; i++)
 		if (t.s[i].num[d][c] + delta < 0) return false;
 	for (int i = st; i <= ed; i++)

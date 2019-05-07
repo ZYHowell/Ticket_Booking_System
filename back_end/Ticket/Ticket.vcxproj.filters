@@ -18,9 +18,6 @@
     <ClInclude Include="train.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Ticket_Booking_System\back_end\exceptions.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="tool.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -46,6 +43,21 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="utility.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="bufferpool.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="parser.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="tokenscanner.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="exceptions.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="trainBase.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

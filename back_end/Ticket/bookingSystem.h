@@ -55,5 +55,9 @@ private:
 	void modifyTrain(const vector<token> &V);
 
 	void clear();
+
+	void login(const vector<token>& V);
+
+	void Exit();
 	/**************************************************************************/
 };

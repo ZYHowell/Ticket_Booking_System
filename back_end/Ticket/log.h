@@ -2,16 +2,15 @@
 
 #include "bplustree.hpp"
 #include "tool.h"
-#include "train.h"
+#include "trainBase.h"
 #include "exceptions.h"
-
-class purchaseLog;
 
 struct keyInfo {
 	int userID;
 	String catalog, trainID, from, to;
 	date Date;
 
+	keyInfo() = default;
 	keyInfo(const int &u, const date &d, const String &c,
 		const String &t, const String &_from, const String &_to)
 		:userID(u), Date(d), catalog(c), trainID(t), from(_from), to(_to) {}
@@ -36,7 +35,7 @@ struct Detail{
 	int classN,num[maxClassN];
 
 	Detail() = default;
-	Detail(const train &T, const String from,const String to, const String &seatCls, const int &quantity) {
+	Detail(const train &T, const String &from,const String &to, const String &seatCls, const int &quantity) {
 		classN = T.classN;
 		for (int i = 0; i < classN; i++) 
 			seatClass[i] = T.seatClass[i],num[i] = 0;
@@ -62,11 +61,11 @@ class purchaseLog {
 
 public:
 	purchaseLog() {
-		B.initialize("logData","logBptFile","logAlloc","logBptAlloc");
+		B.init("logData","logAlloc");
 	}
 
-	void buy(const keyInfo &info,const train &T,const String &seatClass,const int &n);
-	void refund(const keyInfo &info,const train &T,const String &seatClass,const int &n);
+	void buy(const keyInfo &info, const train &T, const String &seatClass, const int &n);
+	void refund(const keyInfo &info, const train &T, const String &seatClass, const int &n);
 	vector<record> query(const vector< std::pair<TYPE, String> > &V) const;
 	void clear() {
 		B.clear();

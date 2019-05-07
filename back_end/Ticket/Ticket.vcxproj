@@ -94,6 +94,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS
+;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -108,6 +110,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS
+;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -115,14 +119,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Ticket_Booking_System\back_end\exceptions.h" />
     <ClInclude Include="alloc.hpp" />
     <ClInclude Include="bookingSystem.h" />
     <ClInclude Include="bplustree.hpp" />
+    <ClInclude Include="bufferpool.hpp" />
+    <ClInclude Include="exceptions.h" />
     <ClInclude Include="log.h" />
+    <ClInclude Include="parser.hpp" />
     <ClInclude Include="ticket.h" />
+    <ClInclude Include="tokenscanner.hpp" />
     <ClInclude Include="tool.h" />
     <ClInclude Include="train.h" />
+    <ClInclude Include="trainBase.h" />
     <ClInclude Include="user.h" />
     <ClInclude Include="utility.hpp" />
     <ClInclude Include="vector.hpp" />

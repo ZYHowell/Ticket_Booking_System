@@ -48,7 +48,7 @@ class ticketSystem {
 
 public:
 	ticketSystem() {
-		B.initialize("ticketData", "ticketBptFile", "ticketAlloc", "ticketBptAlloc");
+		B.init("ticketData", "ticketAlloc");
 	}
 	void init(trainSystem *_TS) { TS = _TS; }
 
