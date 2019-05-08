@@ -144,9 +144,9 @@ int main(){
         else if (i > test_size / 2) printf("wrong\n");
     #endif
     }
-    #ifdef TEST_INT_MODE
-    //vector<pair<test_t, value_t>> v = test.listof(test_t(15, 0), judgement);
-    //for (int i = 0;i < v.size();i++) printf("%d %d %d; ", v[i].first.a, v[i].first.b, v[i].second);
+    #ifdef TEST_EASY_MODE
+    vector<pair<test_t, value_t>> v = test.listof(test_t(15, 0), judgement);
+    for (int i = 0;i < v.size();i++) printf("%d %d %d; ", v[i].first.a, v[i].first.b, v[i].second);
     #endif
     std::cout << std::endl << ::GetTickCount() - k;
     printf("\n");

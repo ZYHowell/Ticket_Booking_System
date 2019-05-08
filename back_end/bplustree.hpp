@@ -36,7 +36,7 @@ template<class key_t,
     point                   root_pos;
     char                    *index_name, *data_name;
 
-    inline bool equal(const key_t& k1,const key_t& k2){
+    inline bool equal(const key_t& k1,const key_t& k2) const{
         return !(com(k1, k2) || com(k2, k1));
     }
     /*
@@ -106,7 +106,7 @@ template<class key_t,
         printf("\n");
 		#endif
     }
-    inline node load_node(point l){
+    inline node load_node(point l)const{
         fseek(datafile, l, SEEK_SET);
         node tmp;
         fread(&tmp, sizeof(node), 1, datafile);
@@ -121,7 +121,7 @@ template<class key_t,
         #endif
         return tmp;
     }
-    inline bool save_node(const node &p){
+    inline bool save_node(const node &p)const{
         if (p.pos == invalid_p) return false;
         fseek(datafile, p.pos, SEEK_SET);
         fwrite(&p, sizeof(node), 1, datafile);
@@ -139,22 +139,22 @@ template<class key_t,
     /*
         * basic function in order to get particular info of a node
     */
-    inline key_t* nth_key_n(byte *start, size_t n = 0){
+    inline key_t* nth_key_n(byte *start, size_t n = 0)const{
         return (key_t *)(start + (sizeof(key_t) + sizeof(point)) * n);
     }
-    inline key_t* nth_key_l(byte *start, size_t n = 0){
+    inline key_t* nth_key_l(byte *start, size_t n = 0)const{
         return (key_t *)(start + (sizeof(key_t) + sizeof(value_type)) * n);
     }
-    inline point* nth_point(byte *start, size_t n = 0){
+    inline point* nth_point(byte *start, size_t n = 0)const{
         return (point *)(start + sizeof(key_t) * (n + 1) + sizeof(point) * n);
     }
-    inline value_type* nth_value(byte *start, size_t n = 0){
+    inline value_type* nth_value(byte *start, size_t n = 0)const{
         return (value_type *)(start + sizeof(key_t) * (n + 1) + sizeof(value_type) * n);
     }
-    inline point nth_value_loc(const node &now, size_t n = 0){
+    inline point nth_value_loc(const node &now, size_t n = 0)const{
         return now.pos + sizeof(node) + (sizeof(key_t) + sizeof(value_type)) * n + sizeof(key_t);
     }
-    inline value_type get_value(point loc){
+    inline value_type get_value(point loc)const{
         value_type v;
         fseek(datafile, loc, SEEK_SET);
         fread(&v, sizeof(value_type), 1, datafile);
@@ -163,7 +163,7 @@ template<class key_t,
     /*
         * binary search function to help find a particular child
     */
-    inline size_t b_search_n(byte *start,const key_t& k, size_t n){
+    inline size_t b_search_n(byte *start,const key_t& k, size_t n)const{
         size_t l = 0, r = n, mid;
         while (l < r){
             mid = (l + r) >> 1;
@@ -174,7 +174,7 @@ template<class key_t,
         else if (equal(*nth_key_n(start, l), k)) return l;
         else return l - 1;
     }
-    inline size_t b_search_l(byte *start,const key_t& k, size_t n){
+    inline size_t b_search_l(byte *start,const key_t& k, size_t n)const{
         size_t l = 0, r = n, mid;
         while (l < r){
             mid = (l + r) >> 1;
@@ -188,7 +188,7 @@ template<class key_t,
     /*
         * find a particular key and return its pointer
     */
-    point _find(const node &p,const key_t& k){
+    point _find(const node &p,const key_t& k)const{
         size_t ord;
         point tmp;
         if (!p.type){
@@ -211,13 +211,14 @@ template<class key_t,
         * return a continuous segment of key-value sets
     */
     vector<list_type> _listof(const node &p, const key_t &k, 
-                            bool (*comp)(const key_t &a, const key_t &b)){
+                            bool (*comp)(const key_t &a, const key_t &b))const{
         size_t ord;
         point tmp;
         if (!p.type){
             byte cache[node_size];
             load_cache_l(cache, p);
-            ord = b_search_l(cache, k, p.size);
+            if (com(k, p.key)) ord = 0;
+            else ord = b_search_l(cache, k, p.size);
             tmp = nth_value_loc(p, ord);
             vector<list_type> ret;
             node now = p;
@@ -241,7 +242,8 @@ template<class key_t,
         else {
             byte cache[node_size];
             load_cache_n(cache, p);
-            ord = b_search_n(cache, k, p.size);
+            if (com(k, p.key)) ord = 0;
+            else ord = b_search_n(cache, k, p.size);
             tmp = *nth_point(cache, ord);
             return _listof(load_node(tmp), k, comp);
         }
@@ -831,14 +833,14 @@ public:
 		if (data_name != nullptr)
 			delete []data_name;
     }
-    bool count(const key_t &k){
+    bool count(const key_t &k) const{
         if (empty()) return 0;
         if (com(k, root.key)) return 0;
         point p = _find(root, k);
         if (p == invalid_p) return 0;
         return 1;
     }
-    value_type find(const key_t &k){
+    value_type find(const key_t &k)const{
         if (empty()) throw(container_is_empty());
         if (com(k, root.key)) return value_type();
         point p = _find(root, k);
@@ -946,10 +948,10 @@ public:
     }
     vector<list_type> listof(key_t k, bool (*comp)(const key_t &a, const key_t &b)){
         if (empty()) throw(container_is_empty());
-        if (com(k, root.key)){
-            return vector<list_type>();
-        }
         return _listof(root, k, comp);
+    }
+    int size() const{
+        return num;
     }
 };
 #endif

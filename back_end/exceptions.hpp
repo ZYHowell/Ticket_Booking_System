@@ -21,6 +21,9 @@ class invalid_format : public exception {
 class invalid_offset : public exception {
 };
 
+class invalid_iterator : public exception {
+};
+
 class not_found : public exception {
 };
 
