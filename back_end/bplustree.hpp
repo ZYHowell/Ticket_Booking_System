@@ -4,7 +4,7 @@
 #include <functional>
 #include <stdio.h>
 #include <cstring>
-#include "exceptions.hpp"
+#include "exceptions.h"
 #include "alloc.hpp"
 #include "vector.hpp"
 const point invalid_p = 0xdeadbeef;
@@ -16,6 +16,7 @@ template<class key_t,
     using point     =   long;
     using byte      =   char;
     using list_type =   pair<key_t, value_type>;
+    using find_type =   pair<bool, value_type>;
     struct node{
         key_t       key;
         point       prior, next;
@@ -32,7 +33,7 @@ template<class key_t,
     size_t                  num;
     FILE                    *datafile;
 	const size_t            part_size_l, part_size_n;
-    ALLOC                   alloc;
+    ALLOC<node_size>        alloc;
     point                   root_pos;
     char                    *index_name, *data_name;
 
@@ -211,7 +212,7 @@ template<class key_t,
         * return a continuous segment of key-value sets
     */
     vector<list_type> _listof(const node &p, const key_t &k, 
-                            bool (*comp)(const key_t &a, const key_t &b))const{
+                            bool (*comp)(const key_t &a, const key_t &b)) const{
         size_t ord;
         point tmp;
         if (!p.type){
@@ -840,18 +841,18 @@ public:
         if (p == invalid_p) return 0;
         return 1;
     }
-    value_type find(const key_t &k)const{
+    find_type find(const key_t &k)const{
         if (empty()) throw(container_is_empty());
-        if (com(k, root.key)) return value_type();
+        if (com(k, root.key)) return find_type(false, value_type());
         point p = _find(root, k);
-        if (p == invalid_p) return value_type();
+        if (p == invalid_p) return find_type(false, value_type());
         fseek(datafile, p, SEEK_SET);
         value_type v;
         fread(&v, sizeof(value_type), 1, datafile);
 		#ifdef DEBUG_MODE
         printf("find_seek_in_database: %d\nwhich is: %d\n", p + sizeof(key_t),v);
 		#endif
-        return v;
+        return find_type(true, v);
     }
     bool set(const key_t &k, const value_type &v){
         if (empty()) throw(container_is_empty());
@@ -946,7 +947,7 @@ public:
         }
         return ret;
     }
-    vector<list_type> listof(key_t k, bool (*comp)(const key_t &a, const key_t &b)){
+    vector<list_type> listof(key_t k, bool (*comp)(const key_t &a, const key_t &b)) const{
         if (empty()) throw(container_is_empty());
         return _listof(root, k, comp);
     }

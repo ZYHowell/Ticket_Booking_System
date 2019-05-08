@@ -1,8 +1,9 @@
 #ifndef SJTU_ALLOC_HPP
 #define SJTU_ALLOC_HPP
 #include <stdio.h>
-#include "exceptions.hpp"
+#include "exceptions.h"
 using point = long;
+template<size_t node_size = 65536>
 class ALLOC{
     struct node{
         node            *next, *prior;
@@ -16,7 +17,6 @@ class ALLOC{
     node                *head;
     point               file_end;
     const int           new_node_num = 8;
-    const int           node_size = 65536;
     void remove(node *n){
         if (n->prior != nullptr) n->prior->next = n->next;
         else head = n->next;
