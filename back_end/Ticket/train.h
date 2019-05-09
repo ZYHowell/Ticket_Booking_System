@@ -9,7 +9,7 @@
 #include "log.h"
 
 class trainSystem {
-	bplustree<String,train,4096> B;
+	bplustree<String,train, 65536> B;
 public:
 	trainSystem() {
 		B.init("trainData", "trainAlloc");
@@ -27,7 +27,7 @@ public:
 	bool modify(const String &id, const String &name, const String catalog,
 		const vector<String> &classes, const vector<station> &V);
 
-	bool modifyTicket(purchaseLog *log, const vector<token> &V,int f = 1);
+	bool modifyTicket(purchaseLog *log, const vector<token> &V,int f);
 
 	void clear() {
 		B.clear();

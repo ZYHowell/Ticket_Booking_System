@@ -1,12 +1,10 @@
 #include "bookingSystem.h"
 
-
 const int numOfCommands = 17;
-
 
 const std::string CMD[numOfCommands] = {
 	"register","query_profile","modify_profile","modify_privilege",
-	"query_ticket,", "query_transfer",
+	"query_ticket", "query_transfer",
 	"buy_ticket", "query_order", "refund_ticket",
 	"add_train", "sale_train", "query_train","delete_train","modify_train",
 	"clean","exit",
@@ -74,8 +72,8 @@ void  ticketBookingSystem::queryTicket(const vector<token> &V) {
 		V[0].first != STRING || V[1].first != STRING || V[3].first != STRING)
 		throw wrong_token();
 	auto U = Ticket.query(V[0].second, V[1].second, V[2].second.asdate(),V[3].second);
-	for (int i = 0; i < U.size(); i++)
-		os << U[i] << endl;
+	os << U.size() << '\n';
+	for (int i = 0; i < U.size(); i++) os << U[i] << '\n';
 }
 
 void ticketBookingSystem::transfer(const vector<token> &V) {
@@ -83,15 +81,15 @@ void ticketBookingSystem::transfer(const vector<token> &V) {
 		V[0].first != STRING || V[1].first != STRING || V[3].first != STRING)
 		throw wrong_token();
 	auto t = Ticket.transfer(V[0].second, V[1].second, V[2].second.asdate(), V[3].second);
-	if (t.first.valid()) os << t.first << '\n' << t.second << endl;
+	if (t.first.valid()) os <<t.first << '\n' << t.second << endl;
 	else os << -1 << endl;
 }
 
 void ticketBookingSystem::buy(const vector<token> &V) {
 	if (V.size() != 7 ||V[0].first != _INT || V[1].first != _INT || V[5].first != _DATE)
 		throw wrong_token();
-	if (!Train.modifyTicket(&Log, V))
-		throw wrong_token();
+	if (!Train.modifyTicket(&Log, V,-1)) os << 0 << '\n';
+	else os << 1 << '\n';
 }
 
 void ticketBookingSystem::queryOrder(const vector<token> &V) {
@@ -104,7 +102,7 @@ void ticketBookingSystem::refund(const vector<token> &V) {
 	if (V.size() != 7 ||
 		V[0].first != _INT || V[1].first != _INT || V[5].first != _DATE)
 		throw wrong_token();
-	Train.modifyTicket(&Log, V, -1);
+	os << Train.modifyTicket(&Log, V, 1) << '\n';
 }
 
 void ticketBookingSystem::sale(const vector<token> &V) {
@@ -112,8 +110,8 @@ void ticketBookingSystem::sale(const vector<token> &V) {
 	bool sale = Train.sale(V[0].second);
 	os << sale << endl;
 	if (sale) {
+		//std::cout << "sale: " << V[0].second << endl;
 		train t = Train.query(V[0].second).second;
-		vector<String> V;
 		for (int i = 0; i < t.n; i++) Ticket.add(t.s[i].name, t.ID);
 	}
 }
@@ -134,7 +132,7 @@ void ticketBookingSystem::clear() {
 void ticketBookingSystem::queryTrain(const vector<token> &V) {
 	if (V.size() != 1 || V[0].first != STRING) throw wrong_token();
 	auto result = Train.query(V[0].second);
-	if (!result.first) os << 0 << endl;
+	if (!result.first || !result.second.onsale) os << 0 << endl;
 	else os << result.second << endl;
 }
 
@@ -147,8 +145,11 @@ void ticketBookingSystem::addTrain(const vector<token> &V) {
 	for (int i = 0; i < m; i++) classes.push_back(V[i+5].second);
 	for (int i = 0; i < n; i++) {
 		int st = 4 + m + i * (4 + m) + 1;
-		vector<double> price;
-		for (int j = 0; j < m; j++) price.push_back(V[st + 4 + j].second.asdouble());
+		vector<float> price;
+		for (int j = 0; j < m; j++) {
+			price.push_back(V[st + 4 + j].second.asfloat());
+			//std::cout << "add price : " << price.back() << endl;
+		}
 		S.push_back(station(V[st].second,
 			V[st + 1].second.asTime(), V[st + 2].second.asTime(), V[st + 3].second.asTime(), price));
 	}
@@ -165,8 +166,8 @@ void ticketBookingSystem::modifyTrain(const vector<token> &V) {
 	for (int i = 0; i < m; i++) classes.push_back(V[i + 5].second);
 	for (int i = 0; i < n; i++) {
 		int st = 4 + m + i * (4 + m) + 1;
-		vector<double> price;
-		for (int j = 0; j < m; j++) price.push_back(V[st + 4 + j].second.asdouble());
+		vector<float> price;
+		for (int j = 0; j < m; j++) price.push_back(V[st + 4 + j].second.asfloat());
 		S.push_back(station(V[st].second,
 			V[st + 1].second.asTime(), V[st + 2].second.asTime(), V[st + 3].second.asTime(), price));
 	}

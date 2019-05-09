@@ -14,7 +14,7 @@ struct user {
 public:
 	user() = default;
 	user(const int &i, const String &n, const String &p,
-		const String &e, const String &ph, userType t = COMMON)
+		const String &e, const String &ph, const userType &t = COMMON)
 		:id(i), name(n), passwd(p), email(e), phone(ph), type(t){}
 
 	bool match(String _pswd) { return _pswd == passwd; }
@@ -27,7 +27,7 @@ public:
 };
 
 class userSystem {
-	bplustree<int, user, 4096> B;
+	bplustree<int, user, 8192> B;
 	int currentID;
 public:
 	userSystem() {

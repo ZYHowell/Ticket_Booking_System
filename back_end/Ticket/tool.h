@@ -1,29 +1,34 @@
 #pragma once
 
+//#define DEBUGMODE
 #include <string>
 #include <iostream>
 #include "vector.hpp"
 #include <sstream>
 #include <algorithm>
+#include <iomanip>
+
+#define RMB_SYMBOL -93
+#define RMB_LEGNTH 2
 
 struct Time;
 struct date;
 using sjtu::vector;
 using std::endl;
 using std::min;
+using std::setw;
+using std::setfill;
 class String;
 
 enum TYPE{STRING,_DATE,TIME,_INT,_DOUBLE};
 
 typedef std::pair<TYPE, String> token;
 
-
 class String {
-	friend std::ostream &operator << (std::ostream &os, const String &str);
-
 	static const int SIZE = 40;
+	friend std::ostream &operator << (std::ostream &os, const String &str);
 	char s[SIZE+1];
-	int l;
+	char l;
 
 	int cmp(const String &a) const {
 		if (l != a.l) return l < a.l ? -1 : 1;
@@ -57,54 +62,52 @@ public:
 	bool operator == (const String &a) const { return cmp(a) == 0; }
 	bool operator != (const String &a) const { return cmp(a) != 0; }
 	bool operator > (const String &a) const { return cmp(a) > 0; }
-	char operator [] (const int &idx) {
+	const char &operator [] (const int &idx) const {
 		return s[idx];
 	}
-	int legnth() { return l; }
+	char &operator [] (const int &idx){
+		return s[idx];
+	}
+	int length() const { return l; }
 	int asint() const ;
-	double asdouble() const;
+	float asfloat() const;
 	date asdate() const;
 	Time asTime() const;
+	char aschar()const;
+	bool contain(const char &c)const;
 };
+
 
 struct Time {
 	friend std::ostream &operator << (std::ostream &os, const String &Time);
-	int hour, minute;
-	Time(int h = 0, int m = 0) :hour(h), minute(m) {}
-	bool operator < (const Time &t) const {
-		if (hour != t.hour) return hour < t.hour;
-		return minute < t.minute;
+	short t;
+	Time(int h = 0, int m = 0) :t(h*60+m){}
+	bool operator < (const Time &rhs) const{
+		return t < rhs.t;
 	}
-	bool operator == (const Time &t) const {
-		return hour == t.hour && minute == t.minute;
-	}
-
-	Time operator - (const Time &rhs) const {
-		if (minute > rhs.minute) return Time(hour - rhs.hour, minute - rhs.minute);
-		return Time(hour - rhs.hour - 1, minute - rhs.minute + 60);
+	bool operator == (const Time &rhs) const {
+		return t == rhs.t;
 	}
 };
 
 struct date {
 	friend std::ostream &operator << (std::ostream &os, const String &date);
-	int year, month, day;
-	date(int y = 0,int m = 1,int d = 1):year(y),month(m),day(d){}
+	short day;
+	date(int y = 2019, int m = 6, int d = 1) :day(d) {
+		if (y != 2019 || m != 6) throw wrong_parameter();
+	}
 
 	bool operator < (const date &d) const {
-		if (year != d.year) return year < d.year;
-		return month < d.month || (month == d.month && day < d.day);
+		return day < d.day;
 	}
 	bool operator == (const date &d) const {
-		return year == d.year && month == d.month && day == d.day;
+		return day == d.day;
 	}
 	bool operator != (const date &d) const {
 		return !this->operator==(d);
 	}
 
-	int asint() { 
-		if (month != 6)  throw wrong_token();
-		return day-1; 
-	}
+	int asint() {return day-1;}
 };
 
 std::ostream &operator << (std::ostream &os, const Time &t);

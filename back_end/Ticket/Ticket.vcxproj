@@ -126,6 +126,7 @@
     <ClInclude Include="exceptions.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="parser.hpp" />
+    <ClInclude Include="test.h" />
     <ClInclude Include="ticket.h" />
     <ClInclude Include="tokenscanner.hpp" />
     <ClInclude Include="tool.h" />

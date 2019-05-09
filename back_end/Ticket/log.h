@@ -7,15 +7,16 @@
 
 struct keyInfo {
 	int userID;
-	String catalog, trainID, from, to;
+	char catalog;
+	String trainID, from, to;
 	date Date;
 
 	keyInfo() = default;
-	keyInfo(const int &u, const date &d, const String &c,
+	keyInfo(const int &u, const date &d, const char &c,
 		const String &t, const String &_from, const String &_to)
 		:userID(u), Date(d), catalog(c), trainID(t), from(_from), to(_to) {}
 	
-	keyInfo(const int &u, const date &d, const String &c)
+	keyInfo(const int &u, const date &d, const char &c)
 		:userID(u), Date(d), catalog(c) {}
 
 	bool operator < (const keyInfo &k) const {
@@ -33,15 +34,19 @@ struct Detail{
 	Time leave, arrive;
 	String seatClass[maxClassN];
 	int classN,num[maxClassN];
+	float price[maxClassN];
 
 	Detail() = default;
 	Detail(const train &T, const String &from,const String &to, const String &seatCls, const int &quantity) {
 		classN = T.classN;
 		for (int i = 0; i < classN; i++) 
-			seatClass[i] = T.seatClass[i],num[i] = 0;
+			seatClass[i] = T.seatClass[i],num[i] = 0,price[i] = 0;
 		num[T.getClassID(seatCls)] = quantity;
-		leave = T.s[T.getStationID(from)].leave;
-		arrive = T.s[T.getStationID(to)].arrive;
+		int st = T.getStationID(from), ed = T.getStationID(to);
+		leave = T.s[st].leave;
+		arrive = T.s[ed].arrive;
+		for (int i = st + 1; i <= ed; i++)
+			for (int j = 0; j < classN; j++) price[j] += T.s[i].price[j];
 	}
 	void modify(const int &cls, const int &delta) {
 		num[cls] += delta;
@@ -59,6 +64,9 @@ typedef std::pair<keyInfo, Detail> record;
 class purchaseLog {
 	bplustree<keyInfo, Detail, 4096> B;
 
+	void merge(vector<record> &V, const vector<record> &U)const  {
+		for (int i = 0; i < U.size(); i++) V.push_back(U[i]);
+	}
 public:
 	purchaseLog() {
 		B.init("logData","logAlloc");
@@ -66,6 +74,7 @@ public:
 
 	void buy(const keyInfo &info, const train &T, const String &seatClass, const int &n);
 	void refund(const keyInfo &info, const train &T, const String &seatClass, const int &n);
+	std::pair<bool, Detail> findOrder(const keyInfo &key)const ;
 	vector<record> query(const vector< std::pair<TYPE, String> > &V) const;
 	void clear() {
 		B.clear();

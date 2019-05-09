@@ -6,7 +6,7 @@ std::ostream &operator << (std::ostream &os, const user &u) {
 }
 
 int userSystem::add(const vector<token> &V) {
-	if (V.size() != 4) return false;
+	if (V.size() != 4) return -1;
 	for (int i = 0; i < 4; i++) if (V[i].first != STRING) return -1;
 	/*
 	此处应当加入更多判断，如邮箱是否重复等等
@@ -20,13 +20,13 @@ int userSystem::add(const vector<token> &V) {
 
 bool userSystem::login(const int &id, const String &pswd) const {
 	//std::cout << "login: " << id << " " << pswd << endl;
-	if (!B.count(id)) return false;
-	return B.find(id).match(pswd);
+	auto result = B.find(id);
+	if (!result.first) return false;
+	return result.second.match(pswd);
 }
 
 std::pair<bool, user> userSystem::query(const int &id) const {
-	if (!B.count(id)) return std::make_pair(false,user());
-	return std::make_pair(true, B.find(id));
+	return B.find(id);
 }
 
 bool userSystem::modify(const vector<token> &V) {
@@ -34,21 +34,23 @@ bool userSystem::modify(const vector<token> &V) {
 	if (V[0].first != _INT) return false;
 	for (int i = 1; i < 5; i++) if (V[i].first != STRING) return false;
 	int id = V[0].second.asint();
-	if (!B.count(id)) return false;
-	user cur = B.find(id);
-	cur.reset(V[1].second,V[2].second,V[3].second,V[4].second);
+	auto cur = B.find(id);
+	if (!cur.first) return false;
+	cur.second.reset(V[1].second,V[2].second,V[3].second,V[4].second);
 	//std::cout << cur << endl;
-	B.set(id, cur);
+	B.set(id, cur.second);
 	return true;
 }
 
 
 bool userSystem::modifyPrivilege(const int &admin, const int &id, int p) {
-	if (!B.count(admin) || !B.count(id)) return false;
-	if (B.find(admin).type != user::ADMIN) return false;
-	user u = B.find(id);
-	if (u.type == user::ADMIN) return p == 2;
-	u.type = user::userType(p);
-	B.set(id,u);
+//	if (!B.count(admin) || !B.count(id)) return false;
+	auto result = B.find(admin);
+	if (!result.first || result.second.type != user::ADMIN) return false;
+	auto u = B.find(id);
+	if (!u.first) return false;
+	if (u.second.type == user::ADMIN) return p == 2;
+	u.second.type = user::userType(p);
+	B.set(id,u.second);
 	return true;
 }

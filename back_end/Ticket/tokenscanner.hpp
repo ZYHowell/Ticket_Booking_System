@@ -19,13 +19,13 @@ public:
 
 	void ignoreWhiteSpace()
 	{
-		for (; ptr < (int)str.length() && (str[ptr] == ' ' || str[ptr] == '\n'); ++ptr);
+		for (; ptr < str.length() && (str[ptr] == ' ' || str[ptr] == '\n'); ++ptr);
 	}
 
 	bool hasMoreTokens()
 	{
 		ignoreWhiteSpace();
-		return (ptr < (int)str.length());
+		return (ptr < str.length());
 	}
 	
 	/*int is_INT(string str)//???
@@ -45,7 +45,7 @@ public:
 		string ret = "";
 		ignoreWhiteSpace();
 
-		for (; ptr < (int)str.length() && !(str[ptr] == ' ' || str[ptr] == '\n'); ++ ptr) ret += str[ptr];
+		for (; ptr < str.length() && !(str[ptr] == ' ' || str[ptr] == '\n'); ++ ptr) ret += str[ptr];
 		return ret;
 	}
 	
