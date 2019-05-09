@@ -145,8 +145,8 @@ public class New2Activity extends AppCompatActivity {
                         String price3_s = price3_text.getText().toString();
 
                         // 前端检测
-                        if(TextUtils.isEmpty(sta_name)) {Tools.toastMessage(New2Activity.this, "站名不能为空！"); return;}
-                        if((tic1 && TextUtils.isEmpty(price1_s)) || (tic2 && TextUtils.isEmpty(price2_s)) || (tic3 && TextUtils.isEmpty(price3_s)))
+                        if(Tools.isEmpty(sta_name)) {Tools.toastMessage(New2Activity.this, "站名不能为空！"); return;}
+                        if((tic1 && Tools.isEmpty(price1_s)) || (tic2 && Tools.isEmpty(price2_s)) || (tic3 && Tools.isEmpty(price3_s)))
                            {Tools.toastMessage(New2Activity.this, "票价不能为空！"); return;}
                         if((tic1 && !Tools.isNonNegtiveInteger(price1_s)) || (tic2 && !Tools.isNonNegtiveInteger(price2_s)) || (tic3 && !Tools.isNonNegtiveInteger(price3_s)))
                             {Tools.toastMessage(New2Activity.this, "票价必须是非负整数！"); return;}

@@ -1,9 +1,11 @@
 package com.example.runzhe.ticket;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.widget.Toast;
 
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,6 +24,15 @@ public class Tools {
             return false;
         }
         return true;
+    }
+
+    static public boolean isEmpty(String string){
+        return TextUtils.isEmpty(string);
+    }
+
+    static public int getRandomInteger(){
+        Random random = new Random();
+        return random.nextInt();
     }
 
 }
