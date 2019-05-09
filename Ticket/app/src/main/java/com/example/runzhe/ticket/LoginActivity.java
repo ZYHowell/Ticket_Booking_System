@@ -101,15 +101,10 @@ public class LoginActivity extends AppCompatActivity {
         } else {
 
             // TODO : 后端检查登陆信息
-
             boolean success = true; // true 还是 false 取决于后端
 
             if(success) {
-
-                Toast toast = Toast.makeText(getApplicationContext(), "登录成功！", Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.BOTTOM, 0, 100);
-                toast.show();
-
+                Tools.toastMessage(LoginActivity.this, "登陆成功！");
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();

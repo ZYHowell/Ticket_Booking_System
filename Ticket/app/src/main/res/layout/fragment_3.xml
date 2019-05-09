@@ -51,6 +51,11 @@
                     android:layout_column="0"
                     android:layout_row="3"
                     android:textSize="20dp"/>
+                <TextView
+                    android:text="新密码"
+                    android:layout_column="0"
+                    android:layout_row="4"
+                    android:textSize="20dp"/>
 
                 <!---所有id以s开始-->
 
@@ -82,6 +87,14 @@
                     android:layout_row="3"
                     android:layout_gravity="fill_horizontal"
                     android:text="Loading..."
+                    android:textSize="20dp"/>
+                <EditText
+                    android:id="@+id/s_new_password"
+                    android:layout_column="1"
+                    android:layout_row="4"
+                    android:layout_gravity="fill_horizontal"
+                    android:inputType="textPassword"
+                    android:hint="留空则默认不修改密码"
                     android:textSize="20dp"/>
 
             </GridLayout>

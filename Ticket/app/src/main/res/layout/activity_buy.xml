@@ -57,21 +57,21 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="一等\n余233\n￥1000"
+                android:text="一等\n余0\n￥0"
                 android:textSize="17dp"/>
             <Button
                 android:id="@+id/y_btn_tic_2"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="二等\n余234\n￥1001"
+                android:text="二等\n余0\n￥0"
                 android:textSize="17dp"/>
             <Button
                 android:id="@+id/y_btn_tic_3"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="无座\n余235\n￥1002"
+                android:text="无座\n余0\n￥0"
                 android:textSize="17dp"/>
 
         </LinearLayout>

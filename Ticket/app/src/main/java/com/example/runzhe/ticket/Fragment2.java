@@ -26,19 +26,25 @@ public class Fragment2 extends Fragment {
 
         ticket_list = (ListView) view.findViewById(R.id.ticket_list);
 
-        String[] test = {"D233    北京 → 上海    07:34 → 13:54    一等", "D234    北京 → 上海    08:34 → 14:54    二等"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, test);
-        ticket_list.setAdapter(adapter);
+        refresh();
 
         ticket_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                String id_s = Tools.getNthSubstring((String)parent.getAdapter().getItem(position), " ", 0);
+
                 final AlertDialog.Builder mBuilder = new AlertDialog.Builder(getActivity());
                 mBuilder.setTitle("退票");
-                mBuilder.setMessage("确认退票？");
+                mBuilder.setMessage("确认退票 " + id_s + " ？");
                 mBuilder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        // TODO : 后端发送退票请求，id为id_s
+                        boolean success = true;
+                        if(success) Tools.toastMessage(getActivity(), "退票成功！");
+                        else Tools.toastMessage(getActivity(), "退票失败！");
+                        refresh();
                         dialog.dismiss();
                     }
                 });
@@ -54,6 +60,13 @@ public class Fragment2 extends Fragment {
         });
 
         return view;
+    }
+
+    void refresh(){
+        // TODO : 向后端要数据以刷新
+        String[] tickets = {"D233    北京 → 上海    07:34 → 13:54    一等", "D234    北京 → 上海    08:34 → 14:54    二等"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, tickets);
+        ticket_list.setAdapter(adapter);
     }
 
     @Override

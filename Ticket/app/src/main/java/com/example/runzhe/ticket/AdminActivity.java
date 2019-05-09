@@ -12,6 +12,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
@@ -58,9 +60,6 @@ public class AdminActivity extends AppCompatActivity {
         arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, new ArrayList<String>());
         listView.setAdapter(arrayAdapter);
 
-        // TODO : 从后端获得所有车次信息，按照一定规则做成字符串，并放进listView
-
-
         refresh(); // 刷新列表
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -77,7 +76,7 @@ public class AdminActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) { // 查询
 
-                String id = idText.getText().toString();
+                final String id = idText.getText().toString();
                 if(Tools.isEmpty(id)) {Tools.toastMessage(AdminActivity.this, "ID不能为空！"); return;}
 
                 // TODO : 以id向后端查询车次信息
@@ -98,13 +97,13 @@ public class AdminActivity extends AppCompatActivity {
                     TextView statusText = (TextView) view.findViewById(R.id.m_status);
                     Button btn_sell = (Button) view.findViewById(R.id.m_sell);
                     Button btn_delete = (Button) view.findViewById(R.id.m_delete);
+                    Button btn_modify = (Button) view.findViewById(R.id.m_modify);
                     Button btn_close = (Button) view.findViewById(R.id.m_close);
 
-                    // TODO : 从后端获取数据
-                    String name = "小火车";
-                    String catalog = "D";
-                    final boolean status = Tools.getRandomInteger() % 2 == 0 ? true : false; // 是否已发售
-
+                    // TODO : 从后端获取数据，以下乱搞
+                    final String name = "小火车";
+                    final String catalog = "D";
+                    final boolean status = Tools.getRandomInteger() % 2 == 0; // 是否已发售
 
                     idText.setText(id);
                     nameText.setText(name);
@@ -116,21 +115,38 @@ public class AdminActivity extends AppCompatActivity {
                         public void onClick(View v) {
                             switch (v.getId()){
                                 case R.id.m_sell:
-                                    if(status) Tools.toastMessage(AdminActivity.this, "请勿重复发售！");
+                                    if(status) Tools.toastMessage(AdminActivity.this, "该车票已发售，无法再次发售！");
                                     else{
-                                        // TODO : 传后端发售，注意多人操作，后端可能返回false
+                                        // TODO : 请求后端判断是否能发售（多人）
                                         Tools.toastMessage(AdminActivity.this, "发售成功！");
-                                        alertDialog.dismiss();
                                         refresh();
+                                        alertDialog.dismiss();
                                     }
                                     break;
                                 case R.id.m_delete:
                                     if(status) Tools.toastMessage(AdminActivity.this, "该车票已发售，无法删除！");
                                     else{
-                                        // TODO : 传后端删除
+                                        // TODO : 请求后端判断是否能删除（多人）
                                         Tools.toastMessage(AdminActivity.this, "删除成功！");
-                                        alertDialog.dismiss();
                                         refresh();
+                                        alertDialog.dismiss();
+                                    }
+                                    break;
+                                case R.id.m_modify:
+                                    if(status) Tools.toastMessage(AdminActivity.this, "该车票已发售，无法修改！");
+                                    else {
+                                        // TODO : 请求后端判断是否能修改（多人）
+                                        // TODO : 传后端删除
+
+                                        Intent intent = new Intent(AdminActivity.this, NewActivity.class);
+                                        intent.putExtra("id", id);
+                                        intent.putExtra("name", name);
+                                        intent.putExtra("catalog", catalog);
+                                        startActivity(intent);
+
+                                        Tools.toastMessage(AdminActivity.this, "已将原车次删除，请建立新的车次！");
+                                        refresh();
+                                        alertDialog.dismiss();
                                     }
                                     break;
                                 case R.id.m_close:
@@ -141,6 +157,7 @@ public class AdminActivity extends AppCompatActivity {
                     }
                     btn_sell.setOnClickListener(new ModifyOnClickListener());
                     btn_delete.setOnClickListener(new ModifyOnClickListener());
+                    btn_modify.setOnClickListener(new ModifyOnClickListener());
                     btn_close.setOnClickListener(new ModifyOnClickListener());
                 }
                 else{
@@ -155,7 +172,7 @@ public class AdminActivity extends AppCompatActivity {
     }
 
     void refresh(){
-        // TODO : 后端传数据
+        // TODO : 后端传数据，按照一定规则做成字符串，并放进listView
         // 测试用数据
         arrayAdapter.clear();
         arrayAdapter.add("c100 上海 → 北京");
@@ -165,6 +182,43 @@ public class AdminActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // TODO : 因为可能已经修改，所以重新从后端获得车次信息并放进listView
+        refresh();
     }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_top_admin, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.clean:
+                final AlertDialog.Builder mBuilder = new AlertDialog.Builder(this);
+                mBuilder.setTitle("警告");
+                mBuilder.setMessage("数据一经删除将无法恢复！你确定要删库吗？");
+                mBuilder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // TODO : 传后端删库
+                        Tools.toastMessage(AdminActivity.this, "删库成功！");
+                        dialog.dismiss();
+                        refresh();
+                    }
+                });
+                mBuilder.setNegativeButton("算了", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                AlertDialog mDialog = mBuilder.create();
+                mDialog.show();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 }

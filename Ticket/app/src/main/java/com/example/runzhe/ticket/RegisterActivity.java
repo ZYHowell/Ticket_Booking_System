@@ -47,12 +47,6 @@ public class RegisterActivity extends AppCompatActivity {
                     mUsernameView.requestFocus();
                     return;
                 }
-                // 邮箱为空
-                if (TextUtils.isEmpty(email)) {
-                    mEmailView.setError("邮箱不能为空！");
-                    mEmailView.requestFocus();
-                    return;
-                }
                 // 电话为空
                 if (TextUtils.isEmpty(phone)) {
                     mPhoneView.setError("手机号码不能为空！");
@@ -71,14 +65,28 @@ public class RegisterActivity extends AppCompatActivity {
                     mPasswordAgainView.requestFocus();
                     return;
                 }
+                // 手机号码不是数字或不是11位
+                if (!Tools.isPhone(phone)) {
+                    mPhoneView.setError("手机号码有误！");
+                    mPhoneView.requestFocus();
+                    return;
+                }
+                // 邮箱格式不正确
+                if (!Tools.isEmail(email)) {
+                    mEmailView.setError("邮箱格式有误！");
+                    mEmailView.requestFocus();
+                    return;
+                }
 
                 // TODO : 后端检查能否注册
+                boolean success = true;
 
-                Toast toast = Toast.makeText(getApplicationContext(), "注册成功，请重新登陆！", Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.BOTTOM, 0, 100);
-                toast.show();
-
-                finish();
+                if(success){
+                    Tools.toastMessage(RegisterActivity.this, "注册成功，请重新登陆！");
+                    finish();
+                }
+                else
+                    Tools.toastMessage(RegisterActivity.this, "注册失败，未知错误！");
 
             }
         });

@@ -46,10 +46,12 @@ public class New2Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new2);
 
+        // 获取控件
         listView = (ListView) findViewById(R.id.n_list);
         newSta = (Button) findViewById(R.id.n_new_sta);
         submit = (Button) findViewById(R.id.n_submit);
 
+        // 获取Extra
         s_id = getIntent().getStringExtra("id");
         s_name = getIntent().getStringExtra("name");
         s_catalog = getIntent().getStringExtra("catalog");

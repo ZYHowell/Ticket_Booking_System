@@ -25,6 +25,7 @@ public class Fragment3 extends Fragment {
     EditText username;
     EditText email;
     EditText phone;
+    EditText new_password;
     TextView priv;
     Button btn_update;
 
@@ -40,6 +41,7 @@ public class Fragment3 extends Fragment {
         username = (EditText)view.findViewById(R.id.s_username);
         email = (EditText)view.findViewById(R.id.s_email);
         phone = (EditText)view.findViewById(R.id.s_phone);
+        new_password = (EditText) view.findViewById(R.id.s_new_password);
         btn_update = (Button)view.findViewById(R.id.s_update_btn);
 
         privilege = 2; // TODO : 后端查询该用户权限
@@ -49,6 +51,7 @@ public class Fragment3 extends Fragment {
         username.setText("小明");
         email.setText("xiaoming@sjtu.edu.cn");
         phone.setText("12345678901");
+        new_password.setText("");
 
         portrait.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,12 +67,22 @@ public class Fragment3 extends Fragment {
         btn_update.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO : 判断数据是不是合法，比如手机号码长度
-                // TODO : 向后端传递修改数据
 
-                Toast toast = Toast.makeText(getActivity().getApplicationContext(), "修改成功！", Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.BOTTOM, 0, 100);
-                toast.show();
+                String newUsername = username.getText().toString();
+                String newEmail = email.getText().toString();
+                String newPhone = phone.getText().toString();
+                String newPassword = new_password.getText().toString();
+
+                if(Tools.isEmpty(newUsername)) {Tools.toastMessage(getActivity(), "用户名不能为空！"); return;}
+                if(Tools.isEmpty(newEmail)) {Tools.toastMessage(getActivity(), "邮箱不能为空！"); return;}
+                if(Tools.isEmpty(newPhone)) {Tools.toastMessage(getActivity(), "手机号码不能为空！"); return;}
+                if(!Tools.isEmail(newEmail)) {Tools.toastMessage(getActivity(), "邮箱格式有误！"); return;}
+                if(!Tools.isPhone(newPhone)) {Tools.toastMessage(getActivity(), "手机号码有误！"); return;}
+
+                // TODO : 向后端传递修改数据
+                boolean success = true;
+                if(success) Tools.toastMessage(getActivity(), "修改成功！");
+                else Tools.toastMessage(getActivity(), "修改失败！");
 
             }
         });

@@ -103,6 +103,14 @@
                 android:text="删除"
                 android:textSize="20dp"/>
             <Button
+                android:id="@+id/m_modify"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:text="修改"
+                android:textSize="20dp"/>
+            <Button
                 android:id="@+id/m_close"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

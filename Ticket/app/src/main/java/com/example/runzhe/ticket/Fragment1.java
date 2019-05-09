@@ -64,7 +64,16 @@ public class Fragment1 extends Fragment {
         btn_query.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(Tools.isEmpty(station_1.getText().toString()) || Tools.isEmpty(station_2.getText().toString())){
+                    Tools.toastMessage(getActivity(), "站点不能为空！");
+                    return;
+                }
+
+                // TODO : 向后端发送信息，接收到的信息使用putExtra方式以string[]参数传给InformationActivity
+                String[] tickets = new String[]{"D233 北京 → 上海 07:34 → 13:54", "D234 北京 → 上海 08:34 → 14:54"};
+
                 Intent intent = new Intent(getActivity(), InformationActivity.class);
+                intent.putExtra("tickets", tickets);
                 startActivity(intent);
             }
         });

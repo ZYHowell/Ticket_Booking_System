@@ -30,11 +30,15 @@ public class NewActivity extends AppCompatActivity {
         cb3 = (CheckBox) findViewById(R.id.n_type_3);
         new_train = (Button) findViewById(R.id.n_new_train);
 
+        id.setText(getIntent().getStringExtra("id"));
+        name.setText(getIntent().getStringExtra("name"));
+        catalog.setText(getIntent().getStringExtra("catalog"));
+
         new_train.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                // TODO : 判断id等是否合法
+                // TODO : 判断id等是否非重复  判断各项非空
 
                 Intent intent = new Intent(NewActivity.this, New2Activity.class);
 

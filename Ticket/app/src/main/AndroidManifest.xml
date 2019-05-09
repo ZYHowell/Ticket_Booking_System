@@ -7,7 +7,6 @@
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
-    <!-- 名字label都要改 -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -22,33 +21,29 @@
         </activity>
 
         <activity
-            android:name=".LoginActivity"
-            android:label="登录"/>
-
-        <activity
-            android:name=".RegisterActivity"
-            android:label="注册"/>
-
-        <activity
-            android:name=".InformationActivity"
-            android:label="查询结果"/>
-
-        <activity
-            android:name=".BuyActivity"
-            android:label="购买车票"/>
-
-        <activity
             android:name=".AdminActivity"
             android:label="管理模式"
             android:theme="@style/AppTheme.NoActionBar">
+        </activity>
 
+        <activity
+            android:name=".LoginActivity"
+            android:label="登录">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".RegisterActivity"
+            android:label="注册"/>
+        <activity
+            android:name=".InformationActivity"
+            android:label="查询结果"/>
+        <activity
+            android:name=".BuyActivity"
+            android:label="购买车票"/>
         <activity
             android:name=".NewActivity"
             android:label="新建车次"/>
