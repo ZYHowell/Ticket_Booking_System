@@ -841,7 +841,7 @@ public:
         if (p == invalid_p) return 0;
         return 1;
     }
-    find_type find(const key_t &k)const{
+    find_type find(const key_t &k) const{
         if (empty()) throw(container_is_empty());
         if (com(k, root.key)) return find_type(false, value_type());
         point p = _find(root, k);
@@ -863,7 +863,7 @@ public:
         fwrite(&v, sizeof(value_type), 1, datafile);
         return 1;
     }
-    bool insert(const key_t &k,const value_type &v){
+    bool insert(const key_t &k, const value_type &v){
         if (root.pos == invalid_p){
             if (!datafile) throw(runtime_error());
             root.pos = root_pos;
@@ -947,7 +947,7 @@ public:
         }
         return ret;
     }
-    vector<list_type> listof(key_t k, bool (*comp)(const key_t &a, const key_t &b)) const{
+    vector<list_type> listof(key_t k, bool (*comp)(const key_t &a, const key_t &b)) const {
         if (empty()) throw(container_is_empty());
         return _listof(root, k, comp);
     }
@@ -955,4 +955,5 @@ public:
         return num;
     }
 };
+
 #endif

@@ -4,7 +4,7 @@
 #include <random>
 //#define OUTPUT_INIT
 //#define DEBUG_MODE
-#define TEST_INT_MODE
+//#define TEST_INT_MODE
 #include "bplustree.hpp"
 #include <Windows.h>
 const int maxn = 100000 + 5;
