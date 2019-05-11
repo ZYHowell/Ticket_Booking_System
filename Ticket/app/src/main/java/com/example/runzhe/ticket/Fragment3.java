@@ -17,6 +17,8 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import es.dmoral.toasty.Toasty;
+
 public class Fragment3 extends Fragment {
 
     View view;
@@ -73,16 +75,17 @@ public class Fragment3 extends Fragment {
                 String newPhone = phone.getText().toString();
                 String newPassword = new_password.getText().toString();
 
-                if(Tools.isEmpty(newUsername)) {Tools.toastMessage(getActivity(), "用户名不能为空！"); return;}
-                if(Tools.isEmpty(newEmail)) {Tools.toastMessage(getActivity(), "邮箱不能为空！"); return;}
-                if(Tools.isEmpty(newPhone)) {Tools.toastMessage(getActivity(), "手机号码不能为空！"); return;}
-                if(!Tools.isEmail(newEmail)) {Tools.toastMessage(getActivity(), "邮箱格式有误！"); return;}
-                if(!Tools.isPhone(newPhone)) {Tools.toastMessage(getActivity(), "手机号码有误！"); return;}
+
+                if(Tools.isEmpty(newUsername)) {Toasty.error(getActivity(), "用户名不能为空！", Toast.LENGTH_SHORT, true).show(); return;}
+                if(Tools.isEmpty(newEmail)) {Toasty.error(getActivity(), "邮箱不能为空！", Toast.LENGTH_SHORT, true).show(); return;}
+                if(Tools.isEmpty(newPhone)) {Toasty.error(getActivity(), "手机号码不能为空！", Toast.LENGTH_SHORT, true).show(); return;}
+                if(!Tools.isEmail(newEmail)) {Toasty.error(getActivity(), "邮箱格式有误！", Toast.LENGTH_SHORT, true).show(); return;}
+                if(!Tools.isPhone(newPhone)) {Toasty.error(getActivity(), "手机号码有误！", Toast.LENGTH_SHORT, true).show(); return;}
 
                 // TODO : 向后端传递修改数据
                 boolean success = true;
-                if(success) Tools.toastMessage(getActivity(), "修改成功！");
-                else Tools.toastMessage(getActivity(), "修改失败！");
+                if(success) Toasty.success(getActivity(), "修改成功！", Toast.LENGTH_SHORT, true).show();
+                else Toasty.error(getActivity(), "修改失败！", Toast.LENGTH_SHORT, true).show();
 
                 new_password.setText("");
 

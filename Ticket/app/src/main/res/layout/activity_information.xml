@@ -6,13 +6,38 @@
     android:layout_height="match_parent"
     tools:context=".InformationActivity">
 
+    <!--所有id以i开始-->
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/i_sort_by_time_consume"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="按耗时排序"
+                android:textSize="20dp"/>
+
+            <Button
+                android:id="@+id/i_sort_by_time_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="按发时排序"
+                android:textSize="20dp"/>
+
+        </LinearLayout>
+
         <ListView
-            android:id="@+id/ticket_list"
+            android:id="@+id/i_ticket_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 

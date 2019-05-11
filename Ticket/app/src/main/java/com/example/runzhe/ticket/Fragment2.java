@@ -14,6 +14,10 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import es.dmoral.toasty.Toasty;
+
+import static android.widget.Toast.LENGTH_SHORT;
+
 public class Fragment2 extends Fragment {
 
     View view;
@@ -42,8 +46,8 @@ public class Fragment2 extends Fragment {
                     public void onClick(DialogInterface dialog, int which) {
                         // TODO : 后端发送退票请求，id为id_s
                         boolean success = true;
-                        if(success) Tools.toastMessage(getActivity(), "退票成功！");
-                        else Tools.toastMessage(getActivity(), "退票失败！");
+                        if(success) Toasty.success(getActivity(), "退票成功！", LENGTH_SHORT, true).show();
+                        else Toasty.error(getActivity(), "退票失败！", LENGTH_SHORT, true).show();
                         refresh();
                         dialog.dismiss();
                     }

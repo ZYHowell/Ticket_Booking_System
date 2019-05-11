@@ -8,6 +8,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import es.dmoral.toasty.Toasty;
+
+import static android.widget.Toast.*;
 
 public class BuyActivity extends AppCompatActivity {
 
@@ -66,10 +71,10 @@ public class BuyActivity extends AppCompatActivity {
                 // TODO : 向后端发送购票请求 curType 表示票的种类
                 boolean success = true;
                 if(success){
-                    Tools.toastMessage(BuyActivity.this, "购票成功！");
+                    Toasty.success(BuyActivity.this, "购票成功！", LENGTH_SHORT, true).show();
                     finish();
                 }
-                else Tools.toastMessage(BuyActivity.this, "购票失败！");
+                else Toasty.error(BuyActivity.this, "购票失败！", LENGTH_SHORT, true).show();
             }
         });
 

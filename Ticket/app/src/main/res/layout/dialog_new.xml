@@ -58,12 +58,16 @@
                 android:text="无座价格"
                 android:textSize="20dp" />
 
-            <EditText
+            <TextView
                 android:id="@+id/n_sta_name"
                 android:layout_row="0"
                 android:layout_column="2"
                 android:layout_gravity="fill_horizontal"
-                android:text="" />
+                android:layout_marginBottom="7dp"
+                android:gravity="center"
+                android:text="请选择"
+                android:textSize="23dp"
+                android:textColor="#000000"/>
 
             <LinearLayout
                 android:layout_row="1"

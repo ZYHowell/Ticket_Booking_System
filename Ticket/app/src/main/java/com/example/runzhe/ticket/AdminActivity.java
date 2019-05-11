@@ -23,10 +23,13 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+
+import es.dmoral.toasty.Toasty;
 
 public class AdminActivity extends AppCompatActivity {
 
@@ -77,7 +80,7 @@ public class AdminActivity extends AppCompatActivity {
             public void onClick(View v) { // 查询
 
                 final String id = idText.getText().toString();
-                if(Tools.isEmpty(id)) {Tools.toastMessage(AdminActivity.this, "ID不能为空！"); return;}
+                if(Tools.isEmpty(id)) {Toasty.error(AdminActivity.this, "ID不能为空！", Toast.LENGTH_SHORT, true).show();return;}
 
                 // TODO : 以id向后端查询车次信息
 
@@ -115,25 +118,28 @@ public class AdminActivity extends AppCompatActivity {
                         public void onClick(View v) {
                             switch (v.getId()){
                                 case R.id.m_sell:
-                                    if(status) Tools.toastMessage(AdminActivity.this, "该车票已发售，无法再次发售！");
+                                    if(status)
+                                        Toasty.error(AdminActivity.this, "该车票已发售，无法再次发售！", Toast.LENGTH_SHORT, true).show();
                                     else{
                                         // TODO : 请求后端判断是否能发售（多人）
-                                        Tools.toastMessage(AdminActivity.this, "发售成功！");
+                                        Toasty.success(AdminActivity.this, "发售成功！", Toast.LENGTH_SHORT, true).show();
                                         refresh();
                                         alertDialog.dismiss();
                                     }
                                     break;
                                 case R.id.m_delete:
-                                    if(status) Tools.toastMessage(AdminActivity.this, "该车票已发售，无法删除！");
+                                    if(status)
+                                        Toasty.error(AdminActivity.this, "该车票已发售，无法删除！", Toast.LENGTH_SHORT, true).show();
                                     else{
                                         // TODO : 请求后端判断是否能删除（多人）
-                                        Tools.toastMessage(AdminActivity.this, "删除成功！");
+                                        Toasty.success(AdminActivity.this, "删除成功！", Toast.LENGTH_SHORT, true).show();
                                         refresh();
                                         alertDialog.dismiss();
                                     }
                                     break;
                                 case R.id.m_modify:
-                                    if(status) Tools.toastMessage(AdminActivity.this, "该车票已发售，无法修改！");
+                                    if(status)
+                                        Toasty.error(AdminActivity.this, "该车票已发售，无法修改！", Toast.LENGTH_SHORT, true).show();
                                     else {
                                         // TODO : 请求后端判断是否能修改（多人）
                                         // TODO : 传后端删除
@@ -144,7 +150,7 @@ public class AdminActivity extends AppCompatActivity {
                                         intent.putExtra("catalog", catalog);
                                         startActivity(intent);
 
-                                        Tools.toastMessage(AdminActivity.this, "已将原车次删除，请建立新的车次！");
+                                        Toasty.success(AdminActivity.this, "已将原车次删除，请建立新的车次！", Toast.LENGTH_SHORT, true).show();
                                         refresh();
                                         alertDialog.dismiss();
                                     }
@@ -161,7 +167,7 @@ public class AdminActivity extends AppCompatActivity {
                     btn_close.setOnClickListener(new ModifyOnClickListener());
                 }
                 else{
-                    Tools.toastMessage(AdminActivity.this, "未找到对应的车次！");
+                    Toasty.error(AdminActivity.this, "未找到对应的车次！", Toast.LENGTH_SHORT, true).show();
                 }
 
             }
@@ -203,7 +209,7 @@ public class AdminActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         // TODO : 传后端删库
-                        Tools.toastMessage(AdminActivity.this, "删库成功！");
+                        Toasty.success(AdminActivity.this, "删库成功！", Toast.LENGTH_SHORT, true).show();
                         dialog.dismiss();
                         refresh();
                     }

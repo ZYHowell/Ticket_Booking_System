@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 
 import java.util.List;
@@ -14,14 +15,18 @@ import java.util.List;
 public class InformationActivity extends AppCompatActivity {
 
     ListView ticket_list;
+    Button sort_by_consume, sort_by_start;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_information);
 
-        ticket_list = (ListView) findViewById(R.id.ticket_list);
+        ticket_list = (ListView) findViewById(R.id.i_ticket_list);
+        sort_by_consume = (Button) findViewById(R.id.i_sort_by_time_consume);
+        sort_by_start = (Button) findViewById(R.id.i_sort_by_time_start);
 
+        // TODO : 分别获得按两种方式排序的车次信息
         String[] tickets = getIntent().getStringArrayExtra("tickets");
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, tickets);
         ticket_list.setAdapter(adapter);
@@ -49,5 +54,27 @@ public class InformationActivity extends AppCompatActivity {
             }
         });
 
+        sort_by_consume.setOnClickListener(new OnClickListener());
+        sort_by_start.setOnClickListener(new OnClickListener());
+
+    }
+
+    void refresh(){
+        // TODO : 更改排序次序后重新显示车票
+    }
+
+    class OnClickListener implements View.OnClickListener{
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.i_sort_by_time_consume:
+                    // TODO : 按耗时排序
+                    break;
+                case R.id.i_sort_by_time_start:
+                    // TODO : 按发时排序
+                    break;
+            }
+            refresh();
+        }
     }
 }

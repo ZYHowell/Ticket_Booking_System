@@ -1,5 +1,6 @@
 package com.example.runzhe.ticket;
 
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_top, menu);
@@ -77,8 +79,7 @@ public class MainActivity extends AppCompatActivity {
                 mDialog.show();
                 break;
             case R.id.admin_mode:
-                if(fragment3.privilege == 1) // 直接用fragment3来存个人信息
-                {
+                if(fragment3.privilege == 1){ // 直接用fragment3来存个人信息
                     final AlertDialog.Builder mBuilder2 = new AlertDialog.Builder(this);
                     mBuilder2.setTitle("访问失败");
                     mBuilder2.setMessage("只有管理员才可以访问管理模式。");
@@ -91,8 +92,7 @@ public class MainActivity extends AppCompatActivity {
                     AlertDialog mDialog2 = mBuilder2.create();
                     mDialog2.show();
                 }
-                else
-                {
+                else{
                     Intent intent = new Intent(MainActivity.this, AdminActivity.class);
                     startActivity(intent);
                 }

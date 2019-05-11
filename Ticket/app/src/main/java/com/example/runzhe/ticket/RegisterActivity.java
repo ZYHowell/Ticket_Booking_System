@@ -11,6 +11,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import es.dmoral.toasty.Toasty;
+
 public class RegisterActivity extends AppCompatActivity {
 
     private EditText mUsernameView;
@@ -82,11 +84,11 @@ public class RegisterActivity extends AppCompatActivity {
                 boolean success = true;
 
                 if(success){
-                    Tools.toastMessage(RegisterActivity.this, "注册成功，请重新登陆！");
+                    Toasty.success(RegisterActivity.this, "注册成功，请重新登陆！", Toast.LENGTH_SHORT, true).show();
                     finish();
                 }
                 else
-                    Tools.toastMessage(RegisterActivity.this, "注册失败，未知错误！");
+                    Toasty.error(RegisterActivity.this, "注册失败，未知错误！", Toast.LENGTH_SHORT, true).show();
 
             }
         });

@@ -30,11 +30,15 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import es.dmoral.toasty.Toasty;
+
 public class New2Activity extends AppCompatActivity {
 
     //extra
     String s_id, s_name, s_catalog;
     boolean tic1, tic2, tic3;
+
+    TextView dialog_name;
 
     ListView listView;
     Button newSta, submit;
@@ -66,7 +70,7 @@ public class New2Activity extends AppCompatActivity {
             @Override
             public void onClick(View v) { // 提交
                 // TODO : 向后端提交数据并返回结果
-                Tools.toastMessage(New2Activity.this, "新建成功！");
+                Toasty.success(New2Activity.this, "新建成功！", Toast.LENGTH_SHORT, true).show();
                 finish();
             }
         });
@@ -82,7 +86,8 @@ public class New2Activity extends AppCompatActivity {
                 alertDialog.setView(view);
                 alertDialog.show();
 
-                final EditText name = (EditText) view.findViewById(R.id.n_sta_name);
+                final TextView name = (TextView) view.findViewById(R.id.n_sta_name);
+                dialog_name = name;
                 final TextView time_arriv_text = (TextView) view.findViewById(R.id.n_time_arriv);
                 final TextView time_start_text = (TextView) view.findViewById(R.id.n_time_start);
                 final TextView time_stop_text = (TextView) view.findViewById(R.id.n_time_stop);
@@ -97,6 +102,14 @@ public class New2Activity extends AppCompatActivity {
                 if(!tic1) {price1_text.setText("N/A"); price1_text.setEnabled(false);}
                 if(!tic2) {price2_text.setText("N/A"); price2_text.setEnabled(false);}
                 if(!tic3) {price3_text.setText("N/A"); price3_text.setEnabled(false);}
+
+                name.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(New2Activity.this, CityPickerActivity.class);
+                        startActivityForResult(intent, 1);
+                    }
+                });
 
                 class ModifyTimeOnClickListener implements View.OnClickListener{ // 仅直接修改对应TextView的字符串
                     @Override
@@ -147,11 +160,11 @@ public class New2Activity extends AppCompatActivity {
                         String price3_s = price3_text.getText().toString();
 
                         // 前端检测
-                        if(Tools.isEmpty(sta_name)) {Tools.toastMessage(New2Activity.this, "站名不能为空！"); return;}
+                        if(sta_name == "请选择") {Toasty.error(New2Activity.this, "站名不能为空！", Toast.LENGTH_SHORT, true).show(); return;}
                         if((tic1 && Tools.isEmpty(price1_s)) || (tic2 && Tools.isEmpty(price2_s)) || (tic3 && Tools.isEmpty(price3_s)))
-                           {Tools.toastMessage(New2Activity.this, "票价不能为空！"); return;}
+                            {Toasty.error(New2Activity.this, "票价不能为空！", Toast.LENGTH_SHORT, true).show(); return;}
                         if((tic1 && !Tools.isNonNegtiveInteger(price1_s)) || (tic2 && !Tools.isNonNegtiveInteger(price2_s)) || (tic3 && !Tools.isNonNegtiveInteger(price3_s)))
-                            {Tools.toastMessage(New2Activity.this, "票价必须是非负整数！"); return;}
+                            {Toasty.error(New2Activity.this, "票价不合法！", Toast.LENGTH_SHORT, true).show(); return;}
 
                         // 通过检测
                         int price1 = tic1 ? Integer.valueOf(price1_s) : -1;
@@ -169,6 +182,17 @@ public class New2Activity extends AppCompatActivity {
             }
         });
 
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (resultCode){
+            case 1:
+                dialog_name.setText(data.getStringExtra("station"));
+                break;
+        }
     }
 
 }

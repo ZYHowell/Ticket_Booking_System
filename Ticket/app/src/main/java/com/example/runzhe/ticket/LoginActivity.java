@@ -30,6 +30,8 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import es.dmoral.toasty.Toasty;
+
 public class LoginActivity extends AppCompatActivity {
 
     private EditText mUsernameView;
@@ -104,7 +106,7 @@ public class LoginActivity extends AppCompatActivity {
             boolean success = true; // true 还是 false 取决于后端
 
             if(success) {
-                Tools.toastMessage(LoginActivity.this, "登陆成功！");
+                Toasty.success(LoginActivity.this, "登陆成功！", Toast.LENGTH_SHORT, true).show();
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();
