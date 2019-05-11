@@ -84,6 +84,8 @@ public class Fragment3 extends Fragment {
                 if(success) Tools.toastMessage(getActivity(), "修改成功！");
                 else Tools.toastMessage(getActivity(), "修改失败！");
 
+                new_password.setText("");
+
             }
         });
 

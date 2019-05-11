@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.runzhe.ticket">
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
@@ -13,11 +14,17 @@
         android:label="12306"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        tools:replace="android:label">
 
         <activity
             android:name=".MainActivity"
             android:label="12306">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
         <activity
@@ -27,29 +34,28 @@
         </activity>
 
         <activity
+            android:name=".CityPickerActivity"
+            android:theme="@style/DefaultCityPickerTheme"
+            android:label="选择城市"/>
+        <activity
             android:name=".LoginActivity"
-            android:label="登录">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
+            android:label="登录"></activity>
         <activity
             android:name=".RegisterActivity"
-            android:label="注册"/>
+            android:label="注册" />
         <activity
             android:name=".InformationActivity"
-            android:label="查询结果"/>
+            android:label="查询结果" />
         <activity
             android:name=".BuyActivity"
-            android:label="购买车票"/>
+            android:label="购买车票" />
         <activity
             android:name=".NewActivity"
-            android:label="新建车次"/>
+            android:label="新建车次" />
         <activity
             android:name=".New2Activity"
-            android:label="新建站点"/>
+            android:label="新建站点" />
+
 
     </application>
 

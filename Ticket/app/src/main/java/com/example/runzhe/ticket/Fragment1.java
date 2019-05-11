@@ -16,10 +16,15 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.zaaach.citypicker.CityPicker;
 
 import org.w3c.dom.Text;
 
 import java.util.Calendar;
+
+import es.dmoral.toasty.Toasty;
 
 import static java.util.Collections.swap;
 
@@ -27,7 +32,8 @@ public class Fragment1 extends Fragment {
 
     View view;
 
-    EditText station_1, station_2;
+    TextView station_1;
+    TextView station_2;
     TextView date;
     ImageView double_arrow;
     ImageView modify_date;
@@ -38,18 +44,29 @@ public class Fragment1 extends Fragment {
     Button btn_query;
 
     int cur_year, cur_month, cur_day; // 车次日期
+    int whichStationToChange;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_1, container, false);
 
-        station_1 = (EditText) view.findViewById(R.id.b_station_1);
-        station_2 = (EditText) view.findViewById(R.id.b_station_2);
+        station_1 = (TextView) view.findViewById(R.id.b_station_1);
+        station_2 = (TextView) view.findViewById(R.id.b_station_2);
         date = (TextView) view.findViewById(R.id.b_date);
         double_arrow = (ImageView) view.findViewById(R.id.b_double_arrow);
         modify_date = (ImageView) view.findViewById(R.id.b_modify_date);
         btn_query = (Button) view.findViewById(R.id.b_query);
+
+        class changeStationClickListener implements View.OnClickListener{
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), CityPickerActivity.class);
+                startActivityForResult(intent, 1);
+                whichStationToChange = v.getId() == R.id.b_station_1 ? 1: 2; // 判断是哪一个框
+            }
+        }
+        station_1.setOnClickListener(new changeStationClickListener());
+        station_2.setOnClickListener(new changeStationClickListener());
 
         double_arrow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,7 +82,7 @@ public class Fragment1 extends Fragment {
             @Override
             public void onClick(View v) {
                 if(Tools.isEmpty(station_1.getText().toString()) || Tools.isEmpty(station_2.getText().toString())){
-                    Tools.toastMessage(getActivity(), "站点不能为空！");
+                    Toasty.error(getActivity(), "站点不能为空！", Toast.LENGTH_LONG, true). show();
                     return;
                 }
 
@@ -113,5 +130,13 @@ public class Fragment1 extends Fragment {
 
     }
 
-
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (resultCode){
+            case 1:
+                (whichStationToChange == 1 ? station_1 : station_2).setText(data.getStringExtra("station"));
+                break;
+        }
+    }
 }

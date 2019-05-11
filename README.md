@@ -28,11 +28,19 @@ MainActivity.java提供主要逻辑，activity_main.xml是空白布局，里面�
 
 由Fragment1.java和fragment_1.xml组成。
 
-此界面由于查询车票信息。
+此界面用于查询车票信息。
 
-在两个输入框内分别输入起点和终点。中间的双箭头可以交换起点和终点。点击日期右边的修改图标可以进入日期修改。
+在两个输入框内分别输入起点和终点（点击自动弹出CityPicker以进行选择）。中间的双箭头可以交换起点和终点。点击日期右边的修改图标可以进入日期修改。
 
 点击查询车票后。前端检测两个站点的输入框是否非空。随后将所有信息传给后端，从后端接收到的车票信息使用putExtra方式以string[]参数传给InformationActivity，并加以显示。保证string[]参数中的每一个string的第一段字符串是车次id以便后续操作。
+
+##### CityPicker
+
+一个比较好看的城市选择界面。
+
+采用StartActivityForResult方式切换至CityPickerActivity.class进行城市选择。 requestCode是1。
+
+直接改TextView。
 
 ##### 查询结果
 
@@ -126,10 +134,9 @@ ListView中的车票信息按照惯例的规则显示，第一段字符串为id�
 
 ### Tools
 
-工具库。
+手写的工具库。
 
-#### 附
+### 造好的轮子
 
-还没有显示进度条的功能，后续可能加一下。
-
-自动补全地名或者下拉选择地名的功能正在找。
+`Toasty` https://github.com/GrenderG/Toasty
+`CityPicker` https://github.com/zaaach/CityPicker
