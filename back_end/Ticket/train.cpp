@@ -24,7 +24,7 @@ int train::getStationID(const String &target)const {
 int train::getClassID(const String &cls) const {
 	int i = 0;
 	while (i < classN && seatClass[i] != cls) i++;
-	return i == n ? -1 : i;
+	return i == classN ? -1 : i;
 }
 
 bool train::ok(const String &from, const String &to)const {
@@ -32,14 +32,10 @@ bool train::ok(const String &from, const String &to)const {
 }
 
 
-bool trainSystem::add(const String &id, const String &name, const String catalog,
+bool trainSystem::add(const String &id, const String &name, const String &catalog,
 	const vector<String> &classes, const vector<station> &V) {
 	//std::cout << "add: " << id << endl;
-	if (B.count(id)) {
-		return false;
-	}
-	B.insert(id,train(id,name,catalog,classes,V));
-	return true;
+	return B.insert(id,train(id,name,catalog,classes,V));
 }
 
 bool trainSystem::sale(const String &id) {
@@ -61,7 +57,7 @@ bool trainSystem::remove(const String &id) {
 	return true;
 }
 
-bool trainSystem::modify(const String &id, const String &name, const String catalog,
+bool trainSystem::modify(const String &id, const String &name, const String &catalog,
 	const vector<String> &classes, const vector<station> &V) {
 	auto result = B.find(id);
 	if (!result.first || result.second.onsale) return false;
@@ -73,12 +69,14 @@ bool trainSystem::modifyTicket(purchaseLog *log, const vector<token> &V,int f) {
 	auto result0 = B.find(V[2].second);
 	if (!result0.first) return false;
 	train &t = result0.second;
-	date Date = V[5].second.asdate();
-	int d = Date.asint();
+	
 	int c = t.getClassID(V[6].second);
+	if (c == -1) return false;
 	int user = V[0].second.asint();
 	int st = t.getStationID(V[3].second), ed = t.getStationID(V[4].second);
-	if (st == -1 || ed == -1 || st >= ed) return false;
+	date Date = V[5].second.asdate();
+	if (t.s[st].leave < t.s[0].leave) Date.day--;
+	int d = Date.asint();
 #ifdef DEBUGMODE
 	std::cout << "-------------------------------DEBUG-----------------------\n";
 	std::cout << (f == -1 ? "buy: " : "refund: ");
@@ -95,7 +93,7 @@ bool trainSystem::modifyTicket(purchaseLog *log, const vector<token> &V,int f) {
 	}
 	else {
 		for (int i = st+1; i <= ed; i++)
-			if (t.s[i].num[d][c] - delta < 0) {
+			if (t.s[i].num[d][c] < delta) {
 				//std::cout << "ticket is not enough.\n";
 				return false;
 			}

@@ -10,12 +10,12 @@ struct station {
 	String name;
 	Time arrive, leave, stop;
 	short num[maxDate][maxClassN]; // 2018-06-01 到2018-06-30每一天的余票数
-	float price[maxClassN];
+	double price[maxClassN];
 
 	station() = default;
 
 	station(const String &str, const Time &_arrive, const Time &Leave, const Time &_stop,
-		const vector<float> &V) :name(str), arrive(_arrive), leave(Leave), stop(_stop) {
+		const vector<double> &V) :name(str), arrive(_arrive), leave(Leave), stop(_stop) {
 		for (int i = 0; i < V.size(); i++) price[i] = V[i];
 	}
 

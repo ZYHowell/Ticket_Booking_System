@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include "vector.hpp"
+#include "exceptions.h"
 #include <sstream>
 #include <algorithm>
 #include <iomanip>
@@ -70,7 +71,7 @@ public:
 	}
 	int length() const { return l; }
 	int asint() const ;
-	float asfloat() const;
+	double asdouble() const;
 	date asdate() const;
 	Time asTime() const;
 	char aschar()const;
@@ -85,17 +86,30 @@ struct Time {
 	bool operator < (const Time &rhs) const{
 		return t < rhs.t;
 	}
+	bool operator > (const Time &rhs) const {
+		return t > rhs.t;
+	}
 	bool operator == (const Time &rhs) const {
 		return t == rhs.t;
+	}
+
+	Time operator - (const Time &rhs) const {
+		Time ret;
+		ret.t = t - rhs.t;
+		return ret;
 	}
 };
 
 struct date {
 	friend std::ostream &operator << (std::ostream &os, const String &date);
 	short day;
-	date(int y = 2019, int m = 6, int d = 1) :day(d) {
+
+	date() = default;
+	date(int y, int m, int d) :day(d) {
 		if (y != 2019 || m != 6) throw wrong_parameter();
 	}
+	date(int d) :day(d) {}
+
 
 	bool operator < (const date &d) const {
 		return day < d.day;
@@ -108,6 +122,8 @@ struct date {
 	}
 
 	int asint() {return day-1;}
+
+	date tomorrow() const { return date(day + 1);}
 };
 
 std::ostream &operator << (std::ostream &os, const Time &t);

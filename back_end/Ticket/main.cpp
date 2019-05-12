@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+//#define LOCAL_TEST
 
 #include <iostream>
 #include "parser.hpp"
@@ -18,8 +19,14 @@ string getToken(const string &str, int t) {
 }
 
 int main() {
+#ifdef LOCAL_TEST
+	freopen("4.in", "r", stdin);
+	freopen("myans.txt", "w", stdout);
+	S.process("clean", vector<token>());
+#endif // LOCAL_TEST
 	std::ios_base::sync_with_stdio(0);
 	std::string str,s;
+	
 	while (true) {
 		std::getline(std::cin,str);
 		s = getToken(str, 1);

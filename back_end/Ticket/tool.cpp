@@ -23,9 +23,9 @@ int String::asint()const {
 	return x;
 }
 
-float String::asfloat()const {
+double String::asdouble()const {
 	int i = (int)s[0] == RMB_SYMBOL ? RMB_LEGNTH : 0;
-	float x = 0, t = 0.1;
+	double x = 0, t = 0.1;
 	for (; i < l && s[i] != '.'; i++) x = x * 10 + s[i] - '0';
 	for (i++; i < l; i++, t *= 0.1) x += t * (s[i] - '0');
 	return x;

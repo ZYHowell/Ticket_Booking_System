@@ -1,13 +1,14 @@
 #include "ticket.h"
 
 std::ostream &operator << (std::ostream &os, const Seat &s) {
-	os << s.type << ' ' << s.num << " " << s.price;
+	os << s.type << ' ' << s.num << ' ' << s.price;
 	return os;
 }
 
 std::ostream &operator << (std::ostream &os, const ticket &t) {
-	os << t.tID << ' ' << t.from << ' ' << t.Date << ' ' << t.leave<<' '
-		<< t.to <<' '<< t.Date<<' ' << t.arrive << ' ';
+	os << t.tID << ' ' << t.from << ' ' << t.Date << ' ' << t.leave << ' '
+		<< t.to << ' ';
+	os<<(t.leave < t.arrive ? t.Date : t.Date.tomorrow())<< ' ' << t.arrive << ' ';
 	for (int i = 0; i < t.seat.size(); i++)
 		os << t.seat[i] << ' ';
 	return os;
@@ -24,7 +25,7 @@ std::pair<bool,String> checkTransfer //返回是否构成中转方案和中转站
 		// 以T1.s[i]为中转站
 	//	std::cout << "transfer check: " <<T1.s[i].name<< endl;
 		int j = 0;
-		while (j < y && T2.s[j] != T1.s[i]) {
+		while (j < y && (T2.s[j] != T1.s[i]||T1.s[i].arrive > T2.s[j].leave)) {
 		//	std::cout << T2.s[j].name << endl;
 			j++;
 		}
@@ -34,7 +35,8 @@ std::pair<bool,String> checkTransfer //返回是否构成中转方案和中转站
 }
 
 void myMin(ticketPair &p1,const ticketPair &p2) {
-	if (!p1.first.valid() || p2.second.arrive < p1.second.arrive) p1 = p2;
+	if (!p1.first.valid() ||
+		p2.second.arrive - p2.first.leave < p1.second.arrive - p1.first.leave) p1 = p2;
 }
 
 void ticketSystem::add(const String &st, const String &id) {
@@ -60,7 +62,7 @@ vector<ticket> ticketSystem::query(const String &from, const String &to,
 	vector<String> C;
 	int i = 0, j = 0;
 	while (i < V.size()) {
-		while (U[j].second < V[i].second && j < U.size()) j++;
+		while (j < U.size() && U[j].second < V[i].second) j++;
 		if (j == U.size()) break;
 		if (V[i].second == U[j].second) 
 			C.push_back(V[i].second);
@@ -70,7 +72,7 @@ vector<ticket> ticketSystem::query(const String &from, const String &to,
 
 	for (i = 0; i < C.size(); i++) {
 		train t = TS->query(C[i]).second;
-		if (t.ok(from, to) && catalog.contain(t.catalog)) ret.push_back(ticket(t,from,to,d));
+		if (catalog.contain(t.catalog) && t.ok(from, to))ret.push_back(ticket(t,from,to,d));
 	}
 
 	return ret;

@@ -34,10 +34,17 @@ class ALLOC{
         file_end += node_size * new_node_num;
     }
     void clear_node(node *n){
+		/*
         if (n != nullptr){
             clear_node(n->next);
             delete n;
         }
+		*/
+		while (n != nullptr) {
+			node *temp = n;
+			n = n->next;
+			delete temp;
+		}
     }
 public:
     ALLOC():head(nullptr),file_end(){}

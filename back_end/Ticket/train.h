@@ -9,13 +9,13 @@
 #include "log.h"
 
 class trainSystem {
-	bplustree<String,train, 65536> B;
+	bplustree<String,train, 131072> B;
 public:
 	trainSystem() {
 		B.init("trainData", "trainAlloc");
 	}
 
-	bool add(const String &id, const String &name, const String catalog,
+	bool add(const String &id, const String &name, const String &catalog,
 		const vector<String> &classes, const vector<station> &V);
 
 	bool sale(const String &id);
@@ -24,7 +24,7 @@ public:
 
 	bool remove(const String &id);
 
-	bool modify(const String &id, const String &name, const String catalog,
+	bool modify(const String &id, const String &name, const String &catalog,
 		const vector<String> &classes, const vector<station> &V);
 
 	bool modifyTicket(purchaseLog *log, const vector<token> &V,int f);

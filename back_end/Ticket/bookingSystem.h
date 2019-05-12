@@ -60,4 +60,5 @@ private:
 
 	void Exit();
 	/**************************************************************************/
+	void outputInOrder(const vector<ticket> &V);
 };

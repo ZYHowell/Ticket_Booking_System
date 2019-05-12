@@ -952,7 +952,7 @@ public:
         return ret;
     }
     vector<list_type> listof(const key_t &k, bool (*comp)(const key_t &a, const key_t &b)) const{
-        if (empty()) throw(container_is_empty());
+		if (empty()) return vector < list_type >();
         return _listof(root, k, comp);
     }
     int size() const{

@@ -7,11 +7,11 @@
 
 struct Seat{
 	String type;
-	float price;
+	double price;
 	int num;
 
 	Seat() = default;
-	Seat(const String &s, const float &p, const int &n) :type(s), price(p), num(n) {}
+	Seat(const String &s, const double &p, const int &n) :type(s), price(p), num(n) {}
 };
 
 struct ticket {
@@ -28,9 +28,10 @@ struct ticket {
 		int x = T.getStationID(from), y = T.getStationID(to);
 		leave = T.s[x].leave;
 		arrive = T.s[y].arrive;
+		if (leave < T.s[0].leave) Date.day++;
 		int d = Date.asint();
 		for (int i = 0; i < T.classN; i++) {
-			float price = 0;
+			double price = 0;
 			for (int j = x + 1; j <= y; j++) price += T.s[j].price[i];
 			short _min = T.s[x+1].num[d][i];
 			for (int j = x + 2; j <= y; j++)
