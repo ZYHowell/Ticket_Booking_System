@@ -7,15 +7,15 @@ int main(){
     const int len = 4080 / sizeof(long long);
     printf("%d\n",len);
     buf->print_lists();
-    buf_block_t *buf_b = buf->load_it(0);
-    long long *data = (long long*)(buf_b->frame);
-    for (int i = 0;i < len;i++) data[i] = i;
-    buf->dirty(buf_b);
+    buf_block_t *buf_b;
+    long long *data;
 
-    buf_b = buf->load_it(4096);
-    data = (long long*)(buf_b->frame);
-    for (int i = 0;i < len;i++) data[i] = i + 1;
-    buf->dirty(buf_b);
+    for (int j = 0;j < 5;j++){
+        buf_b = buf->load_it(4096 * j);
+        data = (long long*)(buf_b->frame);
+        for (int i = 0;i < len;i++) data[i] = i + j;
+        buf->dirty(buf_b);
+    }
 
 
     buf->print_lists();
@@ -23,13 +23,11 @@ int main(){
     fclose(datafile);
     datafile = fopen("buf_test","rb+");
     buf = new buf_pool_t<>(datafile);
-    data = (long long *)((buf->load_it(0))->frame);
-    for (int i = 0;i < len;i++){
-        printf("%lld; ",data[i]);
-    }
-    data = (long long *)((buf->load_it(4096))->frame);
-    for (int i = 0;i < len;i++){
-        printf("%lld; ",data[i]);
+    for (int j = 0;j < 5;j++){
+        data = (long long *)((buf->load_it(4096 * j))->frame);
+        for (int i = len - 2;i < len;i++){
+            printf("%lld; ",data[i]);
+        }
     }
     delete buf;
     fclose(datafile);

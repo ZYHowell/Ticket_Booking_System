@@ -18,10 +18,10 @@ struct ut_list_node{
 //head of a list
 template<typename TYPE>
 struct ut_list_head{
-	size_t count;
+	int count;
 	TYPE* start;
 	TYPE* end;
-    ut_list_head(TYPE* p = nullptr, TYPE* n = nullptr, size_t c = 0):
+    ut_list_head(TYPE* p = nullptr, TYPE* n = nullptr, int c = 0):
         start(p), end(n), count(c){}
 };
 //block of a buffer
@@ -31,13 +31,13 @@ struct buf_block_t{
     size_t                      offset;
 
     //state = 0 when it is free, 1 when it is in HIR, 2 for in LIR and 3, 4 for it is dirty in such a list
-    size_t                      state;
+    int                         state;
     //all info about hash
     int                         hash_value;
     buf_block_t                 *hash_next;
     //its location at three list
     ut_list_node<buf_block_t>   free, LRU, flush;
-    size_t                      IRR, recency;
+    long                        IRR, recency;
 
     buf_block_t(byte *f = nullptr):frame(f), offset(0), 
                                 state(0), IRR(0), recency(),
@@ -47,12 +47,12 @@ struct buf_block_t{
         delete frame;
     }
 };
-template<size_t BUFFER_SIZE = 4096, size_t TOTAL_NUM = 2, size_t COLD_PERCENTAGE = 25>
+template<size_t BUFFER_SIZE = 4096, size_t TOTAL_NUM = 256, size_t COLD_PERCENTAGE = 25>
 class buf_pool_t{
     using byte = char;
     byte                                *mem_head;
     ut_list_head<buf_block_t>           free, LRU, flush;
-    size_t                              clock;
+    long                                clock;
     hash_table_t<buf_block_t*>          hash_table;
     buf_block_t                         *HIR_head;
     FILE                                *f;
@@ -83,40 +83,40 @@ class buf_pool_t{
         * pick out a block from the LRU-list.(simply change the pointer to it)
         * HIR_head is considered
     */
-    inline void _pick_out_LRU(buf_block_t &p){
-        if (&p == HIR_head) HIR_head = p.LRU.next;
-        if (p.LRU.next != nullptr) (p.LRU.next)->LRU.prev = p.LRU.prev;
+    inline void _pick_out_LRU(buf_block_t *it){
+        if (it == HIR_head) HIR_head = it->LRU.next;
+        if (it->LRU.next != nullptr) (it->LRU.next)->LRU.prev = it->LRU.prev;
         else {
-            if (p.LRU.prev != nullptr) LRU.end = p.LRU.prev;
+            if (it->LRU.prev != nullptr) LRU.end = it->LRU.prev;
         }
-        if (p.LRU.prev != nullptr) (p.LRU.prev)->LRU.next = p.LRU.next;
+        if (it->LRU.prev != nullptr) (it->LRU.prev)->LRU.next = it->LRU.next;
         else {
-            if (p.LRU.next != nullptr) LRU.start = p.LRU.next;
+            if (it->LRU.next != nullptr) LRU.start = it->LRU.next;
         }
-        --LRU.count;
     }
     /*
         * can only be used while p is a clean buf_block not in LRU. 
         * get info from the storage, and move it to LRU-old-head.
         * DO NOT CHANGE LRU.COUNT BUT P.STATE = 1.
     */
-    void _to_HIR(buf_block_t *p){
-        p->state = 1;
+    void _to_HIR(buf_block_t *it){
+        it->state = 1;
         if (HIR_head != nullptr) {
-            (p->LRU).prev = (HIR_head->LRU).prev;
-            (p->LRU).next = HIR_head;
-            if (HIR_head = LRU.start) LRU.start = p;
-            HIR_head = p;
+            (it->LRU).prev = (HIR_head->LRU).prev;
+            (it->LRU).next = HIR_head;
+            HIR_head->LRU.prev = it;
+            if (HIR_head = LRU.start) LRU.start = it;
+            HIR_head = it;
             return;
         }
         else{
             //all nodes are young or no node exists
             if (LRU.end != nullptr){
-                (p->LRU).prev = LRU.end;
-                HIR_head = LRU.end = p;
+                (it->LRU).prev = LRU.end;
+                HIR_head = LRU.end = it;
             }
             else{
-                LRU.start = LRU.end = HIR_head = p;
+                LRU.start = LRU.end = HIR_head = it;
             }
         }
     }
@@ -128,7 +128,6 @@ class buf_pool_t{
         //done; re-consider needed
         // void _to_LIR(buf_block_t &p){
         //     _pick_out_LRU(p);
-        //     ++LRU.count;
         //     if ((p.state == 1) || (p.state == 3)) ++p.state;     
         //     p.LRU.prev = nullptr, p.LRU.next = LRU.start;
         //     LRU.start = &p;
@@ -141,7 +140,6 @@ class buf_pool_t{
     */
     void _to_LRU_HIR_end(buf_block_t &p){
         _pick_out_LRU(p);
-        ++LRU.count;
         if (p.state == 2 || p.state == 4) --p.state;
         p.LRU.next = nullptr, p.LRU.prev = LRU.end;
         if (HIR_head == nullptr) HIR_head = &p;
@@ -150,7 +148,6 @@ class buf_pool_t{
     }
         // void _to_LRU_LIR_end(buf_block_t &p){
         //     _pick_out_LRU(p);
-        //     ++LRU.count;
         //     if (p.state == 1 || p.state == 3) ++p.state;
         //     if (HIR_head == nullptr) {
         //         p.LRU.prev = LRU.end;
@@ -173,10 +170,9 @@ class buf_pool_t{
         fread(it->frame, 1, BUFFER_SIZE, f);
         it->state = 1, it->offset = pos;
         it->hash_value = hash_table.get_value(pos);
-        it->hash_next = nullptr;
-        buf_block_t *temp = hash_table.find(pos);
-        if (temp == nullptr) it->hash_next = temp;
+        it->hash_next = hash_table.find(pos);
         hash_table.insert(pos, it);
+        _pick_out_LRU(it);
         _to_HIR(it);
     }
     /*
@@ -186,8 +182,9 @@ class buf_pool_t{
     buf_block_t *free_use(const size_t &pos, FILE *f){
         buf_block_t *tmp = free.start;
         free.start = (tmp->free).next;
-        (tmp->free).next = free.start->free.prev = nullptr; // do we really need this sentence?
         if (free.start == nullptr) free.end = nullptr;
+        else free.start->free.prev = nullptr; // do we really need this sentence?
+        (tmp->free).next = nullptr;
         --free.count;
         _read_inf(tmp, pos, f);
         ++LRU.count;
@@ -198,7 +195,7 @@ class buf_pool_t{
     */
     buf_block_t *LRU_use(const size_t &pos, FILE *f){
         buf_block_t *tmp = _LRU_oldest();
-        buf_block_t *pre = hash_table.find(pos);
+        buf_block_t *pre = hash_table.find(tmp->offset);
         if (pre == tmp){
             hash_table.insert(pos, tmp->hash_next);
         }
@@ -225,7 +222,7 @@ class buf_pool_t{
         else if (flush.end == nullptr) flush.start = nullptr;
         fseek(f, it->offset, SEEK_SET);
         fwrite(it->frame, 1, BUFFER_SIZE, f);
-            --(it->state);
+            (it->state) -= 2;
             --flush.count;
     }
     //mode = 0 for free_list, 1 for lru list and 2 for flush list
@@ -237,6 +234,7 @@ class buf_pool_t{
                 (((temp->flush).prev)->flush).next = nullptr;
                 (temp->flush).prev = nullptr;
             }
+            (temp->state) -= 2;
         }
         flush.start = flush.end = nullptr;
         flush.count = 0;
@@ -309,8 +307,8 @@ public:
             else flush.end = it;
             flush.start = it;
         }
-        if (it->state % 2) {
-            ++it->state;
+        if (it->state < 3) {
+            (it->state) += 2;
             ++flush.count;
         }
     }
