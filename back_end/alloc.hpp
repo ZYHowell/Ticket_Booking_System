@@ -1,22 +1,22 @@
 #ifndef SJTU_ALLOC_HPP
 #define SJTU_ALLOC_HPP
 #include <stdio.h>
-#include "exceptions.hpp"
-using pointer = long;
+#include "exceptions.h"
+using point = long;
+template<size_t node_size = 65536>
 class ALLOC{
     struct node{
-        node *next, *prior;
-        pointer loc[2];
-		size_t size;
+        node            *next, *prior;
+        point           loc[2];
+		size_t          size;
         // int type;
         node(int l1 = 0, int l2 = 0, node *p = nullptr, node *n = nullptr):next(n), prior(p){
             loc[0] = l1, loc[1] = l2;size = l2 - l1;
         }
     };
-    node *head;
-    pointer file_end;
-    const int new_node_num = 8;
-    const int node_size = 65536;
+    node                *head;
+    point               file_end;
+    const int           new_node_num = 8;
     void remove(node *n){
         if (n->prior != nullptr) n->prior->next = n->next;
         else head = n->next;
@@ -61,13 +61,13 @@ public:
             refill(filename);
             return;
         }
-        if (!fread(&file_end, sizeof(pointer), 1, file)){
+        if (!fread(&file_end, sizeof(point), 1, file)){
             refill(filename);
             return;
         }
         node *temp = head = new node;
         while(!feof(file)){
-            fread(temp->loc, sizeof(pointer), 2, file);
+            fread(temp->loc, sizeof(point), 2, file);
             // printf("%d %d ",temp->loc[0], temp->loc[1]);
             temp->next = new node;
             temp->next->prior = temp;
@@ -81,18 +81,18 @@ public:
         FILE *file;
         file = fopen(filename, "wb");
         if (!file) throw(runtime_error());
-        fwrite(&file_end, sizeof(pointer), 1, file);
+        fwrite(&file_end, sizeof(point), 1, file);
         node *temp = head;
         while(temp != nullptr){
-            fwrite(temp->loc, sizeof(pointer), 2, file);
+            fwrite(temp->loc, sizeof(point), 2, file);
             // printf("%d %d ",temp->loc[0], temp->loc[1]);
             temp = temp->next;
         }
         fclose(file);
     }
-    pointer alloc(size_t s){
+    point alloc(size_t s){
         node *temp = head;
-        pointer p;
+        point p;
         if (s > node_size){
             p = file_end;
             file_end += s;
@@ -120,7 +120,7 @@ public:
         }
         return p;
     }
-    void free(pointer p, size_t s){
+    void free(point p, size_t s){
         node *temp = head;
         for (;temp != nullptr;temp = temp->next){
             if (temp->loc[1] >= p + s){

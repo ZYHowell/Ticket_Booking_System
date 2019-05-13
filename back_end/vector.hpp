@@ -1,7 +1,7 @@
 #ifndef SJTU_VECTOR_HPP
 #define SJTU_VECTOR_HPP
 
-#include "exceptions.hpp"
+#include "exceptions.h"
 #include "utility.hpp"
 #include <climits>
 #include <cstddef>
@@ -182,6 +182,10 @@ public:
 		head = (T*)operator new[](sizeof(T) * maxsize);
 		for (size_t i = 0;i < len;i++)
 			*(head + i) = *(other.head + i);
+	}
+	vector(const vector &&other):maxsize(other.maxsize),len(other.len) {
+		head = other.head;
+		other.head = nullptr;
 	}
 	~vector() {
 		for (size_t i = 0;i < len;i++)

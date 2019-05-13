@@ -4,7 +4,7 @@
 #include <random>
 //#define OUTPUT_INIT
 //#define DEBUG_MODE
-#define TEST_INT_MODE
+//#define TEST_INT_MODE
 #include "bplustree.hpp"
 #include <Windows.h>
 const int maxn = 100000 + 5;
@@ -121,7 +121,7 @@ int main(){
         printf("remove: %d %d\n", its[i].a, its[i].b);
         #endif
         test.remove(its[i]);
-        if (test.find(its[i])) printf("wrong_have %d;\n", i);
+        if (test.find(its[i]).second) printf("wrong_have %d;\n", i);
     } 
     #endif
     //printf("find_now\n");
@@ -129,24 +129,24 @@ int main(){
     #ifdef TEST_INT_MODE
         //printf("%d ",its[i].a);
         //printf("\n");
-        if (test.find(its[i]) == i) 
+        if (test.find(its[i]).second == i) 
             if (i < test_size / 2) printf("wrong_have %d %d;\n", its[i].a, its[i].b);
             else;
         else if (i > test_size / 2) printf("wrong_not_have %d %d;\n", its[i].a, its[i].b);
     #endif
     #ifdef TEST_STRING_MODE
-		if(strcmp(test.find(its[i]).inf, its[i].inf) != 0) printf("wrong\n");
+		if(strcmp(test.find(its[i]).second.inf, its[i].inf) != 0) printf("wrong\n");
     #endif
     #ifdef TEST_EASY_MODE
-        if (test.find(its[i]) == i) 
+        if (test.find(its[i]).second == i) 
             if (i < test_size / 2) printf("wrong\n");
             else;
         else if (i > test_size / 2) printf("wrong\n");
     #endif
     }
-    #ifdef TEST_INT_MODE
-    //vector<pair<test_t, value_t>> v = test.listof(test_t(15, 0), judgement);
-    //for (int i = 0;i < v.size();i++) printf("%d %d %d; ", v[i].first.a, v[i].first.b, v[i].second);
+    #ifdef TEST_EASY_MODE
+    vector<pair<test_t, value_t>> v = test.listof(test_t(15, 0), judgement);
+    for (int i = 0;i < v.size();i++) printf("%d %d %d; ", v[i].first.a, v[i].first.b, v[i].second);
     #endif
     std::cout << std::endl << ::GetTickCount() - k;
     printf("\n");
