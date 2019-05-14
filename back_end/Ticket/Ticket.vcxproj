@@ -125,7 +125,9 @@
     <ClInclude Include="bookingSystem.h" />
     <ClInclude Include="bplustree.hpp" />
     <ClInclude Include="bufferpool.hpp" />
+    <ClInclude Include="dataFile.h" />
     <ClInclude Include="exceptions.h" />
+    <ClInclude Include="index.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="parser.hpp" />
     <ClInclude Include="ticket.h" />

@@ -19,10 +19,8 @@ struct station {
 		for (int i = 0; i < V.size(); i++) price[i] = V[i];
 	}
 
-	void init(int classN) {
-		for (int i = 0; i < maxDate; i++)
-			for (int j = 0; j < classN; j++)
-				num[i][j] = INITIAL_QUANTITY;
+	void init() {
+		memset(num, 0, sizeof(num));
 	}
 
 	bool operator == (const station &s) const { return name == s.name; }
@@ -48,10 +46,11 @@ struct train {
 		for (int i = 0; i < classN; i++) seatClass[i] = C[i];
 		for (int i = 0; i < n; i++) {
 			s[i] = V[i];
-			s[i].init(classN);
+			s[i].init();
 		}
 	}
 
+	int getDay(const int &from) const;
 	int getStationID(const String &target) const;
 	int getClassID(const String &cls) const;
 	bool ok(const String &from, const String &to)const;

@@ -7,13 +7,12 @@
 #include "trainBase.h"
 #include "tool.h"
 #include "log.h"
+#include "index.h"
 
 class trainSystem {
-	bplustree<String,train, 131072> B;
+	Index<String,train> B;
 public:
-	trainSystem() {
-		B.init("trainData", "trainAlloc");
-	}
+	trainSystem() :B("train"){}
 
 	bool add(const String &id, const String &name, const String &catalog,
 		const vector<String> &classes, const vector<station> &V);

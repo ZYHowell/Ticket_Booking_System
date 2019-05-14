@@ -27,6 +27,14 @@ int train::getClassID(const String &cls) const {
 	return i == classN ? -1 : i;
 }
 
+int train::getDay(const int &from) const {
+	int ret = 0;
+	for (int i = 1; i <= from; i++)
+		if (s[i].leave < s[i - 1].leave) ret++;
+	//std::cout << "from = " << from << " extra Day = " << ret << endl;
+	return ret;
+}
+
 bool train::ok(const String &from, const String &to)const {
 	return getStationID(from) < getStationID(to);
 }
@@ -52,9 +60,7 @@ std::pair<bool, train> trainSystem::query(const String &id) {
 }
 
 bool trainSystem::remove(const String &id) {
-	if (!B.count(id)) return false;
-	B.remove(id);
-	return true;
+	return B.remove(id);
 }
 
 bool trainSystem::modify(const String &id, const String &name, const String &catalog,
@@ -69,13 +75,14 @@ bool trainSystem::modifyTicket(purchaseLog *log, const vector<token> &V,int f) {
 	auto result0 = B.find(V[2].second);
 	if (!result0.first) return false;
 	train &t = result0.second;
-	
+	if (!t.onsale) return false;
 	int c = t.getClassID(V[6].second);
 	if (c == -1) return false;
 	int user = V[0].second.asint();
 	int st = t.getStationID(V[3].second), ed = t.getStationID(V[4].second);
 	date Date = V[5].second.asdate();
-	if (t.s[st].leave < t.s[0].leave) Date.day--;
+	//Date.day -= t.getDay(st);
+	//std::cout<<"buy : "<<Date<<endl;
 	int d = Date.asint();
 #ifdef DEBUGMODE
 	std::cout << "-------------------------------DEBUG-----------------------\n";
@@ -93,13 +100,16 @@ bool trainSystem::modifyTicket(purchaseLog *log, const vector<token> &V,int f) {
 	}
 	else {
 		for (int i = st+1; i <= ed; i++)
-			if (t.s[i].num[d][c] < delta) {
+			if (t.s[i].num[d][c] + station::INITIAL_QUANTITY < delta) {
 				//std::cout << "ticket is not enough.\n";
 				return false;
 			}
 	}
-	for (int i = st + 1; i <= ed; i++)
+
+	for (int i = st + 1; i <= ed; i++) {
 		t.s[i].num[d][c] += f * delta;
+		//std::cout << "after: " << t.s[i].num[d][c] << endl;
+	}
 	B.set(t.ID, t);
 	if (f == -1)
 		log->buy(keyInfo(user, Date, t.catalog, t.ID, V[3].second, V[4].second), t, V[6].second, delta);

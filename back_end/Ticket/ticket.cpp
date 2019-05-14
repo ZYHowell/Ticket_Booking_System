@@ -1,14 +1,14 @@
 #include "ticket.h"
 
 std::ostream &operator << (std::ostream &os, const Seat &s) {
-	os << s.type << ' ' << s.num << ' ' << s.price;
+	os << s.type << ' ' << s.num + station::INITIAL_QUANTITY << ' ' << s.price;
 	return os;
 }
 
 std::ostream &operator << (std::ostream &os, const ticket &t) {
 	os << t.tID << ' ' << t.from << ' ' << t.Date << ' ' << t.leave << ' '
 		<< t.to << ' ';
-	os<<(t.leave < t.arrive ? t.Date : t.Date.tomorrow())<< ' ' << t.arrive << ' ';
+	os<<t.Date<< ' ' << t.arrive << ' ';
 	for (int i = 0; i < t.seat.size(); i++)
 		os << t.seat[i] << ' ';
 	return os;

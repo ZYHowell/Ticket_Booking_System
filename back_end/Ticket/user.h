@@ -2,7 +2,7 @@
 
 #include "bplustree.hpp"
 #include "tool.h"
-
+#include "index.h"
 
 struct user {
 	enum userType {COMMON=1,ADMIN};
@@ -27,11 +27,10 @@ public:
 };
 
 class userSystem {
-	bplustree<int, user, 8192> B;
+	Index<int, user> B;
 	int currentID;
 public:
-	userSystem() {
-		B.init("userData", "userAlloc");
+	userSystem() :B("user"){
 		currentID = B.size() + 2019;
 	}
 

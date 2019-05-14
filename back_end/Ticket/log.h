@@ -4,6 +4,7 @@
 #include "tool.h"
 #include "trainBase.h"
 #include "exceptions.h"
+#include "index.h"
 
 struct keyInfo {
 	int userID;
@@ -62,15 +63,13 @@ struct Detail{
 typedef std::pair<keyInfo, Detail> record;
 
 class purchaseLog {
-	bplustree<keyInfo, Detail, 4096> B;
+	Index<keyInfo, Detail> B;
 
 	void merge(vector<record> &V, const vector<record> &U)const  {
 		for (int i = 0; i < U.size(); i++) V.push_back(U[i]);
 	}
 public:
-	purchaseLog() {
-		B.init("logData","logAlloc");
-	}
+	purchaseLog() :B("log"){}
 
 	void buy(const keyInfo &info, const train &T, const String &seatClass, const int &n);
 	void refund(const keyInfo &info, const train &T, const String &seatClass, const int &n);

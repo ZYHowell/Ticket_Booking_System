@@ -2,6 +2,8 @@
 
 #ifndef SJTU_BPLUSTREE_HPP
 #define SJTU_BPLUSTREE_HPP
+//#define OUTPUT_INIT
+
 #include <cstddef>
 #include <functional>
 #include <stdio.h>

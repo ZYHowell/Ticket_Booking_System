@@ -28,8 +28,9 @@ struct ticket {
 		int x = T.getStationID(from), y = T.getStationID(to);
 		leave = T.s[x].leave;
 		arrive = T.s[y].arrive;
-		if (leave < T.s[0].leave) Date.day++;
 		int d = Date.asint();
+		Date.day += T.getDay(x);
+		
 		for (int i = 0; i < T.classN; i++) {
 			double price = 0;
 			for (int j = x + 1; j <= y; j++) price += T.s[j].price[i];

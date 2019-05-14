@@ -20,7 +20,7 @@ string getToken(const string &str, int t) {
 
 int main() {
 #ifdef LOCAL_TEST
-	freopen("4.in", "r", stdin);
+	freopen("1.in", "r", stdin);
 	freopen("myans.txt", "w", stdout);
 	S.process("clean", vector<token>());
 #endif // LOCAL_TEST
