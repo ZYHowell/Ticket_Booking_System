@@ -183,7 +183,7 @@ public:
 		for (size_t i = 0;i < len;i++)
 			*(head + i) = *(other.head + i);
 	}
-	vector(const vector &&other):maxsize(other.maxsize),len(other.len) {
+	vector(vector &&other):maxsize(other.maxsize),len(other.len) {
 		head = other.head;
 		other.head = nullptr;
 	}

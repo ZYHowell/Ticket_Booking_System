@@ -4,31 +4,21 @@
 #ifndef SJTU_BUFFER_POOL_HPP
 #define SJTU_BUFFER_POOL_HPP
 
-//node of a list
+
 #include <iostream>
 #include <stdio.h>
+#include "utility.hpp"
 #include "hash.hpp"
-struct lathe{
-    int mode;
-    int R_num;
-    int W_num;
-    lathe():mode(0), R_num(0), W_num(0){}
-};
-template<typename TYPE>
-struct ut_list_node{
-	TYPE* prev;
-	TYPE* next;
-    ut_list_node(TYPE* p = nullptr, TYPE* n = nullptr):prev(p), next(n){}
-};
-//head of a list
-template<typename TYPE>
-struct ut_list_head{
-	int count;
-	TYPE* start;
-	TYPE* end;
-    ut_list_head(TYPE* p = nullptr, TYPE* n = nullptr, int c = 0):
-        start(p), end(n), count(c){}
-};
+// struct lathe{
+//     //mode = 0 when it is free, 1 when it is read and 2 when it is written
+//     int R_num;
+//     int W_num;
+//     lathe():R_num(0), W_num(0){}
+//     ~lathe(){}
+// };
+
+using lathe = size_t;
+
 //block of a buffer
 struct buf_block_t{
     using byte  = char;
@@ -51,7 +41,35 @@ struct buf_block_t{
                                 hash_value(0), hash_next(nullptr),
                                 free(), LRU(), flush(){}
     ~buf_block_t(){}
+    
 };
+
+struct to_block_t{
+    buf_block_t *it;
+    to_block_t(buf_block_t *other = nullptr):it(other){
+        if (it != nullptr) ++it->RW_lathe;
+    }
+    to_block_t(const to_block_t &other):it(other.it){
+        if (it != nullptr) ++it->RW_lathe;
+    }
+    ~to_block_t(){
+        if (it != nullptr) --it->RW_lathe;
+    }
+    to_block_t operator=(const to_block_t &other){
+        if (it != nullptr) --it->RW_lathe;
+        it = other.it;
+        ++it->RW_lathe;
+        return *this;
+    }
+    to_block_t operator=(to_block_t &&other){
+        if (it != nullptr) --it->RW_lathe;
+        it = other.it;
+        other.it = nullptr;
+        return *this;
+    }
+};
+
+
 template<size_t BUFFER_SIZE = 4096, size_t TOTAL_NUM = 256, size_t COLD_PERCENTAGE = 25>
 class buf_pool_t{
     using byte  = char;
@@ -78,12 +96,30 @@ class buf_pool_t{
     buf_block_t *_LRU_oldest(){
         buf_block_t *tmp = LRU.end;
         while(tmp != nullptr){
-            if (tmp->state < 3) break;
+            if (tmp->state < 3 && !(tmp->RW_lathe)) break;
             tmp = (tmp->LRU).prev;
+        }
+        if (tmp == nullptr){
+            if (flush.count){
+                flush_all();
+                return _LRU_oldest();
+            }
+            else{printf("error: buffer_pool is too small\n");throw runtime_error();}
         }
         return tmp;
     }
     //the following functions are movements of LRU-list: insert or remove
+    inline void _pick_out_hash(buf_block_t *it){
+        buf_block_t *pre = hash_table.find(it->offset);
+        if (pre == it){
+            hash_table.insert(it->offset, it->hash_next);
+        }
+        else{
+            while(pre->hash_next != it) pre = pre->hash_next;
+            pre->hash_next = it->hash_next;
+        }
+        it->hash_next = nullptr;
+    }
     /*
         * pick out a block from the LRU-list.(simply change the pointer to it)
         * HIR_head is considered
@@ -203,15 +239,7 @@ class buf_pool_t{
     */
     buf_block_t *LRU_use(const point &pos, FILE *f){
         buf_block_t *tmp = _LRU_oldest();
-        buf_block_t *pre = hash_table.find(tmp->offset);
-        if (pre == tmp){
-            hash_table.insert(tmp->offset, tmp->hash_next);
-        }
-        else{
-            while(pre->hash_next != tmp) pre = pre->hash_next;
-            pre->hash_next = tmp->hash_next;
-        }
-        tmp->hash_next = nullptr;
+        _pick_out_hash(tmp);
         _read_inf(tmp, pos, f);
         return tmp;
     }
@@ -269,7 +297,7 @@ class buf_pool_t{
     }
 public:
     buf_pool_t():   f(),
-                    free(), LRU(), flush(),HIR_head(nullptr),
+                    free(), LRU(), flush(), HIR_head(nullptr),
                     clock(0),
                     hash_table(nullptr){
         mem_head = new byte[BUFFER_SIZE * (TOTAL_NUM + 1)];
@@ -319,6 +347,7 @@ public:
                 (((temp->LRU).prev)->free.next) = temp;
                 (((temp->LRU).prev)->LRU.next) = nullptr;
             }
+            temp->free.prev = temp->LRU.prev;
             temp->LRU.prev = nullptr;
             temp->state = 0;
         }
@@ -331,25 +360,26 @@ public:
         free.count = TOTAL_NUM;
         LRU.count = 0, LRU.start = LRU.end = nullptr;
     }
-    buf_block_t *load_it(const long pos) {
+    to_block_t load_it(const long pos) {
         //in a further mode, if it is used(a x-lathe added), spin and wait.
         buf_block_t *it = _find(pos);
         if (it != nullptr) {
             _pick_out_LRU(it);
             _to_HIR(it);
-            return it;
+            return to_block_t(it);
         }
-        if (free.count) return free_use(pos, f);
-        if (LRU.count > flush.count) return LRU_use(pos, f);
+        if (free.count) return to_block_t(free_use(pos, f));
+        if (LRU.count > flush.count) return to_block_t(LRU_use(pos, f));
         flush_all();
-        return LRU_use(pos, f);
+        return to_block_t(LRU_use(pos, f));
     }
-    bool release_it(buf_block_t *it){
-        if (it == nullptr) return false;
-        flush_back(it, f);
-        return true;
-    }
-    void dirty(buf_block_t *it){
+    // bool release_it(buf_block_t *it){
+    //     if (it == nullptr) return false;
+    //     flush_back(it, f);
+    //     return true;
+    // }
+    void dirty(to_block_t &to_it){
+        buf_block_t *it = to_it.it;
         if (it->state > 2) return;
         if (flush.start != it){
             it->flush.next = flush.start;
@@ -357,8 +387,8 @@ public:
             else flush.end = it;
             flush.start = it;
         }
-            (it->state) += 2;
-            ++flush.count;
+        (it->state) += 2;
+        ++flush.count;
     }
 
     void check_hash(){
@@ -405,7 +435,7 @@ public:
     }
     void check_LRU_point(buf_block_t *it, size_t num = 0){
         if (it == nullptr) return;
-        if (it->state < 0){
+        if (it->state <= 0){
             printf("wrong_LRU_checking: circle ");
             throw runtime_error();
         }
@@ -417,6 +447,17 @@ public:
         it->state = -1;
         check_LRU_point((it->LRU).next, num + 1);
         it->state = tmp;
+    }
+    void check_useage(){
+        check_useage(LRU.start);
+    }
+    void check_useage(buf_block_t *it){
+        if (it == nullptr) return;
+        if (it->RW_lathe){
+            printf("wrong_useage_checking: still in use now ");
+            throw(runtime_error());
+        }
+        check_useage(it->LRU.next);
     }
 };
 

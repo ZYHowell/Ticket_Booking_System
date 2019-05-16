@@ -24,5 +24,20 @@ public:
 		return *this;
 	}
 };
-
+//node of a list
+template<typename TYPE>
+struct ut_list_node{
+	TYPE* prev;
+	TYPE* next;
+    ut_list_node(TYPE* p = nullptr, TYPE* n = nullptr):prev(p), next(n){}
+};
+//head of a list
+template<typename TYPE>
+struct ut_list_head{
+	int count;
+	TYPE* start;
+	TYPE* end;
+    ut_list_head(TYPE* p = nullptr, TYPE* n = nullptr, int c = 0):
+        start(p), end(n), count(c){}
+};
 #endif
