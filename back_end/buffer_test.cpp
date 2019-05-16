@@ -3,7 +3,8 @@
 int main(){
     FILE *datafile;
     datafile = fopen("buf_test","wb+");
-    buf_pool_t<> *buf = new buf_pool_t<>(datafile);
+    buf_pool_t<> *buf = new buf_pool_t<>;
+    buf->init(datafile);
     const int len = 4080 / sizeof(long long);
     printf("%d\n",len);
     buf->print_lists();
@@ -22,7 +23,8 @@ int main(){
     delete buf;
     fclose(datafile);
     datafile = fopen("buf_test","rb+");
-    buf = new buf_pool_t<>(datafile);
+    buf = new buf_pool_t<>;
+    buf->init(datafile);
     for (int j = 0;j < 5;j++){
         data = (long long *)((buf->load_it(4096 * j))->frame);
         for (int i = len - 2;i < len;i++){

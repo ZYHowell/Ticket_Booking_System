@@ -4,11 +4,11 @@
 #include <random>
 //#define OUTPUT_INIT
 //#define DEBUG_MODE
-//#define TEST_INT_MODE
+#define TEST_INT_MODE
 #include "bplustree.hpp"
 #include <Windows.h>
 const int maxn = 100000 + 5;
-const int test_size = 1000;
+const int test_size = 100000;
 
 #ifdef TEST_INT_MODE
 const unsigned Ta = 33333331, Tb = 1 << 16 | 3;
@@ -70,11 +70,11 @@ using value_t = long long;
 test_t its[maxn];
 int main(){
     DWORD k = ::GetTickCount();
-	FILE *file = fopen("data.txt", "wb");fclose(file);
-	file = fopen("alloc.txt", "wb");fclose(file);
+	FILE *file = fopen("data", "wb");fclose(file);
+	file = fopen("alloc", "wb");fclose(file);
     srand(214748364);
-    bplustree <test_t, value_t, 82> test;
-    test.init("data.txt", "alloc.txt");
+    bplustree <test_t, value_t, 512> test;
+    test.init("data", "alloc");
     test.clear();
 #ifdef DEBUG_MODE
 	printf("\n\n");
@@ -96,7 +96,13 @@ int main(){
     for (int i = 1;i <= test_size;i++) printf("%d %d; ", its[i].a, its[i].b);
     printf("\n");
     #endif
-    for (int i = 1;i <= test_size;i++) test.insert(its[i], i);
+    for (int i = 1;i <= test_size;i++){
+        try{
+        test.insert(its[i], i);
+        if (test.find(its[i]).second != i) printf("false insert:%d;\n", i); 
+        test.double_check();
+        }catch(...) {printf("%d;\n", i);}
+    }
 #endif
     #ifdef TEST_STRING_MODE
         its[i] = randstr();
@@ -120,8 +126,11 @@ int main(){
         printf("\n\n");
         printf("remove: %d %d\n", its[i].a, its[i].b);
         #endif
+        try{
         test.remove(its[i]);
         if (test.find(its[i]).second) printf("wrong_have %d;\n", i);
+        test.double_check();
+        }catch(...) {printf("%d;\n", i);}
     } 
     #endif
     //printf("find_now\n");
