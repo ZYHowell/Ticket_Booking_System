@@ -1,34 +1,30 @@
 //in this version, free list has no use, since the only element to free is mutex.
 //in this version, old_list has no use, only a simple LRU is done.(all elements are moved to HIR)
-//some re-consider needed
 //in the next version, a queue is needed in order to change LRU to LIRS
 #ifndef SJTU_BUFFER_POOL_HPP
 #define SJTU_BUFFER_POOL_HPP
 
-//node of a list
+
 #include <iostream>
 #include <stdio.h>
+#include "utility.hpp"
 #include "hash.hpp"
-template<typename TYPE>
-struct ut_list_node{
-	TYPE* prev;
-	TYPE* next;
-    ut_list_node(TYPE* p = nullptr, TYPE* n = nullptr):prev(p), next(n){}
-};
-//head of a list
-template<typename TYPE>
-struct ut_list_head{
-	int count;
-	TYPE* start;
-	TYPE* end;
-    ut_list_head(TYPE* p = nullptr, TYPE* n = nullptr, int c = 0):
-        start(p), end(n), count(c){}
-};
+// struct lathe{
+//     //mode = 0 when it is free, 1 when it is read and 2 when it is written
+//     int R_num;
+//     int W_num;
+//     lathe():R_num(0), W_num(0){}
+//     ~lathe(){}
+// };
+
+using lathe = size_t;
+
 //block of a buffer
 struct buf_block_t{
-    using byte = char;
+    using byte  = char;
+    using point = long;
     byte                        *frame;
-    size_t                      offset;
+    point                       offset;
 
     //state = 0 when it is free, 1 when it is in HIR, 2 for in LIR and 3, 4 for it is dirty in such a list
     int                         state;
@@ -38,18 +34,46 @@ struct buf_block_t{
     //its location at three list
     ut_list_node<buf_block_t>   free, LRU, flush;
     long                        IRR, recency;
+    lathe                       RW_lathe;
 
-    buf_block_t(byte *f = nullptr):frame(f), offset(0), 
+    buf_block_t(byte *f = nullptr):frame(f), offset(0), RW_lathe(),
                                 state(0), IRR(0), recency(),
                                 hash_value(0), hash_next(nullptr),
                                 free(), LRU(), flush(){}
-    ~buf_block_t(){
-        delete frame;
+    ~buf_block_t(){}
+    
+};
+
+struct to_block_t{
+    buf_block_t *it;
+    to_block_t(buf_block_t *other = nullptr):it(other){
+        if (it != nullptr) ++it->RW_lathe;
+    }
+    to_block_t(const to_block_t &other):it(other.it){
+        if (it != nullptr) ++it->RW_lathe;
+    }
+    ~to_block_t(){
+        if (it != nullptr) --it->RW_lathe;
+    }
+    to_block_t operator=(const to_block_t &other){
+        if (it != nullptr) --it->RW_lathe;
+        it = other.it;
+        ++it->RW_lathe;
+        return *this;
+    }
+    to_block_t operator=(to_block_t &&other){
+        if (it != nullptr) --it->RW_lathe;
+        it = other.it;
+        other.it = nullptr;
+        return *this;
     }
 };
+
+
 template<size_t BUFFER_SIZE = 4096, size_t TOTAL_NUM = 256, size_t COLD_PERCENTAGE = 25>
 class buf_pool_t{
-    using byte = char;
+    using byte  = char;
+    using point = long;
     byte                                *mem_head;
     ut_list_head<buf_block_t>           free, LRU, flush;
     long                                clock;
@@ -61,8 +85,7 @@ class buf_pool_t{
         * a basic function in order to know whether the needed key exists.
         * even the page is found, its clock is not changed
     */
-    //done
-    buf_block_t *_find(const size_t &pos){
+    buf_block_t *_find(const point &pos) const{
         buf_block_t *temp = hash_table.find(pos);
         while(temp != nullptr && temp->offset != pos) temp = temp->hash_next;
         return temp;
@@ -73,12 +96,30 @@ class buf_pool_t{
     buf_block_t *_LRU_oldest(){
         buf_block_t *tmp = LRU.end;
         while(tmp != nullptr){
-            if (tmp->state < 3) break;
+            if (tmp->state < 3 && !(tmp->RW_lathe)) break;
             tmp = (tmp->LRU).prev;
+        }
+        if (tmp == nullptr){
+            if (flush.count){
+                flush_all();
+                return _LRU_oldest();
+            }
+            else{printf("error: buffer_pool is too small\n");throw runtime_error();}
         }
         return tmp;
     }
     //the following functions are movements of LRU-list: insert or remove
+    inline void _pick_out_hash(buf_block_t *it){
+        buf_block_t *pre = hash_table.find(it->offset);
+        if (pre == it){
+            hash_table.insert(it->offset, it->hash_next);
+        }
+        else{
+            while(pre->hash_next != it) pre = pre->hash_next;
+            pre->hash_next = it->hash_next;
+        }
+        it->hash_next = nullptr;
+    }
     /*
         * pick out a block from the LRU-list.(simply change the pointer to it)
         * HIR_head is considered
@@ -87,20 +128,23 @@ class buf_pool_t{
         if (it == HIR_head) HIR_head = it->LRU.next;
         if (it->LRU.next != nullptr) (it->LRU.next)->LRU.prev = it->LRU.prev;
         else {
-            if (it->LRU.prev != nullptr) LRU.end = it->LRU.prev;
+            LRU.end = it->LRU.prev;
         }
         if (it->LRU.prev != nullptr) (it->LRU.prev)->LRU.next = it->LRU.next;
         else {
-            if (it->LRU.next != nullptr) LRU.start = it->LRU.next;
+            LRU.start = it->LRU.next;
         }
+        it->LRU.prev = it->LRU.next = nullptr;
+        //shall we really write this?
     }
     /*
-        * can only be used while p is a clean buf_block not in LRU. 
+        * can only be used while *it is a clean buf_block not in LRU. 
         * get info from the storage, and move it to LRU-old-head.
-        * DO NOT CHANGE LRU.COUNT BUT P.STATE = 1.
+        * DO NOT CHANGE LRU.COUNT BUT it->STATE = 1.
     */
     void _to_HIR(buf_block_t *it){
-        it->state = 1;
+        if (it->state < 3) it->state = 1;
+        else if (it->state == 4) it->state = 3;
         if (HIR_head != nullptr) {
             (it->LRU).prev = (HIR_head->LRU).prev;
             (it->LRU).next = HIR_head;
@@ -138,13 +182,13 @@ class buf_pool_t{
     /*
         * make it the last of LRU-list.
     */
-    void _to_LRU_HIR_end(buf_block_t &p){
-        _pick_out_LRU(p);
-        if (p.state == 2 || p.state == 4) --p.state;
-        p.LRU.next = nullptr, p.LRU.prev = LRU.end;
-        if (HIR_head == nullptr) HIR_head = &p;
-        if (LRU.start == nullptr) LRU.start = &p;
-        LRU.end = &p;
+    void _to_LRU_HIR_end(buf_block_t *it){
+        _pick_out_LRU(it);
+        if (it->state == 2 || it->state == 4) --(it->state);
+        it->LRU.next = nullptr, it->LRU.prev = LRU.end;
+        if (HIR_head == nullptr) HIR_head = it;
+        if (LRU.start == nullptr) LRU.start = it;
+        LRU.end = it;
     }
         // void _to_LRU_LIR_end(buf_block_t &p){
         //     _pick_out_LRU(p);
@@ -163,23 +207,24 @@ class buf_pool_t{
     //the following are those involving i/o
     /*
         * read info and make the page the HIR_head
-        * DO NOT CHANGE LRU.COUNT
     */
-    void _read_inf(buf_block_t *it, const size_t &pos, FILE *f){
+    void _read_inf(buf_block_t *it, const point &pos, FILE *f){
         fseek(f, pos, SEEK_SET);
         fread(it->frame, 1, BUFFER_SIZE, f);
-        it->state = 1, it->offset = pos;
+        it->offset = pos;
         it->hash_value = hash_table.get_value(pos);
         it->hash_next = hash_table.find(pos);
         hash_table.insert(pos, it);
-        _pick_out_LRU(it);
+        if (it->state) _pick_out_LRU(it);
+        else {
+            ++LRU.count;it->state = 1;
+        }
         _to_HIR(it);
     }
     /*
         * fulfill a free page and move it to the LRU-list
     */
-    //done
-    buf_block_t *free_use(const size_t &pos, FILE *f){
+    buf_block_t *free_use(const point &pos, FILE *f){
         buf_block_t *tmp = free.start;
         free.start = (tmp->free).next;
         if (free.start == nullptr) free.end = nullptr;
@@ -187,23 +232,14 @@ class buf_pool_t{
         (tmp->free).next = nullptr;
         --free.count;
         _read_inf(tmp, pos, f);
-        ++LRU.count;
         return tmp;
     }
     /*
         * rewrite a page in LRU_page and make it the HIR_head
     */
-    buf_block_t *LRU_use(const size_t &pos, FILE *f){
+    buf_block_t *LRU_use(const point &pos, FILE *f){
         buf_block_t *tmp = _LRU_oldest();
-        buf_block_t *pre = hash_table.find(tmp->offset);
-        if (pre == tmp){
-            hash_table.insert(pos, tmp->hash_next);
-        }
-        else{
-            while(pre->hash_next != tmp) pre = pre->hash_next;
-            pre->hash_next = tmp->hash_next;
-        }
-        tmp->hash_next = nullptr;
+        _pick_out_hash(tmp);
         _read_inf(tmp, pos, f);
         return tmp;
     }
@@ -212,7 +248,6 @@ class buf_pool_t{
         * flush-back to the storage
         * remove it from the flush queue
     */
-    //done
     void flush_back(buf_block_t *it, FILE *f){
         if (it->flush.next != nullptr) (it->flush.next)->flush.prev = it->flush.prev;
         else flush.end = it->flush.prev;
@@ -249,7 +284,6 @@ class buf_pool_t{
             }
             n++;
         }
-        if (free.end != nullptr) delete free.end;
         n = 0;
         for (auto temp = LRU.start;temp != nullptr;temp = (temp->LRU).next){
             if ((temp->LRU).prev != nullptr){
@@ -259,15 +293,27 @@ class buf_pool_t{
             }
             n++;
         }
-        if (LRU.end != nullptr) delete LRU.end;
         n = 0;
     }
 public:
-    buf_pool_t(FILE *fil):  f(fil),
-                            free(), LRU(), flush(),HIR_head(nullptr),
-                            clock(0),
-                            hash_table(){
+    buf_pool_t():   f(),
+                    free(), LRU(), flush(), HIR_head(nullptr),
+                    clock(0),
+                    hash_table(nullptr){
         mem_head = new byte[BUFFER_SIZE * (TOTAL_NUM + 1)];
+        buf_block_t *temp;
+        free.count = TOTAL_NUM;
+        free.start = free.end = new buf_block_t(mem_head);
+        for (size_t i = 1;i < TOTAL_NUM;i++){
+            (free.end)->free.next = temp = new buf_block_t(mem_head + BUFFER_SIZE * i);
+            (temp->free).prev = free.end;
+            free.end = temp;
+        }
+    }
+    void init(FILE *fil){
+        f = fil;
+        flush_all();
+        clean_connection_list();
         buf_block_t *temp;
         free.count = TOTAL_NUM;
         free.start = free.end = new buf_block_t(mem_head);
@@ -281,49 +327,137 @@ public:
     ~buf_pool_t(){
         flush_all();
         clean_connection_list();
+        delete[] mem_head;
     }
-
-    buf_block_t *load_it(const size_t pos){
+    void file_change(FILE *fil){
+        f = fil;
+    }
+    void re_init(){
+        for (auto temp = flush.start;temp != nullptr;temp = (temp->flush).next){
+            if ((temp->flush).prev != nullptr){
+                (((temp->flush).prev)->flush).next = nullptr;
+            }
+            (temp->flush).prev = nullptr;
+            (temp->state) -= 2;
+        }
+        flush.start = flush.end = nullptr;
+        flush.count = 0;
+        for (auto temp = LRU.start;temp != nullptr;temp = (temp->LRU).next){
+            if ((temp->LRU).prev != nullptr){
+                (((temp->LRU).prev)->free.next) = temp;
+                (((temp->LRU).prev)->LRU.next) = nullptr;
+            }
+            temp->free.prev = temp->LRU.prev;
+            temp->LRU.prev = nullptr;
+            temp->state = 0;
+        }
+        if (free.end != nullptr)
+            free.end->free.next = LRU.start;
+        else free.start = LRU.start;
+        if (LRU.start != nullptr)
+            LRU.start->free.prev = free.end;
+        free.end = LRU.end;
+        free.count = TOTAL_NUM;
+        LRU.count = 0, LRU.start = LRU.end = nullptr;
+    }
+    to_block_t load_it(const long pos) {
         //in a further mode, if it is used(a x-lathe added), spin and wait.
         buf_block_t *it = _find(pos);
         if (it != nullptr) {
+            _pick_out_LRU(it);
             _to_HIR(it);
-            return it;
+            return to_block_t(it);
         }
-        if (free.count) return free_use(pos, f);
-        if (LRU.count > flush.count) return LRU_use(pos, f);
+        if (free.count) return to_block_t(free_use(pos, f));
+        if (LRU.count > flush.count) return to_block_t(LRU_use(pos, f));
         flush_all();
-        return LRU_use(pos, f);
+        return to_block_t(LRU_use(pos, f));
     }
-    bool release_it(buf_block_t *it){
-        if (it == nullptr) return false;
-        flush_back(it, f);
-        return true;
-    }
-    void dirty(buf_block_t *it){
+    // bool release_it(buf_block_t *it){
+    //     if (it == nullptr) return false;
+    //     flush_back(it, f);
+    //     return true;
+    // }
+    void dirty(to_block_t &to_it){
+        buf_block_t *it = to_it.it;
+        if (it->state > 2) return;
         if (flush.start != it){
             it->flush.next = flush.start;
             if (flush.start != nullptr) flush.start->flush.prev = it;
             else flush.end = it;
             flush.start = it;
         }
-        if (it->state < 3) {
-            (it->state) += 2;
-            ++flush.count;
+        (it->state) += 2;
+        ++flush.count;
+    }
+
+    void check_hash(){
+        for (int i = 0;i < 512;i++){
+            buf_block_t *now = hash_table.find(i * 4096);
+            check_hash_point(now, i);
         }
     }
-    void print_lists(){
-    #ifdef DEBUG_MODE
-        printf("debug print free list:\n");
-        for (auto temp = free.start;temp != nullptr;temp = (temp->free).next){
-            std::cout<< temp->hash_value << ' ' << temp->free.prev << ' ' << temp->free.next << "; ";
+    void check_hash_point(buf_block_t *it, int k){
+        if (it == nullptr) return;
+        if (hash_table.get_value(it->offset) != k){
+            printf("wrong_hash_checking: wrong offset ");
+            throw runtime_error();
         }
-        printf("now LRU list:\n");
-        for (auto temp = LRU.start;temp != nullptr;temp = (temp->LRU).next){
-            std::cout<< temp->hash_value << ' ' << temp->LRU.prev << ' ' << temp->LRU.next << "; ";
+        int tmp = it->state;
+        if (tmp != -1) it->state = -1;
+        else {
+            printf("wrong_hash_checking: a circle ");
+            throw runtime_error();
         }
-        printf("\n");
-    #endif
+        check_hash_point(it->hash_next, k);
+        it->state = tmp;
+    }
+    void check_flush(){
+        check_flush_point(flush.start);
+    }
+    void check_flush_point(buf_block_t *it){
+        if (it == nullptr) return;
+        if (it->state < 0){
+            printf("wrong_flush_checking: circle ");
+            throw runtime_error();
+        }
+        int tmp = it->state;
+        it->state = -1;
+        check_flush_point((it->flush).next);
+        it->state = tmp;
+    }
+    void check_LRU(){
+        if ((HIR_head->LRU).prev != nullptr) {
+            printf("wrong_LRU_checking: HIR_head ");
+            throw runtime_error();
+        }
+        check_LRU_point(LRU.start);
+    }
+    void check_LRU_point(buf_block_t *it, size_t num = 0){
+        if (it == nullptr) return;
+        if (it->state <= 0){
+            printf("wrong_LRU_checking: circle ");
+            throw runtime_error();
+        }
+        if (num > LRU.count){
+            printf("wrong_LRU_checking: oversize ");
+            throw runtime_error();
+        }
+        int tmp = it->state;
+        it->state = -1;
+        check_LRU_point((it->LRU).next, num + 1);
+        it->state = tmp;
+    }
+    void check_useage(){
+        check_useage(LRU.start);
+    }
+    void check_useage(buf_block_t *it){
+        if (it == nullptr) return;
+        if (it->RW_lathe){
+            printf("wrong_useage_checking: still in use now ");
+            throw(runtime_error());
+        }
+        check_useage(it->LRU.next);
     }
 };
 
