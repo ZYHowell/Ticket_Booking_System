@@ -142,7 +142,7 @@ class buf_pool_t{
         * get info from the storage, and move it to LRU-old-head.
         * DO NOT CHANGE LRU.COUNT BUT it->STATE = 1.
     */
-    void _to_HIR(buf_block_t *it){
+    inline void _to_HIR(buf_block_t *it){
         if (it->state < 3) it->state = 1;
         else if (it->state == 4) it->state = 3;
         if (HIR_head != nullptr) {
@@ -182,7 +182,7 @@ class buf_pool_t{
     /*
         * make it the last of LRU-list.
     */
-    void _to_LRU_HIR_end(buf_block_t *it){
+    inline void _to_LRU_HIR_end(buf_block_t *it){
         _pick_out_LRU(it);
         if (it->state == 2 || it->state == 4) --(it->state);
         it->LRU.next = nullptr, it->LRU.prev = LRU.end;
@@ -208,7 +208,7 @@ class buf_pool_t{
     /*
         * read info and make the page the HIR_head
     */
-    void _read_inf(buf_block_t *it, const point &pos, FILE *f){
+    inline void _read_inf(buf_block_t *it, const point &pos, FILE *f){
         fseek(f, pos, SEEK_SET);
         fread(it->frame, 1, BUFFER_SIZE, f);
         it->offset = pos;
@@ -224,7 +224,7 @@ class buf_pool_t{
     /*
         * fulfill a free page and move it to the LRU-list
     */
-    buf_block_t *free_use(const point &pos, FILE *f){
+    inline buf_block_t *free_use(const point &pos, FILE *f){
         buf_block_t *tmp = free.start;
         free.start = (tmp->free).next;
         if (free.start == nullptr) free.end = nullptr;
@@ -237,7 +237,7 @@ class buf_pool_t{
     /*
         * rewrite a page in LRU_page and make it the HIR_head
     */
-    buf_block_t *LRU_use(const point &pos, FILE *f){
+    inline buf_block_t *LRU_use(const point &pos, FILE *f){
         buf_block_t *tmp = _LRU_oldest();
         _pick_out_hash(tmp);
         _read_inf(tmp, pos, f);
@@ -248,7 +248,7 @@ class buf_pool_t{
         * flush-back to the storage
         * remove it from the flush queue
     */
-    void flush_back(buf_block_t *it, FILE *f){
+    inline void flush_back(buf_block_t *it, FILE *f){
         if (it->flush.next != nullptr) (it->flush.next)->flush.prev = it->flush.prev;
         else flush.end = it->flush.prev;
         if (it->flush.prev != nullptr) (it->flush.prev)->flush.next = it->flush.next;

@@ -10,6 +10,8 @@
 const int maxn = 100000 + 5;
 const int test_size = 100000;
 
+buf_pool_t<512> buf;
+
 #ifdef TEST_INT_MODE
 const unsigned Ta = 33333331, Tb = 1 << 16 | 3;
 unsigned Tc;
@@ -74,7 +76,7 @@ int main(){
 	file = fopen("alloc", "wb");fclose(file);
     srand(214748364);
     bplustree <test_t, value_t, 512> test;
-    test.init("data", "alloc");
+    test.init("data", "alloc", &buf);
     test.clear();
 #ifdef DEBUG_MODE
 	printf("\n\n");
@@ -116,58 +118,58 @@ int main(){
         printf("%lld;",its[i]);
     }
     #endif
-    //printf("remove now\n");
-    // for (int i = 1; i < test_size / 2;i++)
-    // #ifdef TEST_EASY_MODE
-    //     test.remove(its[i]);
-    // #endif
-    // #ifdef TEST_INT_MODE
-    // {
-    //     #ifdef DEBUG_MODE
-    //     printf("\n\n");
-    //     printf("remove: %d %d\n", its[i].a, its[i].b);
-    //     #endif
-    //     try{
-    //     //if (!test.find(its[9379]).first) printf("error: error start there: %d\n", i);
-    //     if (!test.remove(its[i])) printf("error: remove not success: %d\n", i);
-    //     if (test.find(its[i]).second) printf("wrong_have %d;\n", i);
-    //     // for (int j = i + 1;j < i + 100 && j < test_size;j++){
-    //     //     if (!test.find(its[j]).first) printf("error: following not exist: %d %d;\n", i, j);
-    //     // }
-    //     test.double_check();
-    //     }catch(...) {printf("%d;\n", i);}
-    // } 
-    // #endif
-    // printf("find_now\n");
-    // for (int i = 1;i <= test_size;i++){
-    // #ifdef TEST_INT_MODE
-    //     //printf("%d ",its[i].a);
-    //     //printf("\n");
-    //     if (test.find(its[i]).second == i) 
-    //         if (i < test_size / 2) printf("wrong_have %d %d;\n", its[i].a, its[i].b);
-    //         else;
-    //     else if (i > test_size / 2) printf("wrong_not_have %d %d;\n", its[i].a, its[i].b);
-    // #endif
-    // #ifdef TEST_STRING_MODE
-	// 	if(strcmp(test.find(its[i]).second.inf, its[i].inf) != 0) printf("wrong\n");
-    // #endif
-    // #ifdef TEST_EASY_MODE
-    //     if (test.find(its[i]).second == i) 
-    //         if (i < test_size / 2) printf("wrong\n");
-    //         else;
-    //     else if (i > test_size / 2) printf("wrong\n");
-    // #endif
-    // }
+    printf("remove now\n");
+    for (int i = 1; i < test_size / 2;i++)
+    #ifdef TEST_EASY_MODE
+        test.remove(its[i]);
+    #endif
+    #ifdef TEST_INT_MODE
+    {
+        #ifdef DEBUG_MODE
+        printf("\n\n");
+        printf("remove: %d %d\n", its[i].a, its[i].b);
+        #endif
+        try{
+        //if (!test.find(its[9379]).first) printf("error: error start there: %d\n", i);
+        if (!test.remove(its[i])) printf("error: remove not success: %d\n", i);
+        if (test.find(its[i]).second) printf("wrong_have %d;\n", i);
+        // for (int j = i + 1;j < i + 100 && j < test_size;j++){
+        //     if (!test.find(its[j]).first) printf("error: following not exist: %d %d;\n", i, j);
+        // }
+        test.double_check();
+        }catch(...) {printf("%d;\n", i);}
+    } 
+    #endif
+    printf("find_now\n");
+    for (int i = 1;i <= test_size;i++){
+    #ifdef TEST_INT_MODE
+        //printf("%d ",its[i].a);
+        //printf("\n");
+        if (test.find(its[i]).second == i) 
+            if (i < test_size / 2) printf("wrong_have %d %d;\n", its[i].a, its[i].b);
+            else;
+        else if (i > test_size / 2) printf("wrong_not_have %d %d;\n", its[i].a, its[i].b);
+    #endif
+    #ifdef TEST_STRING_MODE
+		if(strcmp(test.find(its[i]).second.inf, its[i].inf) != 0) printf("wrong\n");
+    #endif
+    #ifdef TEST_EASY_MODE
+        if (test.find(its[i]).second == i) 
+            if (i < test_size / 2) printf("wrong\n");
+            else;
+        else if (i > test_size / 2) printf("wrong\n");
+    #endif
+    }
     #ifdef TEST_EASY_MODE
     vector<pair<test_t, value_t>> v = test.listof(test_t(15, 0), judgement);
     for (int i = 0;i < v.size();i++) printf("%d %d %d; ", v[i].first.a, v[i].first.b, v[i].second);
     #endif
-    #ifdef TEST_INT_MODE
-    if (!test.find(its[49210]).first) printf("unknown error\n");
-    vector<pair<test_t, value_t>> v = test.listof(test_t(15, 0), judgement);
-    for (int i = 0;i < v.size();i++)
-        printf("%d %d %d; ", v[i].first.a, v[i].first.b, v[i].second);
-    #endif
+    // #ifdef TEST_INT_MODE
+    // if (!test.find(its[49210]).first) printf("unknown error\n");
+    // vector<pair<test_t, value_t>> v = test.listof(test_t(15, 0), judgement);
+    // for (int i = 0;i < v.size();i++)
+    //     printf("%d %d %d; ", v[i].first.a, v[i].first.b, v[i].second);
+    // #endif
     std::cout << std::endl << ::GetTickCount() - k;
     printf("\n");
     return 0;

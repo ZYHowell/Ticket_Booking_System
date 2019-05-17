@@ -37,7 +37,7 @@ template<class key_t,
             return *this;
         }
     };
-    buf_pool_t<node_size>   buf;
+    buf_pool_t<node_size>   *buf;
     Compare                 com;
     size_t                  num;
     FILE                    *datafile;
@@ -99,7 +99,7 @@ template<class key_t,
     /*
         * find a particular key and return its pointer
     */
-    sub_find_t _find(to_block_t &to_it,const key_t& k)
+    sub_find_t _find(to_block_t &to_it,const key_t& k) const
     {
         size_t ord;
         byte *cache = to_it.it->frame + sizeof(node);
@@ -113,7 +113,7 @@ template<class key_t,
         }
         else{
             ord = b_search_n(cache, k, p->size);
-            to_block_t tmp = buf.load_it(*nth_point(cache, ord));
+            to_block_t tmp = buf->load_it(*nth_point(cache, ord));
             return _find(tmp, k);
         }
     }
@@ -121,7 +121,7 @@ template<class key_t,
         * return a continuous segment of key-value sets
     */
     vector<list_t> _listof(to_block_t &to_it, const key_t &k, 
-                            bool (*comp)(const key_t &a, const key_t &b))
+                            bool (*comp)(const key_t &a, const key_t &b)) const
     {
         size_t ord;
         to_block_t tmp;
@@ -142,7 +142,7 @@ template<class key_t,
                 if (ord + 1 < now->size) ++ord;
                 else{
                     if (now->next == invalid_p) break;
-                    tmp = buf.load_it(now->next);
+                    tmp = buf->load_it(now->next);
                     now = (node *)(tmp.it->frame);
                     ord = 0;
                 }
@@ -152,7 +152,7 @@ template<class key_t,
         else {
             if (com(k, p->key)) ord = 0;
             else ord = b_search_n(cache, k, p->size);
-            tmp = buf.load_it(*nth_point(cache, ord));
+            tmp = buf->load_it(*nth_point(cache, ord));
             return _listof(tmp, k, comp);
         }
     }
@@ -179,7 +179,7 @@ template<class key_t,
             *nth_point(cache_p, i) = *nth_point(cache_p, i + mov);
         }
         p->key = *nth_key_n(cache_p);
-        buf.dirty(to_left), buf.dirty(to_it);
+        buf->dirty(to_left), buf->dirty(to_it);
     }
     inline void Lbalance_l(to_block_t &to_it, to_block_t &to_left)
     {
@@ -199,7 +199,7 @@ template<class key_t,
             *nth_value(cache_p, i) = *nth_value(cache_p, i + mov);
         }
         p->key = *nth_key_l(cache_p);
-        buf.dirty(to_left), buf.dirty(to_it);
+        buf->dirty(to_left), buf->dirty(to_it);
     }
     /*
         * Make the last of p become the first of r,
@@ -224,7 +224,7 @@ template<class key_t,
             *nth_point(cache_r, i)  = *nth_point(cache_p, ps + i);
         }
         r->key = *nth_key_n(cache_r, 0);
-        buf.dirty(to_it), buf.dirty(to_right);
+        buf->dirty(to_it), buf->dirty(to_right);
     }
     inline void Rbalance_l(to_block_t &to_it, to_block_t &to_right)
     {
@@ -244,7 +244,7 @@ template<class key_t,
             *nth_value(cache_r, i)  = *nth_value(cache_p, ps + i);
         }
         r->key = *nth_key_l(cache_r, 0);
-        buf.dirty(to_it), buf.dirty(to_right);
+        buf->dirty(to_it), buf->dirty(to_right);
     }
     /*
         * Receive a node from the left part if avaliable
@@ -263,7 +263,7 @@ template<class key_t,
         ++(p->size);--(l->size);
         p->key = *nth_key_n(cache_p, 0) = *nth_key_n(cache_l, l->size);
         *nth_point(cache_p)             = *nth_point(cache_l, l->size);
-        buf.dirty(to_it), buf.dirty(to_left);
+        buf->dirty(to_it), buf->dirty(to_left);
     }
     inline void Lreceive_l(to_block_t &to_it, to_block_t &to_left)
     {
@@ -278,7 +278,7 @@ template<class key_t,
         ++(p->size);--(l->size);
         p->key = *nth_key_l(cache_p, 0) = *nth_key_l(cache_l, l->size);
         *nth_value(cache_p)             = *nth_value(cache_l, l->size);
-        buf.dirty(to_it), buf.dirty(to_left);
+        buf->dirty(to_it), buf->dirty(to_left);
     }
     /*
         * Receive a node from the right part if avaliable. 
@@ -298,7 +298,7 @@ template<class key_t,
             *nth_key_n(cache_r, i) = *nth_key_n(cache_r, i + 1);
             *nth_point(cache_r, i) = *nth_point(cache_r, i + 1);
         }
-        buf.dirty(to_it), buf.dirty(to_right);
+        buf->dirty(to_it), buf->dirty(to_right);
     }
     inline void Rreceive_l(to_block_t &to_it, to_block_t &to_right)
     {
@@ -314,7 +314,7 @@ template<class key_t,
             *nth_key_l(cache_r, i) = *nth_key_l(cache_r, i + 1);
             *nth_value(cache_r, i) = *nth_value(cache_r, i + 1);
         }
-        buf.dirty(to_it), buf.dirty(to_right);
+        buf->dirty(to_it), buf->dirty(to_right);
     }
     /*
         * Find the quickest way to solve the problem of extreme size.
@@ -330,25 +330,25 @@ template<class key_t,
         node *tmp;
         to_block_t to_tmp_b;
         if (now->pos != *nth_point(cache_par)){
-            to_tmp_b = buf.load_it(now->prior);
+            to_tmp_b = buf->load_it(now->prior);
             tmp = (node *)(to_tmp_b.it->frame);
             if (tmp->size < part_size_n * 3 / 4) {
                 Lbalance_n(to_now_b, to_tmp_b);
                 if (!equal(*nth_key_n(cache_par, ord), now->key)){
                     *nth_key_n(cache_par, ord) = now->key;
-                    buf.dirty(to_par_b);
+                    buf->dirty(to_par_b);
                 }
                 return;
             }
         }
         if (now->pos != *nth_point(cache_par, par->size - 1)){
-            to_tmp_b = buf.load_it(now->next);
+            to_tmp_b = buf->load_it(now->next);
             tmp = (node *)(to_tmp_b.it->frame);
             if (tmp->size < part_size_n * 3 / 4){
                 Rbalance_n(to_now_b, to_tmp_b);
                 if (!equal(*nth_key_n(cache_par, ord + 1), tmp->key)){
                     *nth_key_n(cache_par, ord + 1) = tmp->key;
-                    buf.dirty(to_par_b);
+                    buf->dirty(to_par_b);
                 }
                 return;
             }
@@ -365,25 +365,25 @@ template<class key_t,
         node *tmp;
         to_block_t to_tmp_b;
         if (now->pos != *nth_point(cache_par)){
-            to_tmp_b = buf.load_it(now->prior);
+            to_tmp_b = buf->load_it(now->prior);
             tmp = (node *)(to_tmp_b.it->frame);
             if (tmp->size < part_size_l * 3 / 4) {
                 Lbalance_l(to_now_b, to_tmp_b);
                 if (!equal(*nth_key_n(cache_par, ord), now->key)){
                     *nth_key_n(cache_par, ord) = now->key;
-                    buf.dirty(to_par_b);
+                    buf->dirty(to_par_b);
                 }
                 return;
             }
         }
         if (now->pos != *nth_point(cache_par, par->size - 1)){
-            to_tmp_b = buf.load_it(now->next);
+            to_tmp_b = buf->load_it(now->next);
             tmp = (node *)(to_tmp_b.it->frame);
             if (tmp->size < part_size_l * 3 / 4){
                 Rbalance_l(to_now_b, to_tmp_b);
                 if (!equal(*nth_key_n(cache_par, ord + 1), tmp->key)){
                     *nth_key_n(cache_par, ord + 1) = tmp->key;
-                    buf.dirty(to_par_b);
+                    buf->dirty(to_par_b);
                 }
                 return;
             }
@@ -400,13 +400,13 @@ template<class key_t,
         node *tmp;
         to_block_t to_tmp_b;
         if (now->pos != *nth_point(cache_par, par->size - 1)){
-            to_tmp_b = buf.load_it(now->next);
+            to_tmp_b = buf->load_it(now->next);
             tmp = (node *)(to_tmp_b.it->frame);
             if (tmp->size > (part_size_n >> 1)){
                 Rreceive_n(to_now_b, to_tmp_b);
                 if (!equal(*nth_key_n(cache_par, ord + 1), tmp->key)){
                     *nth_key_n(cache_par, ord + 1) = tmp->key;
-                    buf.dirty(to_par_b);
+                    buf->dirty(to_par_b);
                 }
                 return;
             }
@@ -414,13 +414,13 @@ template<class key_t,
             return;
         }
         if (now->pos != *nth_point(cache_par)){
-            to_tmp_b = buf.load_it(now->prior);
+            to_tmp_b = buf->load_it(now->prior);
             tmp = (node *)(to_tmp_b.it->frame);
             if (tmp->size > (part_size_n >> 1)){
                 Lreceive_n(to_now_b, to_tmp_b);
                 if (!equal(*nth_key_n(cache_par, ord), now->key)){
                     *nth_key_n(cache_par, ord) = now->key;
-                    buf.dirty(to_par_b);
+                    buf->dirty(to_par_b);
                 }
                 return;
             }
@@ -436,13 +436,13 @@ template<class key_t,
         node *tmp;
         to_block_t to_tmp_b;
         if (now->pos != *nth_point(cache_par, par->size - 1)){
-            to_tmp_b = buf.load_it(now->next);
+            to_tmp_b = buf->load_it(now->next);
             tmp = (node *)(to_tmp_b.it->frame);
             if (tmp->size > (part_size_l >> 1)){
                 Rreceive_l(to_now_b, to_tmp_b);
                 if (!equal(*nth_key_n(cache_par, ord + 1), tmp->key)){
                     *nth_key_n(cache_par, ord + 1) = tmp->key;
-                    buf.dirty(to_par_b);
+                    buf->dirty(to_par_b);
                 }
                 return;
             }
@@ -450,13 +450,13 @@ template<class key_t,
             return;
         }
         if (now->pos != *nth_point(cache_par)){
-            to_tmp_b = buf.load_it(now->prior);
+            to_tmp_b = buf->load_it(now->prior);
             tmp = (node *)(to_tmp_b.it->frame);
             if (tmp->size > (part_size_l >> 1)){
                 Lreceive_l(to_now_b, to_tmp_b);
                 if (!equal(*nth_key_n(cache_par, ord), now->key)){
                     *nth_key_n(cache_par, ord) = now->key;
-                    buf.dirty(to_par_b);
+                    buf->dirty(to_par_b);
                 }
                 return;
             }
@@ -479,7 +479,7 @@ template<class key_t,
         size_t ns = now->size;
 
         point pos = alloc.alloc(node_size);
-        to_block_t to_tmp_b = buf.load_it(pos);
+        to_block_t to_tmp_b = buf->load_it(pos);
 
         byte *cache_tmp = to_tmp_b.it->frame + sizeof(node);
         node *tmp       = (node *)(cache_tmp - sizeof(node));
@@ -487,9 +487,9 @@ template<class key_t,
         tmp->prior = now->pos, tmp->next = now->next;
 
         if (now->next != invalid_p){
-            to_block_t temp = buf.load_it(now->next);
+            to_block_t temp = buf->load_it(now->next);
             ((node *)(temp.it->frame))->prior = tmp->pos;
-            buf.dirty(temp);
+            buf->dirty(temp);
         }
         now->next = tmp->pos;
 
@@ -497,7 +497,7 @@ template<class key_t,
             *nth_key_n(cache_tmp, i) = *nth_key_n(cache, ns + i);
             *nth_point(cache_tmp, i) = *nth_point(cache, ns + i);
         }
-        buf.dirty(to_tmp_b), buf.dirty(to_now_b);
+        buf->dirty(to_tmp_b), buf->dirty(to_now_b);
         ns = order;
         for (size_t i = par->size;i > ns + 1;i--){
             *nth_key_n(cache_par, i)    = *nth_key_n(cache_par, i - 1);
@@ -506,7 +506,7 @@ template<class key_t,
         *nth_key_n(cache_par, ns + 1) = tmp->key;
         *nth_point(cache_par, ns + 1) = tmp->pos;
         ++(par->size);
-        buf.dirty(to_par_b);
+        buf->dirty(to_par_b);
     }
     void split_l(to_block_t &to_now_b, to_block_t &to_par_b, size_t order){
         byte *cache     = to_now_b.it->frame + sizeof(node),
@@ -518,16 +518,16 @@ template<class key_t,
         size_t ns = now->size;
 
         point pos = alloc.alloc(node_size);
-        to_block_t to_tmp_b = buf.load_it(pos);
+        to_block_t to_tmp_b = buf->load_it(pos);
         byte *cache_tmp = to_tmp_b.it->frame + sizeof(node);
         node *tmp       = (node *)(cache_tmp - sizeof(node));
         tmp->key = *nth_key_n(cache, ns), tmp->type = now->type, tmp->pos = pos, tmp->size = s;
         tmp->prior = now->pos, tmp->next = now->next;
 
         if (now->next != invalid_p){
-            to_block_t temp = buf.load_it(now->next);
+            to_block_t temp = buf->load_it(now->next);
             ((node *)(temp.it->frame))->prior = tmp->pos;
-            buf.dirty(temp);
+            buf->dirty(temp);
         }
         now->next = tmp->pos;
 
@@ -535,7 +535,7 @@ template<class key_t,
             *nth_key_l(cache_tmp, i) = *nth_key_l(cache, ns + i);
             *nth_value(cache_tmp, i) = *nth_value(cache, ns + i);
         }
-        buf.dirty(to_tmp_b), buf.dirty(to_now_b);
+        buf->dirty(to_tmp_b), buf->dirty(to_now_b);
         ns = order;
         for (size_t i = par->size;i > ns + 1;i--){
             *nth_key_n(cache_par, i)    = *nth_key_n(cache_par, i - 1);
@@ -544,7 +544,7 @@ template<class key_t,
         *nth_key_n(cache_par, ns + 1) = tmp->key;
         *nth_point(cache_par, ns + 1) = tmp->pos;
         ++(par->size);
-        buf.dirty(to_par_b);
+        buf->dirty(to_par_b);
     }
     /*
         * Merge now and the next of it,
@@ -561,9 +561,9 @@ template<class key_t,
              *tmp = (node *)(cache_tmp - sizeof(node));
         now->next = tmp->next;
         if (tmp->next != invalid_p){
-            to_block_t temp = buf.load_it(tmp->next);
+            to_block_t temp = buf->load_it(tmp->next);
             ((node *)(temp.it->frame))->prior = now->pos;
-            buf.dirty(temp);
+            buf->dirty(temp);
         }
         size_t ns = now->size;
         for (size_t i = 0;i < tmp->size;i++){
@@ -579,7 +579,7 @@ template<class key_t,
         }
         if (now->size >= part_size_n)
             split_n(to_now_b, to_par_b, s);
-        buf.dirty(to_now_b), buf.dirty(to_par_b);
+        buf->dirty(to_now_b), buf->dirty(to_par_b);
     }
     void merge_l(to_block_t &to_now_b, to_block_t &to_par_b, to_block_t &to_tmp_b, size_t s)
     {
@@ -591,9 +591,9 @@ template<class key_t,
              *tmp = (node *)(cache_tmp - sizeof(node));
         now->next = tmp->next;
         if (tmp->next != invalid_p){
-            to_block_t temp = buf.load_it(tmp->next);
+            to_block_t temp = buf->load_it(tmp->next);
             ((node *)(temp.it->frame))->prior = now->pos;
-            buf.dirty(temp);
+            buf->dirty(temp);
         }
         size_t ns = now->size;
         for (size_t i = 0;i < tmp->size;i++){
@@ -608,7 +608,7 @@ template<class key_t,
             *nth_point(cache_par, i)  = *nth_point(cache_par, i + 1);
         }
         if (now->size >= part_size_l) split_n(to_now_b, to_par_b, s);
-        buf.dirty(to_now_b), buf.dirty(to_par_b);
+        buf->dirty(to_now_b), buf->dirty(to_par_b);
     }
     /*
         * Insert (k,v) and return true if it is an insertion and false for a change, 
@@ -622,7 +622,7 @@ template<class key_t,
         node *now = (node *)(cache - sizeof(node));
         size_t ord  = b_search_n(cache, k, now->size);
         point loc = *nth_point(cache, ord);
-        to_block_t buf_child = buf.load_it(loc);    
+        to_block_t buf_child = buf->load_it(loc);    
         byte *cache_child = buf_child.it->frame + sizeof(node);
         node *node_child = (node *)(cache_child - sizeof(node));
         bool ret;
@@ -632,7 +632,7 @@ template<class key_t,
             if (node_child->size >= part_size_n) {
                 deal_surplus_n(buf_child, to_it, ord);
             }
-            else buf.dirty(buf_child);
+            else buf->dirty(buf_child);
         }
         else{
             ret = _insert_l(buf_child, k, v);
@@ -640,7 +640,7 @@ template<class key_t,
             if (node_child->size >= part_size_l) {
                 deal_surplus_l(buf_child, to_it, ord);
             }
-            else buf.dirty(buf_child);
+            else buf->dirty(buf_child);
         }
         return ret;
     }
@@ -671,7 +671,7 @@ template<class key_t,
     {
         byte *cache = to_it.it->frame + sizeof(node);
         node *now = (node *)(cache - sizeof(node));
-        to_block_t buf_child = buf.load_it(*nth_point(cache));    
+        to_block_t buf_child = buf->load_it(*nth_point(cache));    
         byte *cache_child = buf_child.it->frame + sizeof(node);
         node *node_child = (node *)(cache_child - sizeof(node));
         if (node_child->type){
@@ -680,7 +680,7 @@ template<class key_t,
             if (node_child->size >= part_size_n){
                 deal_surplus_n(buf_child, to_it, 0);
             }
-            else buf.dirty(buf_child);
+            else buf->dirty(buf_child);
         }
         else{
             _insert_head_l(buf_child, k, v);
@@ -688,7 +688,7 @@ template<class key_t,
             if (node_child->size >= part_size_l){
                 deal_surplus_l(buf_child, to_it, 0);
             }
-            else buf.dirty(buf_child);
+            else buf->dirty(buf_child);
         }
     }
     void _insert_head_l(to_block_t &to_it, const key_t &k, const value_type &v)
@@ -715,7 +715,7 @@ template<class key_t,
         node *now = (node *)(cache - sizeof(node));
         size_t ord = b_search_n(cache, k, now->size);
         point loc = *nth_point(cache, ord);
-        to_block_t buf_child = buf.load_it(loc);    
+        to_block_t buf_child = buf->load_it(loc);    
         byte *cache_child = buf_child.it->frame + sizeof(node);
         node *node_child = (node *)(cache_child - sizeof(node));
         bool ret;
@@ -726,7 +726,7 @@ template<class key_t,
             if (node_child->size < (part_size_n >> 1)){
                 deal_deficit_n(buf_child, to_it, ord);
             }
-            else buf.dirty(buf_child);
+            else buf->dirty(buf_child);
         }
         else{
             ret = _remove_l(buf_child, k);
@@ -735,7 +735,7 @@ template<class key_t,
             if (node_child->size < (part_size_l >> 1)){
                 deal_deficit_l(buf_child, to_it, ord);
             }
-            else buf.dirty(buf_child);
+            else buf->dirty(buf_child);
         }
         now->key = *nth_key_n(cache, 0);
         return ret;
@@ -759,9 +759,10 @@ template<class key_t,
 public:
     bplustree():part_size_n((node_size - sizeof(node)) / (sizeof(key_t) + sizeof(point))),
 	            part_size_l((node_size - sizeof(node)) / (sizeof(key_t) + sizeof(value_type))), 
-                num(0), root_pos(0){}
-    void init(const char *datafile_name, const char *alloc_name)
+                num(0), root_pos(0), buf(nullptr){}
+    void init(const char *datafile_name, const char *alloc_name, buf_pool_t<node_size> *buff)
     {
+        buf = buff;
         index_name = new char[strlen(alloc_name) + 1];
         strcpy(index_name, alloc_name);
         data_name = new char[strlen(datafile_name) + 1];
@@ -769,7 +770,7 @@ public:
         alloc.init(index_name);
         datafile = fopen(data_name, "rb+");
         if (!datafile) datafile = fopen(data_name, "wb+");
-        buf.init(datafile);
+        buf->init(datafile);
 		#ifdef OUTPUT_INIT
         printf("size_of_node: %d; leaf_part: %d; non_leaf_part: %d\n", sizeof(node), part_size_l, part_size_n);
         printf("ini_root_point_seek: %d\n", 0);
@@ -799,8 +800,8 @@ public:
 		#ifdef DEBUG_MODE
         printf("clear_root_point_seek: %d\n", 0);
 		#endif
-        buf.file_change(datafile);
-        buf.re_init();
+        buf->file_change(datafile);
+        buf->re_init();
 		#ifdef DEBUG_MODE
 		printf("clear_root_seek: %d\n", 0);
             #ifdef TEST_INT_MODE
@@ -830,19 +831,19 @@ public:
 		if (data_name != nullptr)
 			delete []data_name;
     }
-    bool count(const key_t &k) 
+    bool count(const key_t &k) const
     {
         if (empty()) return 0;
-        to_block_t root = buf.load_it(root_pos);
+        to_block_t root = buf->load_it(root_pos);
         if (com(k, ((node *)(root.it->frame))->key)) return 0;
         sub_find_t p = _find(root, k);
         if (p.second == nullptr) return 0;
         return 1;
     }
-    find_t find(const key_t &k) 
+    find_t find(const key_t &k)  const
     {
         if (empty()) throw(container_is_empty());
-        to_block_t root = buf.load_it(root_pos);
+        to_block_t root = buf->load_it(root_pos);
         if (com(k, ((node *)(root.it->frame))->key)) return find_t(false, value_type());
         sub_find_t p = _find(root, k);
         if (p.second == nullptr) return find_t(false, value_type());
@@ -851,20 +852,20 @@ public:
 		#endif
         return find_t(true, *nth_value(p.second->frame + sizeof(node), p.first));
     }
-    bool set(const key_t &k, const value_type &v)
+    bool set(const key_t &k, const value_type &v) const
     {
         if (empty()) throw(container_is_empty());
-        to_block_t root = buf.load_it(root_pos);
+        to_block_t root = buf->load_it(root_pos);
         if (com(k, ((node *)(root.it->frame))->key)) return false;
         sub_find_t p = _find(root, k);
         if (p.second == nullptr) return false;
         *nth_value(p.second->frame + sizeof(node), p.first) = v;
-        buf.dirty(p.second);
+        buf->dirty(p.second);
         return 1;
     }
     bool insert(const key_t &k, const value_type &v)
     {
-        to_block_t root = buf.load_it(root_pos);
+        to_block_t root = buf->load_it(root_pos);
         node *root_n = (node *)(root.it->frame);
         if (root_n->pos == invalid_p){
             if (!datafile) throw(runtime_error());
@@ -873,7 +874,7 @@ public:
             root_n->prior   = root_n->next = invalid_p;
             *nth_key_l(root.it->frame + sizeof(node)) = k;
             *nth_value(root.it->frame + sizeof(node)) = v;
-            buf.dirty(root);
+            buf->dirty(root);
             return true;
         }
         bool ret = true;
@@ -881,10 +882,10 @@ public:
         if (root_n->type){
             if (com(root_n->key, k)) ret = _insert_n(root, k, v);
             else _insert_head_n(root, k, v);
-            buf.dirty(root);
+            buf->dirty(root);
             if (root_n->size >= part_size_n){
                 point pos = alloc.alloc(node_size);
-                to_block_t new_root_b = buf.load_it(pos);
+                to_block_t new_root_b = buf->load_it(pos);
                 byte *cache_new_root = new_root_b.it->frame + sizeof(node);
                 node *new_root = (node *)(cache_new_root - sizeof(node));
                 new_root->key = root_n->key, new_root->size = 1;
@@ -899,10 +900,10 @@ public:
         else{
             if (com(root_n->key, k)) ret = _insert_l(root, k, v);
             else _insert_head_l(root, k, v);
-            buf.dirty(root);
+            buf->dirty(root);
             if (root_n->size >= part_size_l){
                 point pos = alloc.alloc(node_size);
-                to_block_t new_root_b = buf.load_it(pos);
+                to_block_t new_root_b = buf->load_it(pos);
                 byte *cache_new_root = new_root_b.it->frame + sizeof(node);
                 node *new_root = (node *)(cache_new_root - sizeof(node));
                 new_root->key = root_n->key, new_root->size = 1;
@@ -919,7 +920,7 @@ public:
     bool remove(const key_t &k)
     {
         if (empty()) return false;
-        to_block_t root_b = buf.load_it(root_pos);
+        to_block_t root_b = buf->load_it(root_pos);
         byte *cache = root_b.it->frame + sizeof(node);
         node *root = (node *)(cache - sizeof(node));
         if (com(k, root->key)) return 0;
@@ -929,22 +930,22 @@ public:
             if (!ret) return 0;
             if (root->size < 2){
                 alloc.free(root->pos, node_size);
-                root_b = buf.load_it(*nth_point(cache));
+                root_b = buf->load_it(*nth_point(cache));
                 root_pos = ((node *)(root_b.it->frame))->pos;
             }
-            else buf.dirty(root_b);
+            else buf->dirty(root_b);
         }
         else {
             ret = _remove_l(root_b, k);
             if (!ret) return 0; 
-            buf.dirty(root_b);
+            buf->dirty(root_b);
         }
         return ret;
     }
-    vector<list_t> listof(key_t k, bool (*comp)(const key_t &a, const key_t &b))
+    vector<list_t> listof(key_t k, bool (*comp)(const key_t &a, const key_t &b)) const
     {
         if (empty()) throw(container_is_empty());
-        to_block_t root_b = buf.load_it(root_pos);
+        to_block_t root_b = buf->load_it(root_pos);
         return _listof(root_b, k, comp);
     }
     int size() const
@@ -961,10 +962,10 @@ public:
     // }
     void double_check()
     {
-        buf.check_hash();
-        buf.check_flush();
-        buf.check_LRU();
-        buf.check_useage();
+        buf->check_hash();
+        buf->check_flush();
+        buf->check_LRU();
+        buf->check_useage();
     }
 };
 
