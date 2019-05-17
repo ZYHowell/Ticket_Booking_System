@@ -68,9 +68,13 @@ struct to_block_t{
         return *this;
     }
 };
-
-
-template<size_t BUFFER_SIZE = 4096, size_t TOTAL_NUM = 256, size_t COLD_PERCENTAGE = 25>
+#ifndef BUF_POOL_TOTAL_NUM
+    #define BUF_POOL_TOTAL_NUM 256
+#endif
+#ifndef BUF_COLD_PERCENTAGE
+    #define BUF_COLD_PERCENTAGE 12
+#endif
+template<size_t BUFFER_SIZE = 4096>
 class buf_pool_t{
     using byte  = char;
     using point = long;
@@ -360,18 +364,18 @@ public:
         free.count = TOTAL_NUM;
         LRU.count = 0, LRU.start = LRU.end = nullptr;
     }
-    to_block_t load_it(const long pos) {
+    to_block_t load_it(const long offset) {
         //in a further mode, if it is used(a x-lathe added), spin and wait.
-        buf_block_t *it = _find(pos);
+        buf_block_t *it = _find(offset);
         if (it != nullptr) {
             _pick_out_LRU(it);
             _to_HIR(it);
             return to_block_t(it);
         }
-        if (free.count) return to_block_t(free_use(pos, f));
-        if (LRU.count > flush.count) return to_block_t(LRU_use(pos, f));
+        if (free.count) return to_block_t(free_use(offset, f));
+        if (LRU.count > flush.count) return to_block_t(LRU_use(offset, f));
         flush_all();
-        return to_block_t(LRU_use(pos, f));
+        return to_block_t(LRU_use(offset, f));
     }
     // bool release_it(buf_block_t *it){
     //     if (it == nullptr) return false;

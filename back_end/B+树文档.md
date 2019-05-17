@@ -1,6 +1,50 @@
 ## B+树文档
 
-B+树的具体原理在这里不再提及
+B+树文件结构的具体原理在这里不再提及
+
+### 缓存池(buf_pool_t)
+
+使用自定义类buf_pool_t管理缓存，并添加了锁RW_lathe。缓存的内容有且仅有一切文件中的内容，使用哈希表对缓存中存在的内容进行索引。
+
+其中，每一页（buf_block_t）大小与bpt中一个块的大小相同，块总数通过宏定义(BUF_POOL_TOTAL_NUM)，其默认值为256。注意，这会对所有bufferpool产生影响。
+
+#### 接口说明
+
+- 构造函数
+
+  `buf_pool_t::buf_pool_t()`
+
+  其实并不需要什么参数。
+
+- 初始化
+
+  `void buf_pool_t::init(FILE *file)`
+
+  将bufferpool与file关联
+
+- 重关联文件
+
+  `void buf_pool_t::file_change(FILE *file)`
+
+  将bufferpool与file重关联
+
+- 重新初始化
+
+  `void buf_pool_t::re_init()`
+
+  由于对接bpt中的clear，不会将现在的缓冲信息写回文件
+
+- 从文件中加载
+
+  `to_block_t load_it(const long offset)`
+
+  文件的偏移量offset位置加载信息进入bufferpool，返回一个封装的buf_block_t *（即指向具有相关信息的内存块）
+
+- 脏页
+
+  `void dirty(to_block_t &to_it)`
+
+  将一个页改写为脏页
 
 ### 硬盘空间管理(class file_alloc)
 
@@ -36,7 +80,7 @@ B+树的具体原理在这里不再提及
 
 - 申请新空间
 
-  `pointer ALLOC::alloc(size_t s);`
+  `point ALLOC::alloc(size_t s);`
 
 - 释放空间
 
@@ -59,7 +103,13 @@ B+树的具体原理在这里不再提及
 
   `init(const char *datafile_name,const char *alloc_name)`
 
-  分别是数据库文件和作为索引的B+树文件的文件名及其外存管理文件的文件名。
+  分别是B+树文件的文件名及其外存管理文件的文件名。
+
+- 清除
+
+  `clear()`
+  
+  清除所有内容
 
 - 询问是否有某个key
 
@@ -91,7 +141,7 @@ B+树的具体原理在这里不再提及
 
 - 删除
 
-  `void remove(const key_t &key)`
+  `bool remove(const key_t &key)`
 
   如果不存在key，不进行任何操作并返回false，否则返回true
 
@@ -102,4 +152,10 @@ B+树的具体原理在这里不再提及
   需要确保comp所确定的区间范围在磁盘上连续
 
   comp的意义为“小于”。将B+树中key既不大于key又不小于key的记录填入一个vector中返回
+
+- 检查当前是否正常
+
+  `void double_check()`
+  
+  在DEBUG中使用
 

@@ -760,9 +760,9 @@ public:
     bplustree():part_size_n((node_size - sizeof(node)) / (sizeof(key_t) + sizeof(point))),
 	            part_size_l((node_size - sizeof(node)) / (sizeof(key_t) + sizeof(value_type))), 
                 num(0), root_pos(0), buf(nullptr){}
-    void init(const char *datafile_name, const char *alloc_name, buf_pool_t<node_size> *buff)
+    void init(const char *datafile_name, const char *alloc_name)
     {
-        buf = buff;
+        buf = new buf_pool_t<node_size>;
         index_name = new char[strlen(alloc_name) + 1];
         strcpy(index_name, alloc_name);
         data_name = new char[strlen(datafile_name) + 1];
@@ -830,6 +830,7 @@ public:
 			delete []index_name;
 		if (data_name != nullptr)
 			delete []data_name;
+        delete buf;
     }
     bool count(const key_t &k) const
     {
@@ -840,7 +841,7 @@ public:
         if (p.second == nullptr) return 0;
         return 1;
     }
-    find_t find(const key_t &k)  const
+    find_t find(const key_t &k) const
     {
         if (empty()) throw(container_is_empty());
         to_block_t root = buf->load_it(root_pos);
@@ -888,8 +889,8 @@ public:
                 to_block_t new_root_b = buf->load_it(pos);
                 byte *cache_new_root = new_root_b.it->frame + sizeof(node);
                 node *new_root = (node *)(cache_new_root - sizeof(node));
-                new_root->key = root_n->key, new_root->size = 1;
-                new_root->pos = pos, new_root->type = 1;
+                new_root->key = root_n->key,    new_root->size = 1;
+                new_root->pos = pos,            new_root->type = 1;
                 new_root->prior = new_root->next = invalid_p;
                 *nth_key_n(cache_new_root) = root_n->key;
                 *nth_point(cache_new_root) = root_n->pos;
@@ -922,7 +923,7 @@ public:
         if (empty()) return false;
         to_block_t root_b = buf->load_it(root_pos);
         byte *cache = root_b.it->frame + sizeof(node);
-        node *root = (node *)(cache - sizeof(node));
+        node *root  = (node *)(cache - sizeof(node));
         if (com(k, root->key)) return 0;
         bool ret = true;
         if (root->type) {
@@ -930,8 +931,8 @@ public:
             if (!ret) return 0;
             if (root->size < 2){
                 alloc.free(root->pos, node_size);
-                root_b = buf->load_it(*nth_point(cache));
-                root_pos = ((node *)(root_b.it->frame))->pos;
+                root_b      = buf->load_it(*nth_point(cache));
+                root_pos    = ((node *)(root_b.it->frame))->pos;
             }
             else buf->dirty(root_b);
         }

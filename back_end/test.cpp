@@ -10,8 +10,6 @@
 const int maxn = 100000 + 5;
 const int test_size = 100000;
 
-buf_pool_t<512> buf;
-
 #ifdef TEST_INT_MODE
 const unsigned Ta = 33333331, Tb = 1 << 16 | 3;
 unsigned Tc;
@@ -76,7 +74,7 @@ int main(){
 	file = fopen("alloc", "wb");fclose(file);
     srand(214748364);
     bplustree <test_t, value_t, 512> test;
-    test.init("data", "alloc", &buf);
+    test.init("data", "alloc");
     test.clear();
 #ifdef DEBUG_MODE
 	printf("\n\n");
