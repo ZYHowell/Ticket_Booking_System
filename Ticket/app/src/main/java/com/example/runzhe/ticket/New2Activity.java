@@ -50,6 +50,11 @@ public class New2Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new2);
 
+        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setHomeButtonEnabled(true);
+
         // 获取控件
         listView = (ListView) findViewById(R.id.n_list);
         newSta = (Button) findViewById(R.id.n_new_sta);
@@ -160,7 +165,7 @@ public class New2Activity extends AppCompatActivity {
                         String price3_s = price3_text.getText().toString();
 
                         // 前端检测
-                        if(sta_name == "请选择") {Toasty.error(New2Activity.this, "站名不能为空！", Toast.LENGTH_SHORT, true).show(); return;}
+                        if(sta_name.equals("请选择")) {Toasty.error(New2Activity.this, "站名不能为空！", Toast.LENGTH_SHORT, true).show(); return;}
                         if((tic1 && Tools.isEmpty(price1_s)) || (tic2 && Tools.isEmpty(price2_s)) || (tic3 && Tools.isEmpty(price3_s)))
                             {Toasty.error(New2Activity.this, "票价不能为空！", Toast.LENGTH_SHORT, true).show(); return;}
                         if((tic1 && !Tools.isNonNegtiveInteger(price1_s)) || (tic2 && !Tools.isNonNegtiveInteger(price2_s)) || (tic3 && !Tools.isNonNegtiveInteger(price3_s)))
@@ -195,4 +200,9 @@ public class New2Activity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
+    }
 }

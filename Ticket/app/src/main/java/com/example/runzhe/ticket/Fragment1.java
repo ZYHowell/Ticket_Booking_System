@@ -60,9 +60,9 @@ public class Fragment1 extends Fragment {
 
         class changeStationClickListener implements View.OnClickListener{
             public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), CityPickerActivity.class);
-                startActivityForResult(intent, 1);
-                whichStationToChange = v.getId() == R.id.b_station_1 ? 1: 2; // 判断是哪一个框
+                Intent intent = new Intent(getActivity(), SelectStation.class);
+                intent.putExtra("type", v.getId() == R.id.b_station_1 ? "1" : "2");
+                startActivityForResult(intent, 2333);
             }
         }
         station_1.setOnClickListener(new changeStationClickListener());
@@ -70,7 +70,7 @@ public class Fragment1 extends Fragment {
 
         double_arrow.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v) { // 交换站点
                 String s1 = station_1.getText().toString();
                 String s2 = station_2.getText().toString();
                 station_1.setText(s2);
@@ -80,9 +80,9 @@ public class Fragment1 extends Fragment {
 
         btn_query.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v) { // 查询车票
                 if(Tools.isEmpty(station_1.getText().toString()) || Tools.isEmpty(station_2.getText().toString())){
-                    Toasty.error(getActivity(), "站点不能为空！", Toast.LENGTH_LONG, true). show();
+                    Tools.showMessage(getActivity(), "站点不能为空！", "error");
                     return;
                 }
 
@@ -127,7 +127,11 @@ public class Fragment1 extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @Override
@@ -135,7 +139,7 @@ public class Fragment1 extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         switch (resultCode){
             case 1:
-                (whichStationToChange == 1 ? station_1 : station_2).setText(data.getStringExtra("station"));
+                (data.getStringExtra("type").equals("1") ? station_1 : station_2).setText(data.getStringExtra("station"));
                 break;
         }
     }

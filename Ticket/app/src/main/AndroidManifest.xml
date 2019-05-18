@@ -3,10 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.runzhe.ticket">
 
-    <!-- To auto-complete the email text field in the login form with the user's emails -->
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-    <uses-permission android:name="android.permission.READ_PROFILE" />
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -19,44 +16,49 @@
 
         <activity
             android:name=".MainActivity"
-            android:label="12306">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
+            android:label="12306"
+            android:screenOrientation="portrait"></activity>
         <activity
             android:name=".AdminActivity"
             android:label="管理模式"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-
+            android:screenOrientation="portrait"></activity>
         <activity
-            android:name=".CityPickerActivity"
-            android:theme="@style/DefaultCityPickerTheme"
-            android:label="选择城市"/>
+            android:name=".SelectStation"
+            android:label="选择车站"/>
         <activity
             android:name=".LoginActivity"
-            android:label="登录"></activity>
+            android:label="请登录"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".RegisterActivity"
-            android:label="注册" />
+            android:label="注册"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".InformationActivity"
-            android:label="查询结果" />
+            android:label="查询结果"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".BuyActivity"
-            android:label="购买车票" />
+            android:label="购买车票"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".NewActivity"
-            android:label="新建车次" />
+            android:label="新建车次"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".New2Activity"
-            android:label="新建站点" />
-
-
+            android:label="新建站点"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".SplashActivity"
+            android:label="欢迎"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

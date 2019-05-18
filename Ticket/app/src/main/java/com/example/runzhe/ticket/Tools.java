@@ -23,6 +23,8 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import es.dmoral.toasty.Toasty;
+
 public class Tools {
 
     static  boolean isNonNegtiveInteger(String string){
@@ -56,6 +58,23 @@ public class Tools {
     static String getNthSubstring(String string, String regex, int index){
         String[] strArray = string.split(" ");
         return strArray[index];
+    }
+
+    static void showMessage(Context context, String message, String type){
+        switch (type){
+            case "error" :
+                Toasty.error(context, message, Toast.LENGTH_SHORT).show();
+                break;
+            case "success" :
+                Toasty.success(context, message, Toast.LENGTH_SHORT).show();
+                break;
+            case "info" :
+                Toasty.info(context, message, Toast.LENGTH_SHORT).show();
+                break;
+            case "warning" :
+                Toasty.warning(context, message, Toast.LENGTH_SHORT).show();
+                break;
+        }
     }
 
 }

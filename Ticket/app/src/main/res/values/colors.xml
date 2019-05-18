@@ -1,6 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#008511</color>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="colorFloatingActionButton">#008CEE</color>
+    <color name="colorSplashBackground">#0E80C6</color>
+    <color name="colorLogin">#0980C3</color>
+    <color name="colorLoginButton">#004684</color>
+    <color name="colorCursor">#cccccc</color>
+    <color name="head_color">#836FFF</color>
+    <color name="information_title_color">#666666</color>
+    <color name="list_bg_color">#FFF4F4F4</color>
+    <color name="list_focus_color">#bdbdbd</color>
+    <color name="logoScreenBackground">#F7F7F7</color>
+    <color name="colorRegisterButton">#6495ED</color>
+    <color name="icon_default_color">#C5CAE9</color>
+    <color name="blank">#FFFFFF</color>
+    <color name="swapButton">#1A237E</color>
+    <color name="black">#000000</color>
+    <color name="drawer_color">#7986CB</color>
+    <color name="gray">#A9A9A9</color>
+    <color name="red">#DC143C</color>
+    <color name="lightpink">#FFB6C1</color>
+    <color name="plus_one">#FF4081</color>
+    <drawable name="checkbox">#666666</drawable>
+    <drawable name="camera_back_press">#1b1b1b</drawable>
+    <drawable name="camera_back_default">#2f2f2f</drawable>
+    <color name="translucent">#01000000</color>
+    <color name="translucent_background">#90000000</color>
 </resources>

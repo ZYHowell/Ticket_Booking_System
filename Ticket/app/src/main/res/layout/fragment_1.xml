@@ -25,7 +25,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="北京"
-                android:textSize="25dp"
+                android:textSize="30sp"
+                android:textColor="@color/black"
                 android:gravity="center_horizontal"/>
 
             <ImageView
@@ -42,7 +43,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="上海"
-                android:textSize="25dp"
+                android:textSize="30sp"
+                android:textColor="@color/black"
                 android:gravity="center_horizontal"/>
 
         </LinearLayout>

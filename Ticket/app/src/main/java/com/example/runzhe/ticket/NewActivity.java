@@ -22,6 +22,11 @@ public class NewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new);
 
+        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setHomeButtonEnabled(true);
+
         id = (EditText) findViewById(R.id.n_id);
         name = (EditText) findViewById(R.id.n_name);
         catalog = (EditText) findViewById(R.id.n_catalog);
@@ -53,8 +58,12 @@ public class NewActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
 
-
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
     }
 
 }
