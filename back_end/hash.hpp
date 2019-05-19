@@ -11,15 +11,15 @@ public:
     }
     ~hash_table_t(){}
     int get_value(const point code) const{
-        return code / 4096;
+        return (code / 4096) % 512;
     }
     V find(const point code) const{
     if (code > 3000000) throw runtime_error();
-        return list[code / 4096];
+        return list[(code / 4096) % 512];
     }
     //even if U already exists, force to insert it.
     void insert(const point code, const V &v){
-        list[code / 4096] = v;
+        list[(code / 4096) % 512] = v;
     }
 };
 #endif

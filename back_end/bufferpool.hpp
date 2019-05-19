@@ -304,11 +304,11 @@ public:
                     free(), LRU(), flush(), HIR_head(nullptr),
                     clock(0),
                     hash_table(nullptr){
-        mem_head = new byte[BUFFER_SIZE * (TOTAL_NUM + 1)];
+        mem_head = new byte[BUFFER_SIZE * (BUF_POOL_TOTAL_NUM + 1)];
         buf_block_t *temp;
-        free.count = TOTAL_NUM;
+        free.count = BUF_POOL_TOTAL_NUM;
         free.start = free.end = new buf_block_t(mem_head);
-        for (size_t i = 1;i < TOTAL_NUM;i++){
+        for (size_t i = 1;i < BUF_POOL_TOTAL_NUM;i++){
             (free.end)->free.next = temp = new buf_block_t(mem_head + BUFFER_SIZE * i);
             (temp->free).prev = free.end;
             free.end = temp;
@@ -319,9 +319,9 @@ public:
         flush_all();
         clean_connection_list();
         buf_block_t *temp;
-        free.count = TOTAL_NUM;
+        free.count = BUF_POOL_TOTAL_NUM;
         free.start = free.end = new buf_block_t(mem_head);
-        for (size_t i = 1;i < TOTAL_NUM;i++){
+        for (size_t i = 1;i < BUF_POOL_TOTAL_NUM;i++){
             (free.end)->free.next = temp = new buf_block_t(mem_head + BUFFER_SIZE * i);
             (temp->free).prev = free.end;
             free.end = temp;
@@ -361,7 +361,7 @@ public:
         if (LRU.start != nullptr)
             LRU.start->free.prev = free.end;
         free.end = LRU.end;
-        free.count = TOTAL_NUM;
+        free.count = BUF_POOL_TOTAL_NUM;
         LRU.count = 0, LRU.start = LRU.end = nullptr;
     }
     to_block_t load_it(const long offset) {
@@ -385,12 +385,12 @@ public:
     void dirty(to_block_t &to_it){
         buf_block_t *it = to_it.it;
         if (it->state > 2) return;
-        if (flush.start != it){
+        //if (flush.start != it){//do we need this? maybe not
             it->flush.next = flush.start;
             if (flush.start != nullptr) flush.start->flush.prev = it;
             else flush.end = it;
             flush.start = it;
-        }
+        //}
         (it->state) += 2;
         ++flush.count;
     }

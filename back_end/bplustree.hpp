@@ -200,6 +200,7 @@ template<class key_t,
         }
         p->key = *nth_key_l(cache_p);
         buf->dirty(to_left), buf->dirty(to_it);
+        print_node_l(to_it.it);print_node_l(to_left.it);
     }
     /*
         * Make the last of p become the first of r,
@@ -521,7 +522,7 @@ template<class key_t,
         to_block_t to_tmp_b = buf->load_it(pos);
         byte *cache_tmp = to_tmp_b.it->frame + sizeof(node);
         node *tmp       = (node *)(cache_tmp - sizeof(node));
-        tmp->key = *nth_key_n(cache, ns), tmp->type = now->type, tmp->pos = pos, tmp->size = s;
+        tmp->key = *nth_key_l(cache, ns), tmp->type = now->type, tmp->pos = pos, tmp->size = s;
         tmp->prior = now->pos, tmp->next = now->next;
 
         if (now->next != invalid_p){
@@ -545,6 +546,7 @@ template<class key_t,
         *nth_point(cache_par, ns + 1) = tmp->pos;
         ++(par->size);
         buf->dirty(to_par_b);
+        print_node_l(to_tmp_b.it);
     }
     /*
         * Merge now and the next of it,
@@ -659,6 +661,7 @@ template<class key_t,
         *nth_key_l(cache, ord + 1) = k;
         *nth_value(cache, ord + 1) = v;
         // p.key = *nth_key(p, 0); shall we add this?
+        print_node_l(to_it.it);
         return true;
     }
     /*
@@ -881,7 +884,8 @@ public:
         bool ret = true;
         byte *cache = root.it->frame + sizeof(node);
         if (root_n->type){
-            if (com(root_n->key, k)) ret = _insert_n(root, k, v);
+            if (com(root_n->key, k))
+                ret = _insert_n(root, k, v);
             else _insert_head_n(root, k, v);
             buf->dirty(root);
             if (root_n->size >= part_size_n){
@@ -899,8 +903,10 @@ public:
             }
         }
         else{
-            if (com(root_n->key, k)) ret = _insert_l(root, k, v);
+            if (com(root_n->key, k))
+                ret = _insert_l(root, k, v);
             else _insert_head_l(root, k, v);
+            print_node_l(root.it);
             buf->dirty(root);
             if (root_n->size >= part_size_l){
                 point pos = alloc.alloc(node_size);
@@ -953,14 +959,17 @@ public:
     {
         return num;
     }
-    // void print_node(buf_block_t *it)
-    // {
-    //     node *tmp = (node *)(it->frame);
-    //     byte *cache = it->frame + sizeof(node);
-    //     for (size_t i = 0;i < tmp->size;i++){
-    //         printf("%d; ",*nth_value(cache, i));
-    //     }
-    // }
+    void print_node_l(buf_block_t *it)
+    {
+        // node *tmp = (node *)(it->frame);
+        // byte *cache = it->frame + sizeof(node);
+        // printf("values are:\n");
+        // for (size_t i = 0;i < tmp->size;i++){
+        //     printf("%d %d; ", nth_key_l(cache, i)->a, nth_key_l(cache, i)->b);
+        //     printf("%lld; ",*nth_value(cache, i));
+        // }
+        // printf("\n");
+    }
     void double_check()
     {
         buf->check_hash();

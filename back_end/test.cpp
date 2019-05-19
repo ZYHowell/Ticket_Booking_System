@@ -28,7 +28,7 @@ bool operator<(const test_t &a, const test_t &b){
     if (a.a != b.a) return a.a < b.a;
     return a.b < b.b;
 }
-using value_t = int;
+using value_t = long long;
 bool judgement(const test_t &a, const test_t &b){
     return a.a < b.a;
 }
@@ -79,13 +79,13 @@ int main(){
 #ifdef DEBUG_MODE
 	printf("\n\n");
 #endif
-    for (int i = 1;i <= test_size;i++){
+    for (long long i = 1;i <= test_size;i++){
 #ifdef TEST_INT_MODE
-        its[i] = test_t(randint(), i);
+        its[i] = test_t(randint(), (int)i);
     }
     std::sort(its + 1, its + test_size + 1);
-    for (int i = 1; i <= test_size;i++) {
-        its[i].a = i;
+    for (long long i = 1; i <= test_size;i++) {
+        its[i].a = (int)i;
     #ifdef DEBUG_MODE
         printf("%d %d; ", its[i].a, its[i].b);
     #endif
@@ -97,12 +97,12 @@ int main(){
     for (int i = 1;i <= test_size;i++) printf("%d %d; ", its[i].a, its[i].b);
     printf("\n");
     #endif
-    for (int i = 1;i <= test_size;i++){
+    for (long long i = 1;i <= test_size;i++){
         try{
         test.insert(its[i], i);
-        if (test.find(its[i]).second != i) printf("false insert:%d;\n", i); 
+        if (test.find(its[i]).second != i) printf("false insert:%lld;\n", i); 
         test.double_check();
-        }catch(...) {printf("%d;\n", i);}
+        }catch(...) {printf("%lld;\n", i);}
     }
 #endif
     #ifdef TEST_STRING_MODE
@@ -117,7 +117,7 @@ int main(){
     }
     #endif
     printf("remove now\n");
-    for (int i = 1; i < test_size / 2;i++)
+    for (long long i = 1; i < test_size / 2;i++)
     #ifdef TEST_EASY_MODE
         test.remove(its[i]);
     #endif
@@ -129,24 +129,24 @@ int main(){
         #endif
         try{
         //if (!test.find(its[9379]).first) printf("error: error start there: %d\n", i);
-        if (!test.remove(its[i])) printf("error: remove not success: %d\n", i);
-        if (test.find(its[i]).second) printf("wrong_have %d;\n", i);
+        if (!test.remove(its[i])) printf("error: remove not success: %lld\n", i);
+        if (test.find(its[i]).second) printf("wrong_have %lld;\n", i);
         // for (int j = i + 1;j < i + 100 && j < test_size;j++){
         //     if (!test.find(its[j]).first) printf("error: following not exist: %d %d;\n", i, j);
         // }
         test.double_check();
-        }catch(...) {printf("%d;\n", i);}
+        }catch(...) {printf("%lld;\n", i);}
     } 
     #endif
     printf("find_now\n");
-    for (int i = 1;i <= test_size;i++){
+    for (long long i = 1;i <= test_size;i++){
     #ifdef TEST_INT_MODE
         //printf("%d ",its[i].a);
         //printf("\n");
         if (test.find(its[i]).second == i) 
-            if (i < test_size / 2) printf("wrong_have %d %d;\n", its[i].a, its[i].b);
+            if (i < test_size / 2) printf("wrong_have %lld %lld;\n", its[i].a, its[i].b);
             else;
-        else if (i > test_size / 2) printf("wrong_not_have %d %d;\n", its[i].a, its[i].b);
+        else if (i > test_size / 2) printf("wrong_not_have %lld %lld;\n", its[i].a, its[i].b);
     #endif
     #ifdef TEST_STRING_MODE
 		if(strcmp(test.find(its[i]).second.inf, its[i].inf) != 0) printf("wrong\n");
