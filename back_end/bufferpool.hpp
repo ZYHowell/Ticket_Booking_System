@@ -431,6 +431,7 @@ public:
         it->state = tmp;
     }
     void check_LRU(){
+		if (HIR_head == nullptr) return;
         if ((HIR_head->LRU).prev != nullptr) {
             printf("wrong_LRU_checking: HIR_head ");
             throw runtime_error();

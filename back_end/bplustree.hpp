@@ -1,3 +1,4 @@
+#pragma warning(disable : 4996)
 #ifndef SJTU_BPLUSTREE_HPP
 #define SJTU_BPLUSTREE_HPP
 #include <cstddef>
@@ -7,6 +8,7 @@
 #include "alloc.hpp"
 #include "vector.hpp"
 #include "bufferpool.hpp"
+#include "tool.h"
 const point invalid_p = 0xdeadbeef;
 
 template<class key_t,
@@ -828,12 +830,12 @@ public:
 		#endif
         fwrite(&root_pos, sizeof(point), 1, datafile);
         fwrite(&num, sizeof(size_t), 1, datafile);
-        if (datafile) fclose(datafile);
 		if (index_name != nullptr)        
 			delete []index_name;
 		if (data_name != nullptr)
 			delete []data_name;
         delete buf;
+		if (datafile) fclose(datafile);
     }
     bool count(const key_t &k) const
     {
@@ -906,7 +908,6 @@ public:
             if (com(root_n->key, k))
                 ret = _insert_l(root, k, v);
             else _insert_head_l(root, k, v);
-            print_node_l(root.it);
             buf->dirty(root);
             if (root_n->size >= part_size_l){
                 point pos = alloc.alloc(node_size);
@@ -961,14 +962,14 @@ public:
     }
     void print_node_l(buf_block_t *it)
     {
-        // node *tmp = (node *)(it->frame);
-        // byte *cache = it->frame + sizeof(node);
-        // printf("values are:\n");
-        // for (size_t i = 0;i < tmp->size;i++){
-        //     printf("%d %d; ", nth_key_l(cache, i)->a, nth_key_l(cache, i)->b);
-        //     printf("%lld; ",*nth_value(cache, i));
-        // }
-        // printf("\n");
+        node *tmp = (node *)(it->frame);
+        byte *cache = it->frame + sizeof(node);
+        printf("values are:\n");
+        for (size_t i = 0;i < tmp->size;i++){
+            nth_key_l(cache, i);
+            *nth_value(cache, i);
+        }
+        printf("\n");
     }
     void double_check()
     {
