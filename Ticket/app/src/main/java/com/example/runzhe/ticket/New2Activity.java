@@ -36,14 +36,18 @@ public class New2Activity extends AppCompatActivity {
 
     //extra
     String s_id, s_name, s_catalog;
-    boolean tic1, tic2, tic3;
+    boolean[] ticket_type;
 
-    TextView dialog_name;
-
+    TextView name_in_dialog;
     ListView listView;
     Button newSta, submit;
 
     ArrayAdapter<String> arrayAdapter;
+
+    String command, stations;
+    int price_cnt, station_cnt;
+
+    private ProgressbarFragment progressbarFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,35 +59,67 @@ public class New2Activity extends AppCompatActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeButtonEnabled(true);
 
-        // 获取控件
-        listView = (ListView) findViewById(R.id.n_list);
-        newSta = (Button) findViewById(R.id.n_new_sta);
-        submit = (Button) findViewById(R.id.n_submit);
+        progressbarFragment = new ProgressbarFragment();
+        command = new String();
+        stations = new String();
 
-        // 获取Extra
-        s_id = getIntent().getStringExtra("id");
-        s_name = getIntent().getStringExtra("name");
-        s_catalog = getIntent().getStringExtra("catalog");
-        tic1 = getIntent().getBooleanExtra("tic1", true);
-        tic2 = getIntent().getBooleanExtra("tic2", true);
-        tic3 = getIntent().getBooleanExtra("tic3", true);
+        findAllView();
+        getAllExtra();
 
+        // 列表
         arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, new ArrayList<String>());
         listView.setAdapter(arrayAdapter);
 
         submit.setOnClickListener(new View.OnClickListener() { // 提交新建车次
             @Override
             public void onClick(View v) { // 提交
-                // TODO : 向后端提交数据并返回结果
-                Toasty.success(New2Activity.this, "新建成功！", Toast.LENGTH_SHORT, true).show();
-                finish();
+                try {
+                    progressbarFragment = new ProgressbarFragment();
+                    progressbarFragment.setCancelable(false);
+                    progressbarFragment.show(getSupportFragmentManager());
+
+//                    command = "add_or_modify_train"
+                    command = "add_train"
+                             + " " + getIntent().getStringExtra("id")
+                             + " " + getIntent().getStringExtra("name")
+                             + " " + getIntent().getStringExtra("catalog")
+                             + " " + station_cnt
+                             + " " + price_cnt;
+                    for(int i = 0; i < 11; i++)
+                        if(getIntent().getBooleanExtra("ticket_type_"+i, false))
+                            command += " " + Tools.getSeatType(i);
+                    command += "\n" + stations;
+
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                String result = Tools.command(command);
+                                if(result.equals("1")){
+                                    Tools.showMessage(New2Activity.this, New2Activity.this, "新建/修改成功！", "success");
+                                    progressbarFragment.dismiss();
+                                    finish();
+                                }
+                                else{
+                                    Tools.showMessage(New2Activity.this, New2Activity.this, "新建/修改失败！", "error");
+                                    progressbarFragment.dismiss();
+                                }
+                            } catch (Exception e) {
+                                Tools.showMessage(New2Activity.this, New2Activity.this, "请检查网络连接！", "warning");
+                                progressbarFragment.dismiss();
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
         newSta.setOnClickListener(new View.OnClickListener() { // 新建站点 弹窗
             @Override
             public void onClick(View v) {
-
                 AlertDialog.Builder builder = new AlertDialog.Builder(New2Activity.this);
                 View view = View.inflate(New2Activity.this, R.layout.dialog_new, null);
 
@@ -91,31 +127,41 @@ public class New2Activity extends AppCompatActivity {
                 alertDialog.setView(view);
                 alertDialog.show();
 
+                // find all view
                 final TextView name = (TextView) view.findViewById(R.id.n_sta_name);
-                dialog_name = name;
+                name_in_dialog = name;
                 final TextView time_arriv_text = (TextView) view.findViewById(R.id.n_time_arriv);
                 final TextView time_start_text = (TextView) view.findViewById(R.id.n_time_start);
                 final TextView time_stop_text = (TextView) view.findViewById(R.id.n_time_stop);
                 ImageView modify_time_arriv = (ImageView) view.findViewById(R.id.n_modify_time_arriv);
                 ImageView modify_time_start = (ImageView) view.findViewById(R.id.n_modify_time_start);
                 ImageView modify_time_stop = (ImageView) view.findViewById(R.id.n_modify_time_stop);
-                final EditText price1_text = (EditText) view.findViewById(R.id.n_price1);
-                final EditText price2_text = (EditText) view.findViewById(R.id.n_price2);
-                final EditText price3_text = (EditText) view.findViewById(R.id.n_price3);
                 Button submit_new_sta = (Button) view.findViewById(R.id.n_new_sta);
+                final EditText[] ticket_type_edit = new EditText[11];
+                ticket_type_edit[0] = view.findViewById(R.id.price_0);                ticket_type_edit[1] = view.findViewById(R.id.price_1);
+                ticket_type_edit[2] = view.findViewById(R.id.price_2);                ticket_type_edit[3] = view.findViewById(R.id.price_3);
+                ticket_type_edit[4] = view.findViewById(R.id.price_4);                ticket_type_edit[5] = view.findViewById(R.id.price_5);
+                ticket_type_edit[6] = view.findViewById(R.id.price_6);                ticket_type_edit[7] = view.findViewById(R.id.price_7);
+                ticket_type_edit[8] = view.findViewById(R.id.price_8);                ticket_type_edit[9] = view.findViewById(R.id.price_9);
+                ticket_type_edit[10] = view.findViewById(R.id.price_10);
+                final TextView[] ticket_type_text = new TextView[11];
+                ticket_type_text[0] = view.findViewById(R.id.textview_0);                ticket_type_text[1] = view.findViewById(R.id.textview_1);
+                ticket_type_text[2] = view.findViewById(R.id.textview_2);                ticket_type_text[3] = view.findViewById(R.id.textview_3);
+                ticket_type_text[4] = view.findViewById(R.id.textview_4);                ticket_type_text[5] = view.findViewById(R.id.textview_5);
+                ticket_type_text[6] = view.findViewById(R.id.textview_6);                ticket_type_text[7] = view.findViewById(R.id.textview_7);
+                ticket_type_text[8] = view.findViewById(R.id.textview_8);                ticket_type_text[9] = view.findViewById(R.id.textview_9);
+                ticket_type_text[10] = view.findViewById(R.id.textview_10);
 
-                if(!tic1) {price1_text.setText("N/A"); price1_text.setEnabled(false);}
-                if(!tic2) {price2_text.setText("N/A"); price2_text.setEnabled(false);}
-                if(!tic3) {price3_text.setText("N/A"); price3_text.setEnabled(false);}
+                // init ticket_type_edit
+                for(int i = 0; i < 11; i++) {
+                    ticket_type_text[i].setText(Tools.getSeatType(i));
+                    boolean enable = getIntent().getBooleanExtra("ticket_type_"+i, false);
+                    ticket_type_edit[i].setEnabled(enable);
+                    if(!enable) ticket_type_edit[i].setText("N/A（未启用）");
+                    else price_cnt++;
+                }
 
-                name.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(New2Activity.this, CityPickerActivity.class);
-                        startActivityForResult(intent, 1);
-                    }
-                });
-
+                name.setOnClickListener(new changeStationClickListener());
                 class ModifyTimeOnClickListener implements View.OnClickListener{ // 仅直接修改对应TextView的字符串
                     @Override
                     public void onClick(final View v) {
@@ -147,11 +193,9 @@ public class New2Activity extends AppCompatActivity {
 
                 submit_new_sta.setOnClickListener(new View.OnClickListener() { // 提交新建站点
                     @Override
-                    public void onClick(View v) {
-
+                    public void onClick(View v) { // 新建一个车站
                         // 获取控件上的数据
                         String sta_name = name.getText().toString();
-
                         DateFormat df = new SimpleDateFormat("hh:mm");
                         Date time_arriv, time_start, time_stop;
                         try {
@@ -160,27 +204,33 @@ public class New2Activity extends AppCompatActivity {
                             time_stop = df.parse(time_stop_text.getText().toString());
                         } catch (ParseException e){ return; }
 
-                        String price1_s = price1_text.getText().toString();
-                        String price2_s = price2_text.getText().toString();
-                        String price3_s = price3_text.getText().toString();
+                        String[] price_s = new String[11];
+                        for(int i = 0; i < 11; i++) price_s[i] = ticket_type_edit[i].getText().toString();
 
                         // 前端检测
-                        if(sta_name.equals("请选择")) {Toasty.error(New2Activity.this, "站名不能为空！", Toast.LENGTH_SHORT, true).show(); return;}
-                        if((tic1 && Tools.isEmpty(price1_s)) || (tic2 && Tools.isEmpty(price2_s)) || (tic3 && Tools.isEmpty(price3_s)))
-                            {Toasty.error(New2Activity.this, "票价不能为空！", Toast.LENGTH_SHORT, true).show(); return;}
-                        if((tic1 && !Tools.isNonNegtiveInteger(price1_s)) || (tic2 && !Tools.isNonNegtiveInteger(price2_s)) || (tic3 && !Tools.isNonNegtiveInteger(price3_s)))
-                            {Toasty.error(New2Activity.this, "票价不合法！", Toast.LENGTH_SHORT, true).show(); return;}
+                        if(sta_name.equals("请选择")) {
+                            Tools.showMessage(New2Activity.this, "站名不能为空！", "error"); return;}
+                        for(int i = 0; i < 11; i++){
+                            if(getIntent().getBooleanExtra("ticket_type_"+i, false)
+                                    && (Tools.isEmpty(price_s[i]) || !Tools.isNonNegtiveInteger(price_s[i]))){
+                                Tools.showMessage(New2Activity.this, Tools.getSeatType(i) + "价格不合法！", "error");
+                                return;
+                            }
+                        }
 
-                        // 通过检测
-                        int price1 = tic1 ? Integer.valueOf(price1_s) : -1;
-                        int price2 = tic2 ? Integer.valueOf(price2_s) : -1;
-                        int price3 = tic3 ? Integer.valueOf(price3_s) : -1;
-
-                        // TODO : 生成新站点的指令字符串，加载在原字符串后面，提交时传给后端
+                        int[] price = new int[11];
+                        for(int i = 0; i < 11; i++) price[i] = getIntent().getBooleanExtra("ticket_type_"+i, false)
+                                                                ? Integer.valueOf(price_s[i]) : -1;
+                        /* 生成指令*/
+                        stations += sta_name
+                                + " " + time_arriv_text.getText().toString()
+                                + " " + time_start_text.getText().toString()
+                                + " " + time_stop_text.getText().toString();
+                        for(int i = 0; i < 11; i++) if(price[i] != -1)
+                            stations += " ￥" + price[i];
 
                         arrayAdapter.add(sta_name);
                         alertDialog.dismiss();
-
                     }
                 });
 
@@ -195,8 +245,15 @@ public class New2Activity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         switch (resultCode){
             case 1:
-                dialog_name.setText(data.getStringExtra("station"));
+                name_in_dialog.setText(data.getStringExtra("station"));
                 break;
+        }
+    }
+
+    class changeStationClickListener implements View.OnClickListener{
+        public void onClick(View v) {
+            Intent intent = new Intent(New2Activity.this, SelectStation.class);
+            startActivityForResult(intent, 2333);
         }
     }
 
@@ -204,5 +261,19 @@ public class New2Activity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         finish();
         return super.onSupportNavigateUp();
+    }
+
+    void getAllExtra(){
+        s_id = getIntent().getStringExtra("id");
+        s_name = getIntent().getStringExtra("name");
+        s_catalog = getIntent().getStringExtra("catalog");
+        ticket_type = new boolean[11];
+        for(int i = 0; i < 11; i++) ticket_type[i] = getIntent().getBooleanExtra("ticket_type_" + i, false);
+    }
+
+    void findAllView(){
+        listView = (ListView) findViewById(R.id.n_list);
+        newSta = (Button) findViewById(R.id.n_new_sta);
+        submit = (Button) findViewById(R.id.n_submit);
     }
 }

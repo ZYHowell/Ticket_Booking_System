@@ -1,29 +1,27 @@
 package com.example.runzhe.ticket;
 
+import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import es.dmoral.toasty.Toasty;
 
-import static android.widget.Toast.*;
+import static android.widget.Toast.LENGTH_SHORT;
 
-public class BuyActivity extends AppCompatActivity {
+public class ReturnTicketActivity extends AppCompatActivity {
 
     TextView train_id_text;
     TextView date_text;
@@ -38,8 +36,7 @@ public class BuyActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_buy);
-
+        setContentView(R.layout.activity_return_ticket);
         findAllView();
         setAllInfo();
 
@@ -49,38 +46,37 @@ public class BuyActivity extends AppCompatActivity {
         actionBar.setHomeButtonEnabled(true);
 
         // TODO : 从后端获得座位数量
-        int[] left = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
-        int[] price = {0, 33, 33, 44, 55, 66, 77, 88, 77, 99, 22};
+        int[] arr = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
 
         list = new ArrayList<>();
         for(int i = 0; i <= 10; i++){
-            list.add(Tools.getSeatType(i) + " ： ￥ " + price[i] + "     " + "剩余 " + left[i] + " 张");
+            list.add(Tools.getSeatType(i) + " ： 已购 " + arr[i] + " 张");
         }
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(BuyActivity.this, android.R.layout.simple_list_item_1, list);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(ReturnTicketActivity.this, android.R.layout.simple_list_item_1, list);
         ticket_list.setAdapter(adapter);
         ticket_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View vi, int position, long id) {
-                final android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(BuyActivity.this);
-                final View view = View.inflate(BuyActivity.this, R.layout.dialog_buy_ticket, null);
+                android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(ReturnTicketActivity.this);
+                final View view = View.inflate(ReturnTicketActivity.this, R.layout.dialog_return_ticket, null);
                 builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         EditText num_edit = view.findViewById(R.id.num_edit);
                         String num = num_edit.getText().toString();
                         if(Tools.isEmpty(num) || !Tools.isNonNegtiveInteger(num)){
-                            Tools.showMessage(BuyActivity.this, "数量有误！", "error");
+                            Tools.showMessage(ReturnTicketActivity.this, "数量有误！", "error");
                             return;
                         }
 
-                        // TODO : 后端购票
+                        // TODO : 后端退票
                         boolean success = true;
                         if(success){
-                            Tools.showMessage(BuyActivity.this, "购票成功！（" + Integer.valueOf(num) + "张）", "success");
+                            Tools.showMessage(ReturnTicketActivity.this, "退票成功！（" + Integer.valueOf(num) + "张）", "success");
                             // 刷新原界面
                             dialog.dismiss();
                         }
-                        else Tools.showMessage(BuyActivity.this, "购票失败！", "error");
+                        else Tools.showMessage(ReturnTicketActivity.this, "退票失败！", "error");
                     }
                 });
                 builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -94,8 +90,18 @@ public class BuyActivity extends AppCompatActivity {
                 alertDialog.show();
             }
         });
-
     }
+
+    void setAllInfo(){
+        Intent intent = getIntent();
+        train_id_text.setText(intent.getStringExtra("id"));
+        date_text.setText(intent.getStringExtra("data"));
+        departure_text.setText(intent.getStringExtra("departure"));
+        destination_text.setText(intent.getStringExtra("destination"));
+        depart_time_text.setText(intent.getStringExtra("departure_time"));
+        destination_time_text.setText(intent.getStringExtra("destination_time"));
+    }
+
     void findAllView(){
         depart_time_text = findViewById(R.id.depart_time);
         destination_time_text = findViewById(R.id.destination_time);
@@ -105,20 +111,10 @@ public class BuyActivity extends AppCompatActivity {
         destination_text = findViewById(R.id.destination);
         ticket_list = findViewById(R.id.ticket_list);
     }
-    void setAllInfo(){
-        Intent intent = getIntent();
-        train_id_text.setText(intent.getStringExtra("id"));
-        date_text.setText(intent.getStringExtra("date"));
-        departure_text.setText(intent.getStringExtra("departure"));
-        destination_text.setText(intent.getStringExtra("destination"));
-        depart_time_text.setText(intent.getStringExtra("depart_time"));
-        destination_time_text.setText(intent.getStringExtra("destination_time"));
-    }
 
     @Override
     public boolean onSupportNavigateUp() {
         finish();
         return super.onSupportNavigateUp();
     }
-
 }

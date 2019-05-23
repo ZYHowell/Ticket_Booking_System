@@ -26,19 +26,13 @@ public class ProgressbarFragment extends android.support.v4.app.DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
         final View view = inflater.inflate(R.layout.progressbar_fragment, null);
-        builder.setView(view)
-                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Tools.showMessage(getActivity(), "已取消！", "warning");
-                            }
-                        });
-                        getActivity().finish();
-                    }
-                });
+        builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.setView(view);
         return builder.create();
     }
 

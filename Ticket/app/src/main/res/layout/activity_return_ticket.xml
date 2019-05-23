@@ -4,9 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".BuyActivity">
-
-    <!--所有id以y开始-->
+    tools:context=".ReturnTicketActivity">
 
     <TextView
         android:id="@+id/train_id"

@@ -43,6 +43,8 @@ public class LoginActivity extends AppCompatActivity {
     Button login_button;
     Button register_button;
 
+    private ProgressbarFragment progressbarFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,18 +95,41 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // TODO : 后端检查登陆信息
-        boolean success = Tools.getRandomInteger() % 2 == 0; // true 还是 false 取决于后端
-
-        if(success) {
-            Tools.showMessage(this, "登录成功", "success");
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
+        try {
+            progressbarFragment = new ProgressbarFragment();
+            progressbarFragment.setCancelable(false);
+            progressbarFragment.show(getSupportFragmentManager());
+            sendRequest(userid, password);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        else{
-            Tools.showMessage(this, "ID不存在或密码错误！", "error");
-        }
+    }
+    private void sendRequest(final String userid, final String password){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String command = "login" + " " + userid + " " + password;
+                    String result = Tools.command(command);
+                    if(result.equals("1")){
+                        Tools.showMessage(LoginActivity.this, LoginActivity.this, "登录成功", "success");
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        intent.putExtra("userid", userid);
+                        progressbarFragment.dismiss();
+                        startActivity(intent);
+                        finish();
+                    }
+                    else{
+                        Tools.showMessage(LoginActivity.this, LoginActivity.this, "ID不存在或密码错误！", "error");
+                        progressbarFragment.dismiss();
+                    }
+                } catch (Exception e) {
+                    Tools.showMessage(LoginActivity.this, LoginActivity.this, "请检查网络连接！", "warning");
+                    progressbarFragment.dismiss();
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     void findAllView(){

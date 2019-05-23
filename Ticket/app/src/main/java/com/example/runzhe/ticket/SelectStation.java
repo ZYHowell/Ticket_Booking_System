@@ -199,10 +199,10 @@ public class SelectStation extends AppCompatActivity implements SortAdapter.Call
 
                     // TODO : 后端传来所有站点名称，并add进去
 
-                    list.add("北京");
-                    list.add("上海虹桥");
-                    for(int i = 1; i <= 100; i++) list.add("重庆");
-                    for(int i = 1; i <= 100; i++) list.add("福州南");
+                    list.add("Station A");
+                    list.add("Station B");
+                    for(int i = 1; i <= 100; i++) list.add("fuck you " + i);
+                    for(int i = 1; i <= 100; i++) list.add("dfasdg " + i);
 
                     initViews();
 

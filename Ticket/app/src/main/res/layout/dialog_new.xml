@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <!--所有id以n开始-->
@@ -13,8 +16,7 @@
 
         <GridLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="10">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:layout_row="0"
@@ -40,23 +42,7 @@
                 android:text="停留时间"
                 android:textSize="20dp" />
 
-            <TextView
-                android:layout_row="4"
-                android:layout_column="1"
-                android:text="一等座价格"
-                android:textSize="20dp" />
 
-            <TextView
-                android:layout_row="5"
-                android:layout_column="1"
-                android:text="二等座价格"
-                android:textSize="20dp" />
-
-            <TextView
-                android:layout_row="6"
-                android:layout_column="1"
-                android:text="无座价格"
-                android:textSize="20dp" />
 
             <TextView
                 android:id="@+id/n_sta_name"
@@ -90,7 +76,7 @@
                     android:layout_gravity="center"
                     android:layout_marginRight="10dp"
                     android:layout_weight="1"
-                    android:src="@drawable/modify"/>
+                    android:src="@drawable/ic_settings_black_36dp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -114,7 +100,7 @@
                     android:layout_gravity="center"
                     android:layout_marginRight="10dp"
                     android:layout_weight="1"
-                    android:src="@drawable/modify"/>
+                    android:src="@drawable/ic_settings_black_36dp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -138,38 +124,205 @@
                     android:layout_gravity="center"
                     android:layout_marginRight="10dp"
                     android:layout_weight="1"
-                    android:src="@drawable/modify"/>
+                    android:src="@drawable/ic_settings_black_36dp"/>
             </LinearLayout>
 
-            <EditText
-                android:id="@+id/n_price1"
-                android:layout_row="4"
-                android:layout_column="2"
-                android:layout_gravity="fill_horizontal"
-                android:text="" />
-
-            <EditText
-                android:id="@+id/n_price2"
-                android:layout_row="5"
-                android:layout_column="2"
-                android:layout_gravity="fill_horizontal"
-                android:text="" />
-
-            <EditText
-                android:id="@+id/n_price3"
-                android:layout_row="6"
-                android:layout_column="2"
-                android:layout_gravity="fill_horizontal"
-                android:text="" />
         </GridLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginStart="2dp"
+            android:background="@color/colorCursor"/>
 
         <Button
             android:id="@+id/n_new_sta"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="确认新建"
-            android:textSize="20dp"/>
+            android:textSize="20dp"
+            android:textColor="#ffffff"
+            android:background="@drawable/round_corner_bg_loginbtn"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginStart="2dp"
+            android:background="@color/colorCursor"/>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/textview_0"
+                    android:layout_row="0"
+                    android:layout_column="0"
+                    android:text="加载中"
+                    android:layout_gravity="center"
+                    android:textSize="15dp" />
+                <TextView
+                    android:id="@+id/textview_1"
+                    android:layout_row="1"
+                    android:layout_column="0"
+                    android:text="加载中"
+                    android:layout_gravity="center"
+                    android:textSize="15dp" />
+                <TextView
+                    android:id="@+id/textview_2"
+                    android:layout_row="2"
+                    android:layout_column="0"
+                    android:text="加载中"
+                    android:layout_gravity="center"
+                    android:textSize="15dp" />
+                <TextView
+                    android:id="@+id/textview_3"
+                    android:layout_row="3"
+                    android:layout_column="0"
+                    android:text="加载中"
+                    android:layout_gravity="center"
+                    android:textSize="15dp" />
+                <TextView
+                    android:id="@+id/textview_4"
+                    android:layout_row="4"
+                    android:layout_column="0"
+                    android:text="加载中"
+                    android:layout_gravity="center"
+                    android:textSize="15dp" />
+                <TextView
+                    android:id="@+id/textview_5"
+                    android:layout_row="5"
+                    android:layout_column="0"
+                    android:text="加载中"
+                    android:layout_gravity="center"
+                    android:textSize="15dp" />
+                <TextView
+                    android:id="@+id/textview_6"
+                    android:layout_row="6"
+                    android:layout_column="0"
+                    android:text="加载中"
+                    android:layout_gravity="center"
+                    android:textSize="15dp" />
+                <TextView
+                    android:id="@+id/textview_7"
+                    android:layout_row="7"
+                    android:layout_column="0"
+                    android:text="加载中"
+                    android:layout_gravity="center"
+                    android:textSize="15dp" />
+                <TextView
+                    android:id="@+id/textview_8"
+                    android:layout_row="8"
+                    android:layout_column="0"
+                    android:text="加载中"
+                    android:layout_gravity="center"
+                    android:textSize="15dp" />
+                <TextView
+                    android:id="@+id/textview_9"
+                    android:layout_row="9"
+                    android:layout_column="0"
+                    android:text="加载中"
+                    android:layout_gravity="center"
+                    android:textSize="15dp" />
+                <TextView
+                    android:id="@+id/textview_10"
+                    android:layout_row="10"
+                    android:layout_column="0"
+                    android:text="加载中"
+                    android:layout_gravity="center"
+                    android:textSize="15dp" />
+
+                <EditText
+                    android:id="@+id/price_0"
+                    android:layout_row="0"
+                    android:layout_column="1"
+                    android:layout_gravity="fill_horizontal"
+                    android:layout_marginStart="10dp"
+                    android:text="" />
+                <EditText
+                    android:id="@+id/price_1"
+                    android:layout_row="1"
+                    android:layout_column="1"
+                    android:layout_gravity="fill_horizontal"
+                    android:layout_marginStart="10dp"
+                    android:text="" />
+                <EditText
+                    android:id="@+id/price_2"
+                    android:layout_row="2"
+                    android:layout_column="1"
+                    android:layout_gravity="fill_horizontal"
+                    android:layout_marginStart="10dp"
+                    android:text="" />
+                <EditText
+                    android:id="@+id/price_3"
+                    android:layout_row="3"
+                    android:layout_column="1"
+                    android:layout_gravity="fill_horizontal"
+                    android:layout_marginStart="10dp"
+                    android:text="" />
+                <EditText
+                    android:id="@+id/price_4"
+                    android:layout_row="4"
+                    android:layout_column="1"
+                    android:layout_gravity="fill_horizontal"
+                    android:layout_marginStart="10dp"
+                    android:text="" />
+                <EditText
+                    android:id="@+id/price_5"
+                    android:layout_row="5"
+                    android:layout_column="1"
+                    android:layout_gravity="fill_horizontal"
+                    android:layout_marginStart="10dp"
+                    android:text="" />
+                <EditText
+                    android:id="@+id/price_6"
+                    android:layout_row="6"
+                    android:layout_column="1"
+                    android:layout_gravity="fill_horizontal"
+                    android:layout_marginStart="10dp"
+                    android:text="" />
+                <EditText
+                    android:id="@+id/price_7"
+                    android:layout_row="7"
+                    android:layout_column="1"
+                    android:layout_gravity="fill_horizontal"
+                    android:layout_marginStart="10dp"
+                    android:text="" />
+                <EditText
+                    android:id="@+id/price_8"
+                    android:layout_row="8"
+                    android:layout_column="1"
+                    android:layout_gravity="fill_horizontal"
+                    android:layout_marginStart="10dp"
+                    android:text="" />
+                <EditText
+                    android:id="@+id/price_9"
+                    android:layout_row="9"
+                    android:layout_column="1"
+                    android:layout_gravity="fill_horizontal"
+                    android:layout_marginStart="10dp"
+                    android:text="" />
+                <EditText
+                    android:id="@+id/price_10"
+                    android:layout_row="10"
+                    android:layout_column="1"
+                    android:layout_gravity="fill_horizontal"
+                    android:layout_marginStart="10dp"
+                    android:text="" />
+
+            </GridLayout>
+
+        </ScrollView>
+
 
     </LinearLayout>
 

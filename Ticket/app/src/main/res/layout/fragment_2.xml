@@ -10,6 +10,98 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="right"
+                android:text="出发日期"
+                android:textSize="20dp"
+                android:textColor="#777777"/>
+
+            <TextView
+                android:id="@+id/b_date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:gravity="center"
+                android:text="loading"
+                android:textSize="30dp"
+                android:textColor="#000000"/>
+
+            <ImageView
+                android:id="@+id/b_modify_date"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/ic_settings_black_36dp"
+                android:tint="#444444"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:gravity="right"
+                android:text="车次类别"
+                android:textSize="20dp"
+                android:textColor="#777777"/>
+
+            <Spinner
+                android:id="@+id/trainCatalog_Spinner"
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:layout_marginStart="38dp"
+                android:background="@null"
+                android:drawablePadding="5dp"
+                android:ems="19"
+                android:singleLine="true"
+                android:textColorHint="@color/colorCursor"
+                android:textCursorDrawable="@drawable/color_cursor"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/query_Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginRight="14dp"
+                android:text="查询"
+                android:textSize="20sp"
+                android:background="@drawable/round_corner_bg_loginbtn"
+                android:textColor="#FFFFFF"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginStart="2dp"
+            android:background="@color/colorCursor"/>
+
         <ListView
             android:id="@+id/ticket_list"
             android:layout_width="match_parent"

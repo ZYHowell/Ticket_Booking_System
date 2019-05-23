@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -37,26 +38,22 @@ public class Fragment1 extends Fragment {
     TextView date;
     ImageView double_arrow;
     ImageView modify_date;
+    Button btn_query;
+
+    CheckBox[] cb;
+    CheckBox cb_All, cb_transfer;
 
     Calendar calendar;
     DatePickerDialog dialog;
-
-    Button btn_query;
-
     int cur_year, cur_month, cur_day; // 车次日期
-    int whichStationToChange;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_1, container, false);
 
-        station_1 = (TextView) view.findViewById(R.id.b_station_1);
-        station_2 = (TextView) view.findViewById(R.id.b_station_2);
-        date = (TextView) view.findViewById(R.id.b_date);
-        double_arrow = (ImageView) view.findViewById(R.id.b_double_arrow);
-        modify_date = (ImageView) view.findViewById(R.id.b_modify_date);
-        btn_query = (Button) view.findViewById(R.id.b_query);
+        findAllView(view);
+        initCheckBox();
 
         class changeStationClickListener implements View.OnClickListener{
             public void onClick(View v) {
@@ -130,11 +127,6 @@ public class Fragment1 extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (resultCode){
@@ -142,5 +134,37 @@ public class Fragment1 extends Fragment {
                 (data.getStringExtra("type").equals("1") ? station_1 : station_2).setText(data.getStringExtra("station"));
                 break;
         }
+    }
+
+    void findAllView(View view){
+        station_1 = (TextView) view.findViewById(R.id.b_station_1);
+        station_2 = (TextView) view.findViewById(R.id.b_station_2);
+        date = (TextView) view.findViewById(R.id.b_date);
+        double_arrow = (ImageView) view.findViewById(R.id.b_double_arrow);
+        modify_date = (ImageView) view.findViewById(R.id.b_modify_date);
+        btn_query = (Button) view.findViewById(R.id.b_query);
+
+        cb = new CheckBox[7];
+        cb[0] = view.findViewById(R.id.train_checkbox_T);
+        cb[1] = view.findViewById(R.id.train_checkbox_Z);
+        cb[2] = view.findViewById(R.id.train_checkbox_O);
+        cb[3] = view.findViewById(R.id.train_checkbox_G);
+        cb[4] = view.findViewById(R.id.train_checkbox_D);
+        cb[5] = view.findViewById(R.id.train_checkbox_K);
+        cb[6] = view.findViewById(R.id.train_checkbox_C);
+        cb_All = view.findViewById(R.id.train_checkbox_All);
+        cb_transfer = view.findViewById(R.id.train_checkbox_transfer);
+    }
+    void initCheckBox(){
+        cb_All.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean state = cb_All.isChecked();
+                setAllCheckBoxState(state);
+            }
+        });
+    }
+    void setAllCheckBoxState(boolean state){
+        for(int i = 0; i <= 6; i++) cb[i].setChecked(state);
     }
 }

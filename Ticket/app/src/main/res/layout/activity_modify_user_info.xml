@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ModifyUserInfoActivity">
+
+    <TextView
+        android:id="@+id/a_hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="42dp"
+        android:paddingLeft="20dp"
+       android:text="Loading"/>
+
+    <RelativeLayout
+        android:id="@+id/registerUsername_Layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:layout_marginTop="14dp"
+        android:background="@drawable/rectangle_edittext"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/a_hint"
+        app:layout_constraintBottom_toTopOf="@+id/registerPassword_Layout">
+
+        <ImageView
+            android:id="@+id/registerUsername_Icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:paddingBottom="10dp"
+            android:paddingLeft="10dp"
+            android:paddingTop="10dp"
+            android:src="@drawable/ic_person_black_24dp"
+            android:tint="@color/icon_default_color" />
+
+        <View
+            android:id="@+id/registerUsername_Cursor"
+            android:layout_width="1dip"
+            android:layout_height="20dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@id/registerUsername_Icon"
+            android:background="@color/colorCursor" />
+
+        <EditText
+            android:id="@+id/registerUsername_Edit"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@id/registerUsername_Cursor"
+            android:background="@null"
+            android:drawablePadding="5dp"
+            android:ems="19"
+            android:hint="用户名"
+            android:singleLine="true"
+            android:textColorHint="@color/colorCursor"
+            android:textCursorDrawable="@drawable/color_cursor"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:id="@+id/registerUsername_Clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="20dp"
+            android:src="@drawable/ic_highlight_off_white_24dp"
+            android:tint="@color/icon_default_color"
+            android:visibility="invisible" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/registerPassword_Layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/registerUsername_Layout"
+        android:layout_marginBottom="4dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/rectangle_edittext"
+        app:layout_constraintBottom_toTopOf="@+id/registerConfirmPassword_Layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/registerUsername_Layout">
+
+        <ImageView
+            android:id="@+id/registerPassword_Icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:paddingBottom="10dp"
+            android:paddingStart="10dp"
+            android:paddingTop="10dp"
+            android:src="@drawable/ic_lock_outline_black_24dp"
+            android:tint="@color/icon_default_color" />
+
+        <View
+            android:id="@+id/registerPassword_Cursor"
+            android:layout_width="1dip"
+            android:layout_height="20dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:layout_toRightOf="@id/registerPassword_Icon"
+            android:background="@color/colorCursor" />
+
+        <EditText
+            android:id="@+id/registerPassword_Edit"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@+id/registerPassword_Cursor"
+            android:background="@null"
+            android:drawablePadding="5dp"
+            android:ems="19"
+            android:hint="新密码"
+            android:inputType="textPassword"
+            android:singleLine="true"
+            android:textColorHint="@color/colorCursor"
+            android:textCursorDrawable="@drawable/color_cursor"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:id="@+id/registerPassword_Clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="20dp"
+            android:src="@drawable/ic_highlight_off_white_24dp"
+            android:tint="@color/icon_default_color"
+            android:visibility="invisible" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/registerConfirmPassword_Layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/registerPassword_Layout"
+        android:layout_marginBottom="4dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/rectangle_edittext"
+        app:layout_constraintBottom_toTopOf="@+id/registerEmail_Layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/registerPassword_Layout">
+
+        <ImageView
+            android:id="@+id/registerConfirmPassword_Icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:paddingBottom="10dp"
+            android:paddingStart="10dp"
+            android:paddingTop="10dp"
+            android:src="@drawable/ic_lock_outline_black_24dp"
+            android:tint="@color/icon_default_color" />
+
+        <View
+            android:id="@+id/registerConfirmPassword_Cursor"
+            android:layout_width="1dip"
+            android:layout_height="20dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@id/registerConfirmPassword_Icon"
+            android:background="@color/colorCursor" />
+
+        <EditText
+            android:id="@+id/registerConfirmPassword_Edit"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@id/registerConfirmPassword_Cursor"
+            android:background="@null"
+            android:drawablePadding="5dp"
+            android:ems="19"
+            android:hint="确认新密码"
+            android:inputType="textPassword"
+            android:singleLine="true"
+            android:textColorHint="@color/colorCursor"
+            android:textCursorDrawable="@drawable/color_cursor"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:id="@+id/registerConfirmPassword_Clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="20dp"
+            android:src="@drawable/ic_highlight_off_white_24dp"
+            android:tint="@color/icon_default_color"
+            android:visibility="invisible" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/registerEmail_Layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/rectangle_edittext"
+        app:layout_constraintBottom_toTopOf="@+id/registerPhone_Layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/registerConfirmPassword_Layout">
+
+        <ImageView
+            android:id="@+id/registerEmail_Icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:paddingBottom="10dp"
+            android:paddingStart="10dp"
+            android:paddingTop="10dp"
+            android:src="@drawable/ic_email_black_24dp"
+            android:tint="@color/icon_default_color" />
+
+        <View
+            android:id="@+id/registerEmail_Cursor"
+            android:layout_width="1dip"
+            android:layout_height="20dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@id/registerEmail_Icon"
+            android:background="@color/colorCursor" />
+
+        <EditText
+            android:id="@+id/registerEmail_Edit"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@id/registerEmail_Cursor"
+            android:background="@null"
+            android:drawablePadding="5dp"
+            android:ems="19"
+            android:hint="邮箱"
+            android:singleLine="true"
+            android:textColorHint="@color/colorCursor"
+            android:textCursorDrawable="@drawable/color_cursor"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:id="@+id/registerEmail_Clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="20dp"
+            android:src="@drawable/ic_highlight_off_white_24dp"
+            android:tint="@color/icon_default_color"
+            android:visibility="invisible" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/registerPhone_Layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/rectangle_edittext"
+        app:layout_constraintBottom_toTopOf="@+id/register_Button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/registerEmail_Layout">
+
+        <ImageView
+            android:id="@+id/registerPhone_Icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:paddingBottom="10dp"
+            android:paddingStart="10dp"
+            android:paddingTop="10dp"
+            android:src="@drawable/ic_call_black_24dp"
+            android:tint="@color/icon_default_color" />
+
+        <View
+            android:id="@+id/registerPhone_Cursor"
+            android:layout_width="1dip"
+            android:layout_height="20dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@id/registerPhone_Icon"
+            android:background="@color/colorCursor" />
+
+        <EditText
+            android:id="@+id/registerPhone_Edit"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@id/registerPhone_Cursor"
+            android:background="@null"
+            android:drawablePadding="5dp"
+            android:ems="19"
+            android:hint="电话"
+            android:singleLine="true"
+            android:textColorHint="@color/colorCursor"
+            android:textCursorDrawable="@drawable/color_cursor"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:id="@+id/registerPhone_Clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="20dp"
+            android:src="@drawable/ic_highlight_off_white_24dp"
+            android:tint="@color/icon_default_color"
+            android:visibility="invisible" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/registerPrivilege_Layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/rectangle_edittext"
+        app:layout_constraintBottom_toTopOf="@+id/register_Button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/registerPhone_Layout">
+
+        <ImageView
+            android:id="@+id/registerPrivilege_Icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:paddingBottom="10dp"
+            android:paddingStart="10dp"
+            android:paddingTop="10dp"
+            android:src="@drawable/ic_group_black_24dp"
+            android:tint="@color/icon_default_color" />
+
+        <View
+            android:id="@+id/registerPrivilege_Cursor"
+            android:layout_width="1dip"
+            android:layout_height="20dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@id/registerPrivilege_Icon"
+            android:background="@color/colorCursor" />
+
+        <Spinner
+            android:id="@+id/registerPrivilege_Spinner"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@id/registerPrivilege_Cursor"
+            android:background="@null"
+            android:drawablePadding="5dp"
+            android:ems="19"
+            android:singleLine="true"
+            android:textColorHint="@color/colorCursor"
+            android:textCursorDrawable="@drawable/color_cursor"
+            android:textSize="15sp" />
+
+    </RelativeLayout>
+
+    <Button
+        android:id="@+id/save_Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/round_corner_bg_loginbtn"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="保存"
+        android:textColor="@color/blank"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/registerPrivilege_Layout" />
+
+</android.support.constraint.ConstraintLayout>

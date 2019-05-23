@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp">
+
+        <CheckBox
+            android:id="@+id/train_checkbox_T"
+            android:layout_row="0"
+            android:layout_column="0"
+            android:layout_columnWeight="1"
+            android:buttonTint="@color/colorLoginButton"
+            android:text="T(特快)"/>
+        <CheckBox
+            android:id="@+id/train_checkbox_Z"
+            android:layout_row="0"
+            android:layout_column="1"
+            android:layout_columnWeight="1"
+            android:buttonTint="@color/colorLoginButton"
+            android:text="Z(直达)"/>
+        <CheckBox
+            android:id="@+id/train_checkbox_O"
+            android:layout_row="1"
+            android:layout_column="0"
+            android:layout_columnWeight="1"
+            android:buttonTint="@color/colorLoginButton"
+            android:text="O(普通)"/>
+        <CheckBox
+            android:id="@+id/train_checkbox_G"
+            android:layout_row="1"
+            android:layout_column="1"
+            android:layout_columnWeight="1"
+            android:buttonTint="@color/colorLoginButton"
+            android:text="G(高铁)"/>
+        <CheckBox
+            android:id="@+id/train_checkbox_D"
+            android:layout_row="2"
+            android:layout_column="0"
+            android:layout_columnWeight="1"
+            android:buttonTint="@color/colorLoginButton"
+            android:text="D(动车)"/>
+        <CheckBox
+            android:id="@+id/train_checkbox_K"
+            android:layout_row="2"
+            android:layout_column="1"
+            android:layout_columnWeight="1"
+            android:buttonTint="@color/colorLoginButton"
+            android:text="K(快车)"/>
+        <CheckBox
+            android:id="@+id/train_checkbox_C"
+            android:layout_row="3"
+            android:layout_column="0"
+            android:layout_columnWeight="1"
+            android:buttonTint="@color/colorLoginButton"
+            android:text="C(城际)"/>
+        <CheckBox
+            android:id="@+id/train_checkbox_All"
+            android:layout_row="3"
+            android:layout_column="1"
+            android:layout_columnWeight="1"
+            android:buttonTint="@color/colorLoginButton"
+            android:text="全选/全不选"/>
+
+    </GridLayout>
+
+</android.support.constraint.ConstraintLayout>

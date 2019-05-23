@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".Fragment1">
 
     <LinearLayout
@@ -24,6 +25,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_gravity="center"
                 android:text="北京"
                 android:textSize="30sp"
                 android:textColor="@color/black"
@@ -32,16 +34,17 @@
             <ImageView
                 android:id="@+id/b_double_arrow"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="60dp"
                 android:layout_weight="1"
-                android:scaleType="centerInside"
-                android:src="@drawable/double_arrow"/>
+                android:src="@drawable/ic_swap_horiz_black_36dp"
+                android:tint="@color/swapButton"/>
 
             <TextView
                 android:id="@+id/b_station_2"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_gravity="center"
                 android:text="上海"
                 android:textSize="30sp"
                 android:textColor="@color/black"
@@ -75,23 +78,50 @@
 
             <ImageView
                 android:id="@+id/b_modify_date"
-                android:layout_width="25dp"
-                android:layout_height="25dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_gravity="center"
-                android:layout_marginRight="10dp"
-                android:src="@drawable/modify"/>
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/ic_settings_black_36dp"
+                android:tint="#444444"/>
 
         </LinearLayout>
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_margin="10dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginStart="2dp"
+            android:background="@color/colorCursor"/>
+
+        <include layout="@layout/catalog"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_margin="10dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginStart="2dp"
+            android:background="@color/colorCursor"/>
+
+        <CheckBox
+            android:id="@+id/train_checkbox_transfer"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center"
+            android:buttonTint="@color/colorLoginButton"
+            android:text="中转"/>
+
         <Button
             android:id="@+id/b_query"
-            android:layout_width="150dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="10dp"
             android:text="查询车票"
-            android:textSize="25dp"
-            android:background="@color/colorPrimary"
+            android:textSize="20sp"
+            android:background="@drawable/round_corner_bg_loginbtn"
             android:textColor="#FFFFFF"/>
 
     </LinearLayout>

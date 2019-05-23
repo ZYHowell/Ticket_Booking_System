@@ -34,7 +34,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="查找"
-                android:textSize="20dp"/>
+                android:textSize="20dp"
+                android:textColor="#ffffff"
+                android:background="@drawable/round_corner_bg_registerbtn"/>
 
         </LinearLayout>
 

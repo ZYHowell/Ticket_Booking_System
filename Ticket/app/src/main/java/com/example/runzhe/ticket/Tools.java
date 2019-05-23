@@ -27,6 +27,19 @@ import es.dmoral.toasty.Toasty;
 
 public class Tools {
 
+    static String command(String command) throws Exception{
+
+        // TODO : 使用 client
+        return Client.main(command);
+//        return new String("张三 zhangsan@sjtu.edu.cn 12345678901 2");
+    }
+
+    static String getSeatType(int pos){
+        if(pos >= 11) return "未知席别";
+        String[] seatType = {"商务座", "一等座", "二等座", "特等座", "硬座", "软座", "无座", "硬卧", "软卧", "动卧", "高级软卧"};
+        return seatType[pos];
+    }
+
     static  boolean isNonNegtiveInteger(String string){
         Pattern pattern = Pattern.compile("[0-9]*");
         Matcher isNum = pattern.matcher(string);
@@ -55,12 +68,13 @@ public class Tools {
         return random.nextInt();
     }
 
-    static String getNthSubstring(String string, String regex, int index){
+    static String getNthSubstring(String string, String regex, int index){ // 0 base
         String[] strArray = string.split(" ");
         return strArray[index];
     }
 
     static void showMessage(Context context, String message, String type){
+
         switch (type){
             case "error" :
                 Toasty.error(context, message, Toast.LENGTH_SHORT).show();
@@ -75,6 +89,27 @@ public class Tools {
                 Toasty.warning(context, message, Toast.LENGTH_SHORT).show();
                 break;
         }
+    }
+    static void showMessage(final Context context, Activity ac, final String message, final String type){
+        ac.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                switch (type) {
+                    case "error":
+                        Toasty.error(context, message, Toast.LENGTH_SHORT).show();
+                        break;
+                    case "success":
+                        Toasty.success(context, message, Toast.LENGTH_SHORT).show();
+                        break;
+                    case "info":
+                        Toasty.info(context, message, Toast.LENGTH_SHORT).show();
+                        break;
+                    case "warning":
+                        Toasty.warning(context, message, Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            }
+        });
     }
 
 }

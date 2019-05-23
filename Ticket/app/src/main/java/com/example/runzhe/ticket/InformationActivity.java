@@ -22,6 +22,11 @@ public class InformationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_information);
 
+        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setHomeButtonEnabled(true);
+
         ticket_list = (ListView) findViewById(R.id.i_ticket_list);
         sort_by_consume = (Button) findViewById(R.id.i_sort_by_time_consume);
         sort_by_start = (Button) findViewById(R.id.i_sort_by_time_start);
@@ -40,10 +45,12 @@ public class InformationActivity extends AppCompatActivity {
                 // TODO : 从后端获得id_s对应车票的信息并putExtra方式传给BuyActivity
 
                 Intent intent = new Intent(InformationActivity.this, BuyActivity.class);
-                intent.putExtra("station_1", "北京");
-                intent.putExtra("station_2", "上海");
-                intent.putExtra("time_1", "13:00");
-                intent.putExtra("time_2", "14:00");
+                intent.putExtra("id", "D2333");
+                intent.putExtra("date", "2019/06/07");
+                intent.putExtra("departure", "北京");
+                intent.putExtra("destination", "上海");
+                intent.putExtra("depart_time", "13:00");
+                intent.putExtra("destination_time", "14:00");
                 intent.putExtra("price_1", 100);
                 intent.putExtra("price_2", 200);
                 intent.putExtra("price_3", 300);
@@ -76,5 +83,11 @@ public class InformationActivity extends AppCompatActivity {
             }
             refresh();
         }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
     }
 }

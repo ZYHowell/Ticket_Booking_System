@@ -13,52 +13,58 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:label">
-
         <activity
             android:name=".MainActivity"
             android:label="12306"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".AdminActivity"
             android:label="管理模式"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".SelectStation"
-            android:label="选择车站"/>
+            android:label="选择车站" />
         <activity
             android:name=".LoginActivity"
             android:label="请登录"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".RegisterActivity"
             android:label="注册"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".InformationActivity"
             android:label="查询结果"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".BuyActivity"
             android:label="购买车票"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".NewActivity"
-            android:label="新建车次"
-            android:screenOrientation="portrait"/>
+            android:label="新建/修改车次"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".New2Activity"
             android:label="新建站点"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".SplashActivity"
             android:label="欢迎"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ModifyUserInfoActivity"
+            android:label="修改用户资料" />
+        <activity
+            android:name=".ReturnTicketActivity"
+            android:label="退票"></activity>
     </application>
 
 </manifest>

@@ -1,5 +1,6 @@
 package com.example.runzhe.ticket;
 
+import android.content.Intent;
 import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -23,83 +24,162 @@ public class Fragment3 extends Fragment {
 
     View view;
 
-    ImageView portrait;
-    EditText username;
-    EditText email;
-    EditText phone;
-    EditText new_password;
-    TextView priv;
-    Button btn_update;
+    TextView id_text;
+    EditText username_edit;
+    EditText email_edit;
+    EditText phone_edit;
+    EditText password_edit;
+    EditText password_confirm_edit;
+    TextView privilege_text;
+    Button save_btn;
 
-    public int privilege;
+    String userid, username, email, phone, privilege;
+
+    private ProgressbarFragment progressbarFragment;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_3, container, false);
+        findAllView();
 
-        portrait = (ImageView)view.findViewById(R.id.s_portrait);
-        priv = (TextView) view.findViewById(R.id.s_privilege);
-        username = (EditText)view.findViewById(R.id.s_username);
-        email = (EditText)view.findViewById(R.id.s_email);
-        phone = (EditText)view.findViewById(R.id.s_phone);
-        new_password = (EditText) view.findViewById(R.id.s_new_password);
-        btn_update = (Button)view.findViewById(R.id.s_update_btn);
+        userid = getActivity().getIntent().getStringExtra("userid");
+        progressbarFragment = new ProgressbarFragment();
+        try {
+            progressbarFragment = new ProgressbarFragment();
+            progressbarFragment.setCancelable(false);
+            progressbarFragment.show(getActivity().getSupportFragmentManager());
+            sendRequest(userid);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        privilege = 2; // TODO : 后端查询该用户权限
-
-        // TODO : 向后端索要各种个人资料并展示，这里胡来一通
-        priv.setText(privilege == 1 ? "普通用户" : "管理员");
-        username.setText("小明");
-        email.setText("xiaoming@sjtu.edu.cn");
-        phone.setText("12345678901");
-        new_password.setText("");
-
-        portrait.setOnClickListener(new View.OnClickListener() {
+        id_text.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO : 上传图片
-                // TODO : 向后端传图片
-                Toast toast = Toast.makeText(getActivity().getApplicationContext(), "头像功能还未开放！", Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.BOTTOM, 0, 100);
-                toast.show();
+                Tools.showMessage(getActivity(), "ID是不可以修改的噢！", "info");
             }
         });
 
-        btn_update.setOnClickListener(new View.OnClickListener() {
+        privilege_text.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                String newUsername = username.getText().toString();
-                String newEmail = email.getText().toString();
-                String newPhone = phone.getText().toString();
-                String newPassword = new_password.getText().toString();
-
-
-                if(Tools.isEmpty(newUsername)) {Toasty.error(getActivity(), "用户名不能为空！", Toast.LENGTH_SHORT, true).show(); return;}
-                if(Tools.isEmpty(newEmail)) {Toasty.error(getActivity(), "邮箱不能为空！", Toast.LENGTH_SHORT, true).show(); return;}
-                if(Tools.isEmpty(newPhone)) {Toasty.error(getActivity(), "手机号码不能为空！", Toast.LENGTH_SHORT, true).show(); return;}
-                if(!Tools.isEmail(newEmail)) {Toasty.error(getActivity(), "邮箱格式有误！", Toast.LENGTH_SHORT, true).show(); return;}
-                if(!Tools.isPhone(newPhone)) {Toasty.error(getActivity(), "手机号码有误！", Toast.LENGTH_SHORT, true).show(); return;}
-
-                // TODO : 向后端传递修改数据
-                boolean success = true;
-                if(success) Toasty.success(getActivity(), "修改成功！", Toast.LENGTH_SHORT, true).show();
-                else Toasty.error(getActivity(), "修改失败！", Toast.LENGTH_SHORT, true).show();
-
-                new_password.setText("");
-
+                Tools.showMessage(getActivity(), "如需修改权限，请进入管理模式！", "info");
             }
         });
 
+        save_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String newUsername = username_edit.getText().toString();
+                String newEmail = email_edit.getText().toString();
+                String newPhone = phone_edit.getText().toString();
+                String newPassword = password_edit.getText().toString();
+                String newPassword2 = password_confirm_edit.getText().toString();
+
+                if(Tools.isEmpty(userid)) {Tools.showMessage(getActivity(), "系统异常！", "error"); return;}
+                if(Tools.isEmpty(newUsername)) {Tools.showMessage(getActivity(), "用户名不能为空！", "error"); return;}
+                if(Tools.isEmpty(newEmail)) {Tools.showMessage(getActivity(), "邮箱不能为空！", "error"); return;}
+                if(Tools.isEmpty(newPhone)) {Tools.showMessage(getActivity(), "手机号码不能为空！", "error"); return;}
+                if(!Tools.isEmail(newEmail)) {Tools.showMessage(getActivity(), "邮箱格式有误！", "error"); return;}
+                if(!Tools.isPhone(newPhone)) {Tools.showMessage(getActivity(), "手机号码有误！", "error"); return;}
+                if(!Tools.isEmpty(newPassword) && !newPassword.equals(newPassword2))
+                    {Tools.showMessage(getActivity(), "两次密码不一致！", "error"); return;}
+
+
+                try {
+                    progressbarFragment = new ProgressbarFragment();
+                    progressbarFragment.setCancelable(false);
+                    progressbarFragment.show(getActivity().getSupportFragmentManager());
+                    sendRequest2(userid, newUsername, newPassword, newEmail, newPhone);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                password_edit.setText("");
+                password_confirm_edit.setText("");
+            }
+        });
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
     }
 
+    private void sendRequest(final String userid){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String command = "query_profile" + " " + userid;
+                    String result = Tools.command(command);
+                    if(result.equals("0")){
+                        Tools.showMessage(getActivity(), getActivity(), "系统异常！", "error");
+                        progressbarFragment.dismiss();
+                    }
+                    else{
+                        username = Tools.getNthSubstring(result, " ", 0);
+                        email = Tools.getNthSubstring(result, " ", 1);
+                        phone = Tools.getNthSubstring(result, " ", 2);
+                        privilege = Tools.getNthSubstring(result, " ", 3);
+
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                id_text.setText(userid);
+                                username_edit.setText(username);
+                                email_edit.setText(email);
+                                phone_edit.setText(phone);
+                                privilege_text.setText(privilege.equals("1") ? "普通用户" : "管理员");
+                                progressbarFragment.dismiss();
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    Tools.showMessage(getActivity(), getActivity(), "请检查网络连接！", "warning");
+                    progressbarFragment.dismiss();
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private void sendRequest2(final String userid, final String username, final String password, final String email, final String phone){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String command = !Tools.isEmpty(password)
+                        ? "modify_profile" + " " + userid + " " + username + " " + password + " " + email + " " + phone
+                        : "modify_profile_without_password" + " " + userid + " " + username + " " + email + " " + phone;
+                    String result = Tools.command(command);
+                    if(result.equals("0")){
+                        Tools.showMessage(getActivity(), getActivity(), "修改失败！", "error");
+                        progressbarFragment.dismiss();
+                    }
+                    else{
+                        Tools.showMessage(getActivity(), getActivity(), "修改成功！", "success");
+                        progressbarFragment.dismiss();
+                    }
+                } catch (Exception e) {
+                    Tools.showMessage(getActivity(), getActivity(), "请检查网络连接！", "warning");
+                    progressbarFragment.dismiss();
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    void findAllView(){
+        id_text = view.findViewById(R.id.registerID_Text);
+        username_edit = view.findViewById(R.id.registerUsername_Edit);
+        password_edit = view.findViewById(R.id.registerPassword_Edit);
+        password_confirm_edit = view.findViewById(R.id.registerConfirmPassword_Edit);
+        email_edit = view.findViewById(R.id.registerEmail_Edit);
+        phone_edit = view.findViewById(R.id.registerPhone_Edit);
+        privilege_text = view.findViewById(R.id.registerPrivilege_Text);
+        save_btn = view.findViewById(R.id.save_Button);
+    }
 
 }

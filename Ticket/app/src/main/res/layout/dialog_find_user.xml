@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/logoScreenBackground"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="提示：请输入要修改的用户的ID"
+            android:layout_margin="10dp"/>
+
+        <RelativeLayout
+            android:id="@+id/userid_query_Layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rectangle_edittext"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/userid_query_Icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:paddingBottom="10dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="10dp"
+                android:src="@drawable/ic_account_box_black_24dp"
+                android:tint="@color/icon_default_color" />
+
+            <View
+                android:id="@+id/userid_query_Cursor"
+                android:layout_width="1dp"
+                android:layout_height="20dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="10dp"
+                android:layout_toEndOf="@id/userid_query_Icon"
+                android:background="@color/colorCursor" />
+
+            <EditText
+                android:id="@+id/userid_query_Edit"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="10dp"
+                android:layout_toRightOf="@id/userid_query_Cursor"
+                android:background="@null"
+                android:ems="19"
+                android:hint="用户ID"
+                android:singleLine="true"
+                android:textColorHint="@color/colorCursor"
+                android:textCursorDrawable="@drawable/color_cursor"
+                android:textSize="15sp"
+                tools:ignore="RtlHardcoded" />
+
+            <ImageView
+                android:id="@+id/userid_query_Clear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="20dp"
+                android:src="@drawable/ic_highlight_off_white_24dp"
+                android:tint="@color/icon_default_color"
+                android:visibility="invisible" />
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/contain_userid_query_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/round_corner_bg_loginbtn"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="查询"
+                android:textColor="#fff"
+                android:textSize="18sp" />
+            <Button
+                android:id="@+id/contain_userid_exit_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/round_corner_bg_deletebtn"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="取消"
+                android:textColor="#fff"
+                android:textSize="18sp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

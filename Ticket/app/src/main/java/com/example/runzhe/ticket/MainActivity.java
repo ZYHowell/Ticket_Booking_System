@@ -19,10 +19,16 @@ public class MainActivity extends AppCompatActivity {
     private Fragment2 fragment2;
     private Fragment3 fragment3;
 
+    String userid;
+
+    private ProgressbarFragment progressbarFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        userid = getIntent().getStringExtra("userid");
 
         fragment1 = new Fragment1();
         fragment2 = new Fragment2();
@@ -90,13 +96,42 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             case R.id.admin_mode: {
-                if (fragment3.privilege == 1) { // 直接用fragment3来存个人信息
-                    Tools.showMessage(this, "无访问权限！", "error");
-                } else {
-                    Intent intent = new Intent(MainActivity.this, AdminActivity.class);
-                    startActivity(intent);
+                progressbarFragment = new ProgressbarFragment();
+                try {
+                    progressbarFragment = new ProgressbarFragment();
+                    progressbarFragment.setCancelable(false);
+                    progressbarFragment.show(getSupportFragmentManager());
+
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                String command = "query_profile" + " " + userid;
+                                String result = Tools.command(command);
+                                if (result.equals("0") || Tools.getNthSubstring(result, " ", 3).equals("1")) {
+                                    Tools.showMessage(MainActivity.this, "无访问权限！", "error");
+                                } else {
+                                    progressbarFragment.dismiss();
+                                    Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+                                    startActivity(intent);
+                                }
+                            } catch (Exception e) {
+                                Tools.showMessage(MainActivity.this, MainActivity.this, "请检查网络连接！", "warning");
+                                progressbarFragment.dismiss();
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
                 break;
+            }
+            case R.id.logout:{
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
             }
         }
         return super.onOptionsItemSelected(item);

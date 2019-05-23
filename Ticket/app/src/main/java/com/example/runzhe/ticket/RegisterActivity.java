@@ -22,11 +22,18 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText phone_edit;
     private Button register_btn;
 
+    private ProgressbarFragment progressbarFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         findAllView();
+
+        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setHomeButtonEnabled(true);
 
         register_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,20 +76,43 @@ public class RegisterActivity extends AppCompatActivity {
                     return;
                 }
 
-                // TODO : 后端检查能否注册，并返回ID
-                boolean success = true;
-                int id = 2333;
-
-                if(success){
-                    Tools.showMessage(RegisterActivity.this, "注册成功，你的ID是" + id + "，请重新登录！", "success");
-                    finish();
+                try {
+                    progressbarFragment = new ProgressbarFragment();
+                    progressbarFragment.setCancelable(false);
+                    progressbarFragment.show(getSupportFragmentManager());
+                    sendRequest(username, password, email, phone);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                else
-                    Tools.showMessage(RegisterActivity.this, "注册失败！", "error");
-
             }
         });
 
+    }
+
+    private void sendRequest(final String username, final String password, final String email, final String phone){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String command = "register" + " " + username + " " + password + " " + email + " " + phone;
+                    String result = Tools.command(command);
+                    if(result.equals("-1")){
+                        Tools.showMessage(RegisterActivity.this, RegisterActivity.this, "注册失败！", "error");
+                        progressbarFragment.dismiss();
+                    }
+                    else{
+                        Tools.showMessage(RegisterActivity.this, RegisterActivity.this,
+                                "注册成功！\n你的ID是 " + result, "success");
+                        progressbarFragment.dismiss();
+                        finish();
+                    }
+                } catch (Exception e) {
+                    Tools.showMessage(RegisterActivity.this, RegisterActivity.this, "请检查网络连接！", "warning");
+                    progressbarFragment.dismiss();
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     void findAllView(){
@@ -92,6 +122,13 @@ public class RegisterActivity extends AppCompatActivity {
         email_edit = (EditText)findViewById(R.id.registerEmail_Edit);
         phone_edit = (EditText)findViewById(R.id.registerPhone_Edit);
         register_btn = (Button)findViewById(R.id.register_Button);
+    }
+
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
     }
 
 }
