@@ -56,6 +56,7 @@ public class Fragment1 extends Fragment {
 
         findAllView(view);
         initCheckBox();
+        setDate();
 
         progressbarFragment = new ProgressbarFragment();
 
@@ -101,9 +102,6 @@ public class Fragment1 extends Fragment {
                 }
             }
         });
-
-        setDate();
-
         return view;
     }
 

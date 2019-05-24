@@ -13,7 +13,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="25dp"
+            android:layout_marginTop="5dp"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp">
 
@@ -63,41 +63,24 @@
                 android:textSize="20dp"
                 android:textColor="#777777"/>
 
-            <Spinner
-                android:id="@+id/trainCatalog_Spinner"
-                android:layout_width="0dp"
-                android:layout_height="30dp"
-                android:layout_weight="1"
-                android:layout_gravity="center"
-                android:layout_marginStart="38dp"
-                android:background="@null"
-                android:drawablePadding="5dp"
-                android:ems="19"
-                android:singleLine="true"
-                android:textColorHint="@color/colorCursor"
-                android:textCursorDrawable="@drawable/color_cursor"
-                android:textSize="15sp" />
-
-            <Button
-                android:id="@+id/query_Button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="5dp"
-                android:layout_marginRight="14dp"
-                android:text="查询"
-                android:textSize="20sp"
-                android:background="@drawable/round_corner_bg_loginbtn"
-                android:textColor="#FFFFFF"/>
+            <include layout="@layout/catalog"/>
 
         </LinearLayout>
+
+        <Button
+            android:id="@+id/query_Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="查询"
+            android:textSize="20sp"
+            android:background="@drawable/round_corner_bg_loginbtn"
+            android:textColor="#FFFFFF"/>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:layout_marginEnd="2dp"
             android:layout_marginStart="2dp"
             android:background="@color/colorCursor"/>

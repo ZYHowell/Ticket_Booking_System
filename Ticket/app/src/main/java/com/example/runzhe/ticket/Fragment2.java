@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -33,10 +34,12 @@ public class Fragment2 extends Fragment {
     View view;
 
     TextView date;
-    Spinner train_catalog_spinner;
     Button query_btn;
     ImageView modify_date;
     ListView ticket_list;
+
+    CheckBox[] cb;
+    CheckBox cb_All;
 
     ArrayAdapter<String> arrayAdapter;
     List<String> train_catalog_list;
@@ -55,15 +58,10 @@ public class Fragment2 extends Fragment {
         view = inflater.inflate(R.layout.fragment_2, container, false);
 
         findAllView();
+        initCheckBox();
         setDate();
 
         progressbarFragment = new ProgressbarFragment();
-
-        train_catalog_list = new ArrayList<String>();
-        addAllCatalog(train_catalog_list);
-        arrayAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, train_catalog_list);
-        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        train_catalog_spinner.setAdapter(arrayAdapter);
 
         query_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,8 +70,7 @@ public class Fragment2 extends Fragment {
                     progressbarFragment = new ProgressbarFragment();
                     progressbarFragment.setCancelable(false);
                     progressbarFragment.show(getActivity().getSupportFragmentManager());
-                    sendRequest(getActivity().getIntent().getStringExtra("userid"), date.getText().toString(),
-                            train_catalog_spinner.getSelectedItemPosition());
+                    sendRequest(getActivity().getIntent().getStringExtra("userid"), date.getText().toString(), getAllCatalogs());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -102,21 +99,19 @@ public class Fragment2 extends Fragment {
         return view;
     }
 
-    void sendRequest(final String userid, final String date, final int catalog) {
+    void sendRequest(final String userid, final String date, final String catalog) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String command = "query_order" + " " + userid + " " + date + " " + Tools.getTrainCatalogs(catalog);
+                    String command = "query_order" + " " + userid + " " + date + " " + catalog;
                     String result = Tools.command(command);
                     if(result.equals("-1") || result.equals("0")){
-System.out.println("fuckyou2");
                         Tools.showMessage(getActivity(), getActivity(), "无查询结果！", "error");
                         progressbarFragment.dismiss();
                     }
                     else{
                         /*******************/
-System.out.println("fuckyou");
                         tickets = result.split("\n");
                         String[] tickets_tmp = new String[tickets.length];
                         for(int i = 1; i < tickets.length; i++){ // 整理以便展示 注意这里是1
@@ -169,20 +164,37 @@ System.out.println("fuckyou");
 
     void findAllView(){
         date = view.findViewById(R.id.b_date);
-        train_catalog_spinner = view.findViewById(R.id.trainCatalog_Spinner);
         query_btn = view.findViewById(R.id.query_Button);
         ticket_list = view.findViewById(R.id.ticket_list);
         modify_date = view.findViewById(R.id.b_modify_date);
-    }
 
-    void addAllCatalog(List<String> list){
-        list.add("T(特快)");
-        list.add("Z(直达)");
-        list.add("O(普通)");
-        list.add("G(高铁)");
-        list.add("D(动车)");
-        list.add("K(快车)");
-        list.add("C(城际)");
+        cb = new CheckBox[7];
+        cb[0] = view.findViewById(R.id.train_checkbox_T);
+        cb[1] = view.findViewById(R.id.train_checkbox_Z);
+        cb[2] = view.findViewById(R.id.train_checkbox_O);
+        cb[3] = view.findViewById(R.id.train_checkbox_G);
+        cb[4] = view.findViewById(R.id.train_checkbox_D);
+        cb[5] = view.findViewById(R.id.train_checkbox_K);
+        cb[6] = view.findViewById(R.id.train_checkbox_C);
+        cb_All = view.findViewById(R.id.train_checkbox_All);
+    }
+    String getAllCatalogs(){
+        String catalog = "";
+        for(int i = 0; i < 7; i++) if(cb[i].isChecked())
+            catalog += Tools.getTrainCatalogs(i);
+        return catalog;
+    }
+    void initCheckBox(){
+        cb_All.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean state = cb_All.isChecked();
+                setAllCheckBoxState(state);
+            }
+        });
+    }
+    void setAllCheckBoxState(boolean state){
+        for(int i = 0; i <= 6; i++) cb[i].setChecked(state);
     }
 
 }

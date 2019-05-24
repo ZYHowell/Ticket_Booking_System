@@ -35,13 +35,13 @@ public class Tools {
     }
 
     static String getSeatType(int pos){
-        if(pos >= 11) return "未知席别";
+        if(pos >= 11) return "NoSuchSeatType";
         String[] seatType = {"商务座", "一等座", "二等座", "特等座", "硬座", "软座", "无座", "硬卧", "软卧", "动卧", "高级软卧"};
         return seatType[pos];
     }
 
     static String getTrainCatalogs(int pos){
-        if(pos >= 7) return "未知席别";
+        if(pos >= 7) return "NoSuchCatalog";
         String[] trainType = {"T", "Z", "O", "G", "D", "K", "C"};
         return trainType[pos];
     }
