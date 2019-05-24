@@ -109,7 +109,8 @@ public class MainActivity extends AppCompatActivity {
                                 String command = "query_profile" + " " + userid;
                                 String result = Tools.command(command);
                                 if (result.equals("0") || Tools.getNthSubstring(result, " ", 3).equals("1")) {
-                                    Tools.showMessage(MainActivity.this, "无访问权限！", "error");
+                                    progressbarFragment.dismiss();
+                                    Tools.showMessage(MainActivity.this, MainActivity.this, "无访问权限！", "error");
                                 } else {
                                     progressbarFragment.dismiss();
                                     Intent intent = new Intent(MainActivity.this, AdminActivity.class);

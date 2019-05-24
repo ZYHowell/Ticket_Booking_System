@@ -64,7 +64,7 @@ public class ModifyUserInfoActivity extends AppCompatActivity {
                 String phone = phone_edit.getText().toString();
                 String password = password_edit.getText().toString();
                 String password2 = password2_edit.getText().toString();
-                String privilege = getIntent().getStringExtra("privilege");
+                String privilege = "" + (privilege_spinner.getSelectedItemPosition() + 1);
 
                 // 用户名为空
                 if (TextUtils.isEmpty(username)) {

@@ -31,14 +31,19 @@ public class ReturnTicketActivity extends AppCompatActivity {
     TextView destination_time_text;
     ListView ticket_list;
 
+    private ProgressbarFragment progressbarFragment;
+
     private List<String> list;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_return_ticket);
+
         findAllView();
         setAllInfo();
+
+        progressbarFragment = new ProgressbarFragment();
 
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         assert actionBar != null;
@@ -46,19 +51,31 @@ public class ReturnTicketActivity extends AppCompatActivity {
         actionBar.setHomeButtonEnabled(true);
 
         // TODO : 从后端获得座位数量
-        int[] arr = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
+        String[] arr = new String[11];
+        for(int i = 0; i < 11; i++){
+            arr[i] = getIntent().getStringExtra("left_" + i);
+        }
 
         list = new ArrayList<>();
         for(int i = 0; i <= 10; i++){
-            list.add(Tools.getSeatType(i) + " ： 已购 " + arr[i] + " 张");
+            if(arr[i].equals("-1"))
+                list.add(Tools.getSeatType(i) + " ： 无");
+            else
+                list.add(Tools.getSeatType(i) + " ： 已购 " + arr[i] + " 张");
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(ReturnTicketActivity.this, android.R.layout.simple_list_item_1, list);
         ticket_list.setAdapter(adapter);
         ticket_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View vi, int position, long id) {
+            public void onItemClick(AdapterView<?> parent, View vi, final int position, long id) {
                 android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(ReturnTicketActivity.this);
                 final View view = View.inflate(ReturnTicketActivity.this, R.layout.dialog_return_ticket, null);
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
                 builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -68,21 +85,19 @@ public class ReturnTicketActivity extends AppCompatActivity {
                             Tools.showMessage(ReturnTicketActivity.this, "数量有误！", "error");
                             return;
                         }
-
-                        // TODO : 后端退票
-                        boolean success = true;
-                        if(success){
-                            Tools.showMessage(ReturnTicketActivity.this, "退票成功！（" + Integer.valueOf(num) + "张）", "success");
-                            // 刷新原界面
-                            dialog.dismiss();
+                        try {
+                            progressbarFragment = new ProgressbarFragment();
+                            progressbarFragment.setCancelable(false);
+                            progressbarFragment.show(getSupportFragmentManager());
+                            sendRequest(getIntent().getStringExtra("userid"), num,
+                                    train_id_text.getText().toString(),
+                                    departure_text.getText().toString(),
+                                    destination_text.getText().toString(),
+                                    date_text.getText().toString(),
+                                    position, dialog);
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                        else Tools.showMessage(ReturnTicketActivity.this, "退票失败！", "error");
-                    }
-                });
-                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
                     }
                 });
                 final android.support.v7.app.AlertDialog alertDialog = builder.create();
@@ -90,6 +105,34 @@ public class ReturnTicketActivity extends AppCompatActivity {
                 alertDialog.show();
             }
         });
+    }
+
+    void sendRequest(final String userid, final String num, final String train_id, final String departure, final String destination,
+                      final String date, final int ticket_type, final DialogInterface alertDialog){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String command = "refund_ticket" + " " + userid + " " + num + " " + train_id + " "
+                            + departure + " " + destination + " " + date + " " + ticket_type;
+                    String result = Tools.command(command);
+                    if(result.equals("1")){
+                        Tools.showMessage(ReturnTicketActivity.this, "退票成功！\n（"
+                                + Integer.valueOf(num) + "×" + Tools.getSeatType(ticket_type) + "）", "success");
+                        alertDialog.dismiss();
+                        progressbarFragment.dismiss();
+                    }
+                    else{
+                        Tools.showMessage(ReturnTicketActivity.this, "退票失败！", "error");
+                        progressbarFragment.dismiss();
+                    }
+                } catch (Exception e) {
+                    Tools.showMessage(ReturnTicketActivity.this, ReturnTicketActivity.this, "请检查网络连接！", "warning");
+                    progressbarFragment.dismiss();
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     void setAllInfo(){

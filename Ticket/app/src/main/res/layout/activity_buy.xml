@@ -131,7 +131,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="20dp"
         android:gravity="center"
-        android:text="0000年00月00日"
+        android:text="0000-00-00"
         app:layout_constraintEnd_toStartOf="@+id/destination_time"
         app:layout_constraintStart_toEndOf="@+id/depart_time"
         app:layout_constraintTop_toTopOf="@+id/arrow_right_icon" />

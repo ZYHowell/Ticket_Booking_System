@@ -40,6 +40,12 @@ public class Tools {
         return seatType[pos];
     }
 
+    static String getTrainCatalogs(int pos){
+        if(pos >= 7) return "未知席别";
+        String[] trainType = {"T", "Z", "O", "G", "D", "K", "C"};
+        return trainType[pos];
+    }
+
     static  boolean isNonNegtiveInteger(String string){
         Pattern pattern = Pattern.compile("[0-9]*");
         Matcher isNum = pattern.matcher(string);
@@ -110,6 +116,10 @@ public class Tools {
                 }
             }
         });
+    }
+
+    static String getStandardDate(String num){
+        return num.length() == 2 ? num : "0" + num;
     }
 
 }

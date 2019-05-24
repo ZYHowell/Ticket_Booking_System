@@ -17,6 +17,9 @@ public class InformationActivity extends AppCompatActivity {
     ListView ticket_list;
     Button sort_by_consume, sort_by_start;
 
+    String[] tickets;
+    String[] tickets_tmp;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,31 +35,33 @@ public class InformationActivity extends AppCompatActivity {
         sort_by_start = (Button) findViewById(R.id.i_sort_by_time_start);
 
         // TODO : 分别获得按两种方式排序的车次信息
-        String[] tickets = getIntent().getStringArrayExtra("tickets");
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, tickets);
+        /*******************/
+        tickets = getIntent().getStringArrayExtra("tickets");
+        tickets_tmp = new String[tickets.length];
+        for(int i = 0; i < tickets.length; i++){ // 整理以便展示 注意这里是0
+            String[] tmp = tickets[i].split(" ");
+            tickets_tmp[i] = tmp[0] + " " + tmp[1] + " → " + tmp[4] + " " + tmp[3] + " → " + tmp[6];
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, tickets_tmp);
         ticket_list.setAdapter(adapter);
+        /*******************/
 
         ticket_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                String id_s = Tools.getNthSubstring((String)parent.getAdapter().getItem(position), " ", 0);
-
-                // TODO : 从后端获得id_s对应车票的信息并putExtra方式传给BuyActivity
-
+                String[] tmp = tickets[position].split(" "); // 此车票标准信息的分隔
                 Intent intent = new Intent(InformationActivity.this, BuyActivity.class);
-                intent.putExtra("id", "D2333");
-                intent.putExtra("date", "2019/06/07");
-                intent.putExtra("departure", "北京");
-                intent.putExtra("destination", "上海");
-                intent.putExtra("depart_time", "13:00");
-                intent.putExtra("destination_time", "14:00");
-                intent.putExtra("price_1", 100);
-                intent.putExtra("price_2", 200);
-                intent.putExtra("price_3", 300);
-                intent.putExtra("left_1", 1000);
-                intent.putExtra("left_2", 2000);
-                intent.putExtra("left_3", 3000);
+                intent.putExtra("userid", getIntent().getStringExtra("userid"));
+                intent.putExtra("train_id", tmp[0]);
+                intent.putExtra("departure", tmp[1]);
+                intent.putExtra("date", tmp[2]);
+                intent.putExtra("depart_time", tmp[3]);
+                intent.putExtra("destination", tmp[4]);
+                intent.putExtra("destination_time", tmp[6]);
+                for(int i = 0; i < 11; i++){
+                    intent.putExtra("left_" + i, tmp[7 + i * 2]); // -1 if no available
+                    intent.putExtra("price_" + i, tmp[7 + i * 2 + 1]);
+                }
                 startActivity(intent);
             }
         });

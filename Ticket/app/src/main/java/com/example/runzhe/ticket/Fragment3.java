@@ -77,7 +77,7 @@ public class Fragment3 extends Fragment {
                 String newPassword = password_edit.getText().toString();
                 String newPassword2 = password_confirm_edit.getText().toString();
 
-                if(Tools.isEmpty(userid)) {Tools.showMessage(getActivity(), "系统异常！", "error"); return;}
+                if(Tools.isEmpty(id_text.getText().toString())) {Tools.showMessage(getActivity(), "系统异常！", "error"); return;}
                 if(Tools.isEmpty(newUsername)) {Tools.showMessage(getActivity(), "用户名不能为空！", "error"); return;}
                 if(Tools.isEmpty(newEmail)) {Tools.showMessage(getActivity(), "邮箱不能为空！", "error"); return;}
                 if(Tools.isEmpty(newPhone)) {Tools.showMessage(getActivity(), "手机号码不能为空！", "error"); return;}

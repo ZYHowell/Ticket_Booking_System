@@ -33,6 +33,8 @@ public class BuyActivity extends AppCompatActivity {
     TextView destination_time_text;
     ListView ticket_list;
 
+    private ProgressbarFragment progressbarFragment;
+
     private List<String> list;
 
     @Override
@@ -43,26 +45,41 @@ public class BuyActivity extends AppCompatActivity {
         findAllView();
         setAllInfo();
 
+        progressbarFragment = new ProgressbarFragment();
+
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         assert actionBar != null;
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeButtonEnabled(true);
 
-        // TODO : 从后端获得座位数量
-        int[] left = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
-        int[] price = {0, 33, 33, 44, 55, 66, 77, 88, 77, 99, 22};
+        // 从后端获得座数量与价格
+        String[] left = new String[11];
+        String[] price = new String[11];
+        for(int i = 0; i < 11; i++){
+            left[i] = getIntent().getStringExtra("left_" + i);
+            price[i] = getIntent().getStringExtra("price_" + i);
+        }
 
         list = new ArrayList<>();
-        for(int i = 0; i <= 10; i++){
-            list.add(Tools.getSeatType(i) + " ： ￥ " + price[i] + "     " + "剩余 " + left[i] + " 张");
+        for(int i = 0; i < 11; i++){
+            if(left[i].equals("-1"))
+                list.add(Tools.getSeatType(i) + " ： 无");
+            else
+                list.add(Tools.getSeatType(i) + " ： ￥ " + price[i] + "     " + "剩余 " + left[i] + " 张");
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(BuyActivity.this, android.R.layout.simple_list_item_1, list);
         ticket_list.setAdapter(adapter);
         ticket_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View vi, int position, long id) {
+            public void onItemClick(AdapterView<?> parent, View vi, final int position, long id) { // 购票
                 final android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(BuyActivity.this);
                 final View view = View.inflate(BuyActivity.this, R.layout.dialog_buy_ticket, null);
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.dismiss();
+                    }
+                });
                 builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -72,21 +89,18 @@ public class BuyActivity extends AppCompatActivity {
                             Tools.showMessage(BuyActivity.this, "数量有误！", "error");
                             return;
                         }
-
-                        // TODO : 后端购票
-                        boolean success = true;
-                        if(success){
-                            Tools.showMessage(BuyActivity.this, "购票成功！（" + Integer.valueOf(num) + "张）", "success");
-                            // 刷新原界面
-                            dialog.dismiss();
+                        try {
+                            progressbarFragment.setCancelable(false);
+                            progressbarFragment.show(getSupportFragmentManager());
+                            sendRequest(getIntent().getStringExtra("userid"), num,
+                                    train_id_text.getText().toString(),
+                                    departure_text.getText().toString(),
+                                    destination_text.getText().toString(),
+                                    date_text.getText().toString(),
+                                    position);
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                        else Tools.showMessage(BuyActivity.this, "购票失败！", "error");
-                    }
-                });
-                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
                     }
                 });
                 final android.support.v7.app.AlertDialog alertDialog = builder.create();
@@ -96,6 +110,34 @@ public class BuyActivity extends AppCompatActivity {
         });
 
     }
+
+    void sendRequest(final String userid, final String num, final String train_id, final String departure, final String destination,
+                     final String date, final int ticket_type){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String command = "buy_ticket" + " " + userid + " " + num + " " + train_id + " "
+                            + departure + " " + destination + " " + date + " " + ticket_type;
+                    String result = Tools.command(command);
+                    if(result.equals("1")){
+                        Tools.showMessage(BuyActivity.this, BuyActivity.this, "购票成功！\n（"
+                                + Integer.valueOf(num) + "×" + Tools.getSeatType(ticket_type) + "）", "success");
+                        progressbarFragment.dismiss();
+                    }
+                    else{
+                        Tools.showMessage(BuyActivity.this, BuyActivity.this, "购票失败！", "error");
+                        progressbarFragment.dismiss();
+                    }
+                } catch (Exception e) {
+                    Tools.showMessage(BuyActivity.this, BuyActivity.this, "请检查网络连接！", "warning");
+                    progressbarFragment.dismiss();
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
     void findAllView(){
         depart_time_text = findViewById(R.id.depart_time);
         destination_time_text = findViewById(R.id.destination_time);
@@ -107,7 +149,7 @@ public class BuyActivity extends AppCompatActivity {
     }
     void setAllInfo(){
         Intent intent = getIntent();
-        train_id_text.setText(intent.getStringExtra("id"));
+        train_id_text.setText(intent.getStringExtra("train_id"));
         date_text.setText(intent.getStringExtra("date"));
         departure_text.setText(intent.getStringExtra("departure"));
         destination_text.setText(intent.getStringExtra("destination"));

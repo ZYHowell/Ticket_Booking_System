@@ -78,22 +78,24 @@ public class New2Activity extends AppCompatActivity {
                     progressbarFragment.setCancelable(false);
                     progressbarFragment.show(getSupportFragmentManager());
 
-//                    command = "add_or_modify_train"
-                    command = "add_train"
-                             + " " + getIntent().getStringExtra("id")
+                    command = " " + getIntent().getStringExtra("id")
                              + " " + getIntent().getStringExtra("name")
                              + " " + getIntent().getStringExtra("catalog")
                              + " " + station_cnt
                              + " " + price_cnt;
                     for(int i = 0; i < 11; i++)
                         if(getIntent().getBooleanExtra("ticket_type_"+i, false))
-                            command += " " + Tools.getSeatType(i);
+                            command += " " + i;
                     command += "\n" + stations;
 
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
                             try {
+                                if(Tools.command("query_train " + getIntent().getStringExtra("id")).equals("0"))
+                                    command = "add_train" + command;
+                                else
+                                    command = "modify_train" + command;
                                 String result = Tools.command(command);
                                 if(result.equals("1")){
                                     Tools.showMessage(New2Activity.this, New2Activity.this, "新建/修改成功！", "success");
@@ -153,6 +155,7 @@ public class New2Activity extends AppCompatActivity {
                 ticket_type_text[10] = view.findViewById(R.id.textview_10);
 
                 // init ticket_type_edit
+                price_cnt = 0;
                 for(int i = 0; i < 11; i++) {
                     ticket_type_text[i].setText(Tools.getSeatType(i));
                     boolean enable = getIntent().getBooleanExtra("ticket_type_"+i, false);
@@ -222,12 +225,14 @@ public class New2Activity extends AppCompatActivity {
                         for(int i = 0; i < 11; i++) price[i] = getIntent().getBooleanExtra("ticket_type_"+i, false)
                                                                 ? Integer.valueOf(price_s[i]) : -1;
                         /* 生成指令*/
+                        station_cnt++;
                         stations += sta_name
                                 + " " + time_arriv_text.getText().toString()
                                 + " " + time_start_text.getText().toString()
                                 + " " + time_stop_text.getText().toString();
                         for(int i = 0; i < 11; i++) if(price[i] != -1)
                             stations += " ￥" + price[i];
+                        stations += "\n";
 
                         arrayAdapter.add(sta_name);
                         alertDialog.dismiss();

@@ -294,95 +294,102 @@ public class AdminActivity extends AppCompatActivity {
             public void run() {
                 try {
                     String command = "query_train" + " " + id;
-                    String result = Tools.command(command);
+                    final String result = Tools.command(command);
                     if (!result.equals("0")) { // 弹窗显示车次信息以便操作
-                        AlertDialog.Builder builder = new AlertDialog.Builder(AdminActivity.this);
-                        View view = View.inflate(AdminActivity.this, R.layout.activity_modify_ticket, null);
-                        final AlertDialog alertDialog = builder.create();
-                        alertDialog.setView(view);
-                        alertDialog.show();
-
-                        // 获取控件
-                        TextView idText = (TextView) view.findViewById(R.id.m_id);
-                        TextView nameText = (TextView) view.findViewById(R.id.m_name);
-                        TextView catalogText = (TextView) view.findViewById(R.id.m_catalog);
-                        TextView time_table = view.findViewById(R.id.time_table);
-                        Button btn_sell = (Button) view.findViewById(R.id.m_sell);
-                        Button btn_delete = (Button) view.findViewById(R.id.m_delete);
-                        Button btn_close = (Button) view.findViewById(R.id.m_close);
-
-                        final String name = Tools.getNthSubstring(result , " ", 1);
-                        final String catalog = Tools.getNthSubstring(result , " ", 2);
-
-                        idText.setText(id);
-                        nameText.setText(name);
-                        catalogText.setText(catalog);
-                        time_table.setText(result);
-
-                        class ModifyOnClickListener implements View.OnClickListener {
+                        AdminActivity.this.runOnUiThread(new Runnable() {
                             @Override
-                            public void onClick(View v) {
-                                switch (v.getId()) {
-                                    case R.id.m_sell:
-                                        try{
-                                            progressbarFragment.setCancelable(false);
-                                            progressbarFragment.show(getSupportFragmentManager());
-                                            new Thread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    try {
-                                                        String command = "sale_train" + " " + id;
-                                                        String result = Tools.command(command);
-                                                        if (result.equals("0"))
-                                                            Toasty.error(AdminActivity.this, "发售失败！", Toast.LENGTH_SHORT, true).show();
-                                                        else
-                                                            Toasty.success(AdminActivity.this, "发售成功！", Toast.LENGTH_SHORT, true).show();
-                                                        progressbarFragment.dismiss();
-                                                    }catch (Exception e) {
-                                                        Tools.showMessage(AdminActivity.this, AdminActivity.this, "请检查网络连接！", "warning");
-                                                        progressbarFragment.dismiss();
-                                                        e.printStackTrace();
-                                                    }
+                            public void run() {
+
+                                AlertDialog.Builder builder = new AlertDialog.Builder(AdminActivity.this);
+                                View view = View.inflate(AdminActivity.this, R.layout.activity_modify_ticket, null);
+                                final AlertDialog alertDialog = builder.create();
+                                alertDialog.setView(view);
+                                alertDialog.show();
+
+                                // 获取控件
+                                TextView idText = (TextView) view.findViewById(R.id.m_id);
+                                TextView nameText = (TextView) view.findViewById(R.id.m_name);
+                                TextView catalogText = (TextView) view.findViewById(R.id.m_catalog);
+                                TextView time_table = view.findViewById(R.id.time_table);
+                                Button btn_sell = (Button) view.findViewById(R.id.m_sell);
+                                Button btn_delete = (Button) view.findViewById(R.id.m_delete);
+                                Button btn_close = (Button) view.findViewById(R.id.m_close);
+
+                                final String name = Tools.getNthSubstring(result, " ", 1);
+                                final String catalog = Tools.getNthSubstring(result, " ", 2);
+
+                                idText.setText(id);
+                                nameText.setText(name);
+                                catalogText.setText(catalog);
+                                time_table.setText(result);
+
+                                class ModifyOnClickListener implements View.OnClickListener {
+                                    @Override
+                                    public void onClick(View v) {
+                                        switch (v.getId()) {
+                                            case R.id.m_sell:
+                                                try {
+                                                    progressbarFragment.setCancelable(false);
+                                                    progressbarFragment.show(getSupportFragmentManager());
+                                                    new Thread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            try {
+                                                                String command = "sale_train" + " " + id;
+                                                                String result = Tools.command(command);
+                                                                if (result.equals("0"))
+                                                                    Tools.showMessage(AdminActivity.this, AdminActivity.this, "发售失败！", "error");
+                                                                else
+                                                                    Tools.showMessage(AdminActivity.this, AdminActivity.this, "发售成功！", "success");
+                                                                progressbarFragment.dismiss();
+                                                            } catch (Exception e) {
+                                                                Tools.showMessage(AdminActivity.this, AdminActivity.this, "请检查网络连接！", "warning");
+                                                                progressbarFragment.dismiss();
+                                                                e.printStackTrace();
+                                                            }
+                                                        }
+                                                    }).start();
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
                                                 }
-                                            });
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        }
-                                        break;
-                                    case R.id.m_delete:
-                                        try{
-                                            progressbarFragment.setCancelable(false);
-                                            progressbarFragment.show(getSupportFragmentManager());
-                                            new Thread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    try {
-                                                        String command = "delete_train" + " " + id;
-                                                        String result = Tools.command(command);
-                                                        if (result.equals("0"))
-                                                            Toasty.error(AdminActivity.this, "删除失败！", Toast.LENGTH_SHORT, true).show();
-                                                        else
-                                                            Toasty.success(AdminActivity.this, "删除成功！", Toast.LENGTH_SHORT, true).show();
-                                                    }catch (Exception e) {
-                                                        Tools.showMessage(AdminActivity.this, AdminActivity.this, "请检查网络连接！", "warning");
-                                                        progressbarFragment.dismiss();
-                                                        e.printStackTrace();
-                                                    }
+                                                break;
+                                            case R.id.m_delete:
+                                                try {
+                                                    progressbarFragment.setCancelable(false);
+                                                    progressbarFragment.show(getSupportFragmentManager());
+                                                    new Thread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            try {
+                                                                String command = "delete_train" + " " + id;
+                                                                String result = Tools.command(command);
+                                                                if (result.equals("0"))
+                                                                    Tools.showMessage(AdminActivity.this, AdminActivity.this, "删除失败！", "error");
+                                                                else
+                                                                    Tools.showMessage(AdminActivity.this, AdminActivity.this, "删除成功！", "success");
+                                                                progressbarFragment.dismiss();
+                                                            } catch (Exception e) {
+                                                                Tools.showMessage(AdminActivity.this, AdminActivity.this, "请检查网络连接！", "warning");
+                                                                progressbarFragment.dismiss();
+                                                                e.printStackTrace();
+                                                            }
+                                                        }
+                                                    }).start();
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
                                                 }
-                                            });
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
+                                                break;
+                                            case R.id.m_close:
+                                                alertDialog.dismiss();
+                                                break;
                                         }
-                                        break;
-                                    case R.id.m_close:
-                                        alertDialog.dismiss();
-                                        break;
+                                    }
                                 }
+                                btn_sell.setOnClickListener(new ModifyOnClickListener());
+                                btn_delete.setOnClickListener(new ModifyOnClickListener());
+                                btn_close.setOnClickListener(new ModifyOnClickListener());
                             }
-                        }
-                        btn_sell.setOnClickListener(new ModifyOnClickListener());
-                        btn_delete.setOnClickListener(new ModifyOnClickListener());
-                        btn_close.setOnClickListener(new ModifyOnClickListener());
+                        });
                     } else {
                         Tools.showMessage(AdminActivity.this, AdminActivity.this, "未找到对应的车次！", "error");
                     }
