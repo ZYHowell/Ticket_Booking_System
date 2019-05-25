@@ -19,27 +19,6 @@
             android:layout_marginTop="5dp"
             android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/i_sort_by_time_consume"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="按耗时排序"
-                android:textSize="20dp"
-                android:textColor="#fff"
-                android:background="@drawable/round_corner_bg_loginbtn"/>
-
-            <Button
-                android:id="@+id/i_sort_by_time_start"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
-                android:text="按发时排序"
-                android:textSize="20dp"
-                android:textColor="#fff"
-                android:background="@drawable/round_corner_bg_registerbtn"/>
-
         </LinearLayout>
 
         <ListView

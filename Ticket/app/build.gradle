@@ -49,4 +49,8 @@ dependencies {
     //  Glide
     implementation 'com.github.bumptech.glide:glide:4.9.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
+
+    // jxl
+    implementation 'net.sourceforge.jexcelapi:jxl:2.6.12'
+
 }

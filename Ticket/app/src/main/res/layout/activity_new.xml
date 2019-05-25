@@ -175,7 +175,7 @@
                     android:layout_toRightOf="@id/registerPassword_Icon"
                     android:background="@color/colorCursor" />
 
-                <EditText
+                <Spinner
                     android:id="@+id/n_catalog"
                     android:layout_width="match_parent"
                     android:layout_height="30dp"

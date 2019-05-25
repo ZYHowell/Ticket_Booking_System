@@ -7,15 +7,15 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="12306"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:icon="@mipmap/logo"
+        android:label="12307"
+        android:roundIcon="@mipmap/logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:label">
         <activity
             android:name=".MainActivity"
-            android:label="12306"
+            android:label="12307"
             android:screenOrientation="portrait" />
         <activity
             android:name=".AdminActivity"
@@ -23,7 +23,8 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".SelectStation"
-            android:label="选择车站" />
+            android:label="选择车站"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".LoginActivity"
             android:label="请登录"
@@ -50,7 +51,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".SplashActivity"
-            android:label="欢迎"
+            android:label="12307"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>

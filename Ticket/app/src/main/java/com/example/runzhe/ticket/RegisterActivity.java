@@ -46,18 +46,18 @@ public class RegisterActivity extends AppCompatActivity {
                 String password2 = password2_edit.getText().toString();
 
                 // 用户名为空
-                if (TextUtils.isEmpty(username)) {
-                    Tools.showMessage(RegisterActivity.this, "用户名不能为空！", "error");
+                if (TextUtils.isEmpty(username) || username.contains(" ")) {
+                    Tools.showMessage(RegisterActivity.this, "用户名不合法！", "error");
                     return;
                 }
                 // 电话为空
-                if (TextUtils.isEmpty(phone)) {
-                    Tools.showMessage(RegisterActivity.this, "手机号码不能为空！", "error");
+                if (TextUtils.isEmpty(phone) || phone.contains(" ")) {
+                    Tools.showMessage(RegisterActivity.this, "手机号码不合法！", "error");
                     return;
                 }
                 // 密码为空
-                if (TextUtils.isEmpty(password)) {
-                    Tools.showMessage(RegisterActivity.this, "密码不能为空！", "error");
+                if (TextUtils.isEmpty(password) || password.contains(" ")) {
+                    Tools.showMessage(RegisterActivity.this, "密码不合法！", "error");
                     return;
                 }
                 // 密码不一致
@@ -66,13 +66,13 @@ public class RegisterActivity extends AppCompatActivity {
                     return;
                 }
                 // 邮箱格式不正确
-                if (!Tools.isEmail(email)) {
-                    Tools.showMessage(RegisterActivity.this, "邮箱格式有误！", "error");
+                if (!Tools.isEmail(email) || email.contains(" ")) {
+                    Tools.showMessage(RegisterActivity.this, "邮箱不合法！", "error");
                     return;
                 }
                 // 手机号码格式不正确
                 if (!Tools.isPhone(phone)) {
-                    Tools.showMessage(RegisterActivity.this, "手机号码有误！", "error");
+                    Tools.showMessage(RegisterActivity.this, "手机号码不合法！", "error");
                     return;
                 }
 

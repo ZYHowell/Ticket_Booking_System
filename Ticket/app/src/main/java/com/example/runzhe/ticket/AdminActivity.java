@@ -21,6 +21,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,10 +37,13 @@ public class AdminActivity extends AppCompatActivity {
     ListView listView;
     EditText idText;
     Button search;
+    ImageView trainID_Image;
 
     ArrayAdapter<String> arrayAdapter;
 
     private ProgressbarFragment progressbarFragment;
+
+    String[] result_arr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,11 +70,18 @@ public class AdminActivity extends AppCompatActivity {
         listView = (ListView)findViewById(R.id.a_ticket_list);
         idText = (EditText) findViewById(R.id.a_id);
         search = (Button) findViewById(R.id.a_search);
+        trainID_Image = findViewById(R.id.trainID_Clear);
 
-        arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, new ArrayList<String>());
+        arrayAdapter = new ArrayAdapter<String>(AdminActivity.this, android.R.layout.simple_list_item_1, new ArrayList<String>());
         listView.setAdapter(arrayAdapter);
+        refresh(); // 刷新所有车次列表
 
-        refresh(); // 刷新列表
+        trainID_Image.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                idText.setText("");
+            }
+        });
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -86,7 +97,7 @@ public class AdminActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) { // 查询
                 final String id = idText.getText().toString();
-                if(Tools.isEmpty(id)) {Toasty.error(AdminActivity.this, "ID不能为空！", Toast.LENGTH_SHORT, true).show();return;}
+                if(Tools.isEmpty(id) || id.contains(" ")) {Toasty.error(AdminActivity.this, "ID不合法！", Toast.LENGTH_SHORT, true).show();return;}
                 try {
                     progressbarFragment = new ProgressbarFragment();
                     progressbarFragment.setCancelable(false);
@@ -97,23 +108,44 @@ public class AdminActivity extends AppCompatActivity {
                 }
             }
         });
-
-        // TODO : 从后端获得车次信息并放进listView
-
     }
 
     void refresh(){
-        // TODO : 后端传数据，按照一定规则做成字符串，并放进listView
-        // 测试用数据
-        arrayAdapter.clear();
-        arrayAdapter.add("c100 上海 → 北京");
-        arrayAdapter.add("d100 上海交通大学 → 世界一流大学");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        refresh();
+        try {
+            progressbarFragment = new ProgressbarFragment();
+            progressbarFragment.setCancelable(false);
+            progressbarFragment.show(getSupportFragmentManager());
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String command = "display";
+                        final String result = Tools.command(command);
+                        result_arr = result.split("\n");
+                        progressbarFragment.dismiss();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                arrayAdapter.clear();
+                                if (!Tools.isEmpty(result)) {
+                                    String[] tmp;
+                                    for (int i = 0; i < result_arr.length; i++) {
+                                        tmp = result_arr[i].split(" ");
+                                        arrayAdapter.add(tmp[0] + " : " + tmp[1] + " → " + tmp[2]);
+                                    }
+                                }
+                            }
+                        });
+                    } catch (Exception e) {
+                        Tools.showMessage(AdminActivity.this, AdminActivity.this, "请检查网络连接！", "warning");
+                        progressbarFragment.dismiss();
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -221,7 +253,8 @@ public class AdminActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    void showDialogToGetIdAndEnter(){ // 修改用户资料对话框
+    /*修改用户资料对话框*/
+    void showDialogToGetIdAndEnter(){
         android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(AdminActivity.this);
         View view = View.inflate(AdminActivity.this, R.layout.dialog_find_user, null);
         final android.support.v7.app.AlertDialog alertDialog = builder.create();
@@ -288,7 +321,8 @@ public class AdminActivity extends AppCompatActivity {
         });
     }
 
-    public void sendRequest(final String id){ // 查询车次
+    /*查询车次*/
+    public void sendRequest(final String id){
         new Thread(new Runnable() {
             @Override
             public void run() {

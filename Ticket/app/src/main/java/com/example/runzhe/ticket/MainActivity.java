@@ -38,11 +38,6 @@ public class MainActivity extends AppCompatActivity {
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-
-        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setHomeButtonEnabled(true);
     }
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -66,12 +61,6 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @Override
-    public boolean onSupportNavigateUp() {
-        finish();
-        return super.onSupportNavigateUp();
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_top, menu);
         return super.onCreateOptionsMenu(menu);
@@ -84,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.about_item: {
                 final AlertDialog.Builder mBuilder = new AlertDialog.Builder(this);
                 mBuilder.setTitle("关于");
-                mBuilder.setMessage("我是订票系统V2.0，我有一段精妙的介绍，但是这里放不下了。");
+                mBuilder.setMessage("我是订票系统V2.0，我有一段的介绍，但是这里放不下了。");
                 mBuilder.setPositiveButton("好吧", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

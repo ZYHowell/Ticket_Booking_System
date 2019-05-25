@@ -85,13 +85,13 @@ public class LoginActivity extends AppCompatActivity {
         String password = password_edit.getText().toString();
 
         // 用户名为空
-        if (TextUtils.isEmpty(userid)) {
-            Tools.showMessage(this, "ID不能为空！", "error");
+        if (TextUtils.isEmpty(userid) || userid.contains(" ")) {
+            Tools.showMessage(this, "ID不合法！", "error");
             return;
         }
         // 密码为空
-        if (TextUtils.isEmpty(password)) {
-            Tools.showMessage(this, "密码不能为空！", "error");
+        if (TextUtils.isEmpty(password) || password.contains(" ")) {
+            Tools.showMessage(this, "密码不合法！", "error");
             return;
         }
 
@@ -109,12 +109,14 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    String command = "login" + " " + userid + " " + password;
+
+                    String command = ((Tools.isNonNegtiveInteger(userid) && !Tools.isPhone(userid)) ? "login" : "login_with_info")
+                            + " " + userid + " " + password;
                     String result = Tools.command(command);
-                    if(result.equals("1")){
+                    if(!result.equals("0")){
                         Tools.showMessage(LoginActivity.this, LoginActivity.this, "登录成功", "success");
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        intent.putExtra("userid", userid);
+                        intent.putExtra("userid", result);
                         progressbarFragment.dismiss();
                         startActivity(intent);
                         finish();

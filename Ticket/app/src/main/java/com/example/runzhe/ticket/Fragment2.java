@@ -42,7 +42,7 @@ public class Fragment2 extends Fragment {
     CheckBox cb_All;
 
     ArrayAdapter<String> arrayAdapter;
-    List<String> train_catalog_list;
+//    List<String> train_catalog_list;
 
     String[] tickets;
 
@@ -62,11 +62,21 @@ public class Fragment2 extends Fragment {
         setDate();
 
         progressbarFragment = new ProgressbarFragment();
+        arrayAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
+        ticket_list.setAdapter(arrayAdapter);
 
         query_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
+                    if(Tools.isEmpty(getAllCatalogs())){
+                        Tools.showMessage(getActivity(), "车类未选择！", "error");
+                        return;
+                    }
+                    if(!Tools.legalDate(date.getText().toString())){
+                        Tools.showMessage(getActivity(), "日期不合法！", "error");
+                        return;
+                    }
                     progressbarFragment = new ProgressbarFragment();
                     progressbarFragment.setCancelable(false);
                     progressbarFragment.show(getActivity().getSupportFragmentManager());
@@ -80,7 +90,7 @@ public class Fragment2 extends Fragment {
         ticket_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String[] tmp = tickets[position].split(" "); // 此车票标准信息的分隔
+                String[] tmp = tickets[position + 1].split(" "); // 此车票标准信息的分隔
                 Intent intent = new Intent(getActivity(), ReturnTicketActivity.class);
                 intent.putExtra("userid", getActivity().getIntent().getStringExtra("userid"));
                 intent.putExtra("train_id", tmp[0]);
@@ -105,7 +115,7 @@ public class Fragment2 extends Fragment {
             public void run() {
                 try {
                     String command = "query_order" + " " + userid + " " + date + " " + catalog;
-                    String result = Tools.command(command);
+                    final String result = Tools.command(command);
                     if(result.equals("-1") || result.equals("0")){
                         Tools.showMessage(getActivity(), getActivity(), "无查询结果！", "error");
                         progressbarFragment.dismiss();
@@ -113,13 +123,16 @@ public class Fragment2 extends Fragment {
                     else{
                         /*******************/
                         tickets = result.split("\n");
-                        String[] tickets_tmp = new String[tickets.length];
-                        for(int i = 1; i < tickets.length; i++){ // 整理以便展示 注意这里是1
-                            String[] tmp = tickets[i].split(" ");
-                            tickets_tmp[i] = tmp[0] + " " + tmp[1] + " → " + tmp[4] + " " + tmp[3] + " → " + tmp[6];
-                        }
-                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, tickets_tmp);
-                        ticket_list.setAdapter(adapter);
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                arrayAdapter.clear();
+                                for(int i = 1; i < tickets.length; i++){ // 整理以便展示 注意这里是1
+                                    String[] tmp = tickets[i].split(" ");
+                                    arrayAdapter.add(tmp[0] + " " + tmp[1] + " → " + tmp[4] + " " + tmp[3] + " → " + tmp[6]);
+                                }
+                            }
+                        });
                         /*******************/
                         progressbarFragment.dismiss();
                     }

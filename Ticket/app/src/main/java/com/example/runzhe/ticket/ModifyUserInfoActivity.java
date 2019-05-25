@@ -101,15 +101,6 @@ public class ModifyUserInfoActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
-                // TODO : 后端检查能否保存，注意这时候可以不改密码，记得加进度条
-
-                boolean success = true;
-                if(success)
-                    Tools.showMessage(ModifyUserInfoActivity.this, "保存成功", "success");
-                else
-                    Tools.showMessage(ModifyUserInfoActivity.this, "保存失败！", "error");
-
             }
         });
 

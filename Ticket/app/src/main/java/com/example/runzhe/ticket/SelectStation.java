@@ -1,6 +1,7 @@
 package com.example.runzhe.ticket;
 
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -16,6 +17,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
 
 public class SelectStation extends AppCompatActivity implements SortAdapter.Callback{
 
@@ -40,6 +45,11 @@ public class SelectStation extends AppCompatActivity implements SortAdapter.Call
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_station);
+
+        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setHomeButtonEnabled(true);
 
         Intent intent = getIntent();
         type = intent.getStringExtra("type");
@@ -195,21 +205,28 @@ public class SelectStation extends AppCompatActivity implements SortAdapter.Call
         new Thread(new Runnable() {
             @Override
             public void run() {
+                Workbook book;
+                Sheet sheet;
+                AssetManager assetManager = getAssets();
                 try {
-
-                    // TODO : 后端传来所有站点名称，并add进去
-
-                    list.add("StationA");
-                    list.add("StationB");
-                    for(int i = 1; i <= 100; i++) list.add("fuckyou" + i);
-                    for(int i = 1; i <= 100; i++) list.add("dfasdg" + i);
-
-                    initViews();
-
+                    book = Workbook.getWorkbook(assetManager.open("stations.xls"));
+                    //获得第一个工作表对象(ecxel中sheet的编号从0开始,0,1,2,3,....)
+                    sheet = book.getSheet(0);
+                    for (int i = 1; i < 4190; i++) {
+                        Cell cur = sheet.getCell(2, i);
+                        list.add(cur.getContents());
+                    }
+                    book.close();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                initViews();
             }
         }).start();
+    }
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
     }
 }

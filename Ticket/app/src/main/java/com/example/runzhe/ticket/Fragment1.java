@@ -92,6 +92,10 @@ public class Fragment1 extends Fragment {
                     Tools.showMessage(getActivity(), "车类未选择！", "error");
                     return;
                 }
+                if(!Tools.legalDate(date.getText().toString())){
+                    Tools.showMessage(getActivity(), "日期不合法！", "error");
+                    return;
+                }
                 try {
                     progressbarFragment = new ProgressbarFragment();
                     progressbarFragment.setCancelable(false);
@@ -120,8 +124,10 @@ public class Fragment1 extends Fragment {
                         // 向后端发送信息，接收到的信息使用putExtra方式以string[]参数传给InformationActivity
                         String[] ticket_arr = result.split("\n");
                         Intent intent = new Intent(getActivity(), InformationActivity.class);
-                        if(transfer)
+                        if(transfer) {
+                            intent.putExtra("userid", getActivity().getIntent().getStringExtra("userid"));
                             intent.putExtra("tickets", ticket_arr);
+                        }
                         else{
                             String[] tickets = new String[ticket_arr.length - 1];
                             for(int i = 1; i < ticket_arr.length; i++){

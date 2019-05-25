@@ -78,13 +78,15 @@ public class Fragment3 extends Fragment {
                 String newPassword2 = password_confirm_edit.getText().toString();
 
                 if(Tools.isEmpty(id_text.getText().toString())) {Tools.showMessage(getActivity(), "系统异常！", "error"); return;}
-                if(Tools.isEmpty(newUsername)) {Tools.showMessage(getActivity(), "用户名不能为空！", "error"); return;}
+                if(Tools.isEmpty(newUsername) || newUsername.contains(" ")) {Tools.showMessage(getActivity(), "用户名不合法！", "error"); return;}
                 if(Tools.isEmpty(newEmail)) {Tools.showMessage(getActivity(), "邮箱不能为空！", "error"); return;}
                 if(Tools.isEmpty(newPhone)) {Tools.showMessage(getActivity(), "手机号码不能为空！", "error"); return;}
-                if(!Tools.isEmail(newEmail)) {Tools.showMessage(getActivity(), "邮箱格式有误！", "error"); return;}
-                if(!Tools.isPhone(newPhone)) {Tools.showMessage(getActivity(), "手机号码有误！", "error"); return;}
+                if(!Tools.isEmail(newEmail) || newEmail.contains(" ")) {Tools.showMessage(getActivity(), "邮箱格式有误！", "error"); return;}
+                if(!Tools.isPhone(newPhone) || newPhone.contains(" ")) {Tools.showMessage(getActivity(), "手机号码有误！", "error"); return;}
+                if(newPassword.contains(" "))
+                {Tools.showMessage(getActivity(), "密码不合法！", "error"); return;}
                 if(!Tools.isEmpty(newPassword) && !newPassword.equals(newPassword2))
-                    {Tools.showMessage(getActivity(), "两次密码不一致！", "error"); return;}
+                {Tools.showMessage(getActivity(), "两次密码不一致！", "error"); return;}
 
 
                 try {

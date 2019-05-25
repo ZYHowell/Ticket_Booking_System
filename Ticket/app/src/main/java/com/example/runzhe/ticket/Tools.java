@@ -28,10 +28,14 @@ import es.dmoral.toasty.Toasty;
 public class Tools {
 
     static String command(String command) throws Exception{
-
-        // TODO : 使用 client
         return Client.main(command);
-//        return new String("张三 zhangsan@sjtu.edu.cn 12345678901 2");
+    }
+
+    static boolean legalDate(String date){
+        String[] tmp = date.split("-");
+        if(Integer.valueOf(tmp[0]) != 2019) return false;
+        if(Integer.valueOf(tmp[1]) != 6) return false;
+        return true;
     }
 
     static String getSeatType(int pos){

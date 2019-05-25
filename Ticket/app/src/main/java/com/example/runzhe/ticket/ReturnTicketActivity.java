@@ -117,13 +117,13 @@ public class ReturnTicketActivity extends AppCompatActivity {
                             + departure + " " + destination + " " + date + " " + ticket_type;
                     String result = Tools.command(command);
                     if(result.equals("1")){
-                        Tools.showMessage(ReturnTicketActivity.this, "退票成功！\n（"
+                        Tools.showMessage(ReturnTicketActivity.this, ReturnTicketActivity.this, "退票成功！\n（"
                                 + Integer.valueOf(num) + "×" + Tools.getSeatType(ticket_type) + "）", "success");
                         alertDialog.dismiss();
                         progressbarFragment.dismiss();
                     }
                     else{
-                        Tools.showMessage(ReturnTicketActivity.this, "退票失败！", "error");
+                        Tools.showMessage(ReturnTicketActivity.this, ReturnTicketActivity.this, "退票失败！", "error");
                         progressbarFragment.dismiss();
                     }
                 } catch (Exception e) {
@@ -137,11 +137,11 @@ public class ReturnTicketActivity extends AppCompatActivity {
 
     void setAllInfo(){
         Intent intent = getIntent();
-        train_id_text.setText(intent.getStringExtra("id"));
-        date_text.setText(intent.getStringExtra("data"));
+        train_id_text.setText(intent.getStringExtra("train_id"));
+        date_text.setText(intent.getStringExtra("date"));
         departure_text.setText(intent.getStringExtra("departure"));
         destination_text.setText(intent.getStringExtra("destination"));
-        depart_time_text.setText(intent.getStringExtra("departure_time"));
+        depart_time_text.setText(intent.getStringExtra("depart_time"));
         destination_time_text.setText(intent.getStringExtra("destination_time"));
     }
 
