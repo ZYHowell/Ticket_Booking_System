@@ -24,8 +24,46 @@ class invalid_offset : public exception {
 class invalid_iterator : public exception {
 };
 
-class not_found : public exception {
+class wrong_parameter : public exception {
+
 };
+
+class wrong_command :public exception {
+};
+
+class wrong_token :public exception {
+};
+
+#ifndef SJTU_EXCEPTIONS_HPP
+#define SJTU_EXCEPTIONS_HPP
+
+namespace sjtu {
+
+	class exception {
+	};
+
+	/**
+	* TODO
+	* Please complete them.
+	*/
+	class index_out_of_bound : public exception {
+		/* __________________________ */
+	};
+
+	class runtime_error : public exception {
+		/* __________________________ */
+	};
+
+	class invalid_iterator : public exception {
+		/* __________________________ */
+	};
+
+	class container_is_empty : public exception {
+		/* __________________________ */
+	};
+}
+
+#endif
 
 class index_out_of_bound : public exception {
 	/* __________________________ */
