@@ -8,12 +8,19 @@ std::ostream &operator << (std::ostream &os,const Time &time){
 }
 
 std::ostream &operator << (std::ostream &os, const date &d) {
-	os << "2019-06-" << setw(2) << setfill('0') << d.day;
+	if (d.day > 30)
+		os << "2019-07-" << setw(2) << setfill('0') << d.day - 30;
+	else os << "2019-06-" << setw(2) << setfill('0') << d.day;
 	return os;
 }
 
 std::ostream &operator << (std::ostream &os, const String &str) {
 	os<<str.s;
+	return os;
+}
+
+std::ostream &operator << (std::ostream &os, const shortString &str) {
+	os << str.s;
 	return os;
 }
 
@@ -23,9 +30,9 @@ int String::asint()const {
 	return x;
 }
 
-double String::asdouble()const {
+float String::asfloat()const {
 	int i = (int)s[0] == RMB_SYMBOL ? RMB_LEGNTH : 0;
-	double x = 0, t = 0.1;
+	float x = 0, t = 0.1;
 	for (; i < l && s[i] != '.'; i++) x = x * 10 + s[i] - '0';
 	for (i++; i < l; i++, t *= 0.1) x += t * (s[i] - '0');
 	return x;

@@ -9,13 +9,7 @@
 #include <stdio.h>
 #include "utility.hpp"
 #include "hash.hpp"
-// struct lathe{
-//     //mode = 0 when it is free, 1 when it is read and 2 when it is written
-//     int R_num;
-//     int W_num;
-//     lathe():R_num(0), W_num(0){}
-//     ~lathe(){}
-// };
+
 
 using lathe = size_t;
 
