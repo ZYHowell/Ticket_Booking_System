@@ -21,7 +21,7 @@ class invalid_format : public exception {
 class invalid_offset : public exception {
 };
 
-class not_found : public exception {
+class invalid_iterator : public exception {
 };
 
 class wrong_parameter : public exception {
@@ -65,19 +65,11 @@ namespace sjtu {
 
 #endif
 
-/**
- * TODO
- * Please complete them.
- */
 class index_out_of_bound : public exception {
 	/* __________________________ */
 };
 
 class runtime_error : public exception {
-	/* __________________________ */
-};
-
-class invalid_iterator : public exception {
 	/* __________________________ */
 };
 
