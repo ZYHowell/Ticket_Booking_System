@@ -9,7 +9,7 @@ struct station {
 	static const short INITIAL_QUANTITY = 2000;
 	shortString name;
 	Time arrive, leave, stop;
-	short num[maxDate][maxClassN]; // 2018-06-01 µ½2018-06-30Ã¿Ò»ÌìµÄÓàÆ±Êı
+	short num[maxDate][maxClassN]; // 2018-06-01 åˆ°2018-06-30æ¯ä¸€å¤©çš„ä½™ç¥¨æ•°
 	float price[maxClassN];
 
 	station() = default;
@@ -29,8 +29,8 @@ struct station {
 
 struct train {
 	static const int maxN = 50;
-	short n; //¾­¹ıÕ¾µÄÊıÁ¿
-	short classN; //×ùÎ»Àà±ğµÄÊıÁ¿
+	short n; //ç»è¿‡ç«™çš„æ•°é‡
+	short classN; //åº§ä½ç±»åˆ«çš„æ•°é‡
 	String name;
 	char catalog;
 	shortString ID,seatClass[maxClassN];

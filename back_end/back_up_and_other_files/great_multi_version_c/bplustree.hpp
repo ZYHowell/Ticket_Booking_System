@@ -556,12 +556,12 @@ template<class key_t,
         now->size -= s;
         size_t ns = now->size;
 
-        point pos = alloc.alloc(node_size);
-        buf_block_t *tmp_b = buf->load_it(pos, 1);
-        byte *cache_tmp = tmp_b->frame + sizeof(node);
-        node *tmp       = (node *)(cache_tmp - sizeof(node));
-        tmp->key = *nth_key_l(cache, ns), tmp->type = now->type, tmp->pos = pos, tmp->size = s;
-        tmp->prior = now->pos, tmp->next = now->next;
+        point pos           = alloc.alloc(node_size);
+        buf_block_t *tmp_b  = buf->load_it(pos, 1);
+        byte *cache_tmp     = tmp_b->frame + sizeof(node);
+        node *tmp           = (node *)(cache_tmp - sizeof(node));
+        tmp->key    = *nth_key_l(cache, ns), tmp->type = now->type, tmp->pos = pos, tmp->size = s;
+        tmp->prior  = now->pos, tmp->next = now->next;
 
         if (now->next != invalid_p){
             buf_block_t *temp = buf->load_it(now->next, 1);
@@ -725,10 +725,10 @@ template<class key_t,
     void _insert_head_n(buf_block_t *it, const key_t &k, const value_type &v)
     {
         byte *cache = it->frame + sizeof(node);
-        node *now = (node *)(cache - sizeof(node));
-        buf_block_t *buf_child = buf->load_it(*nth_point(cache), 1);    
-        byte *cache_child = buf_child->frame + sizeof(node);
-        node *node_child = (node *)(cache_child - sizeof(node));
+        node *now   = (node *)(cache - sizeof(node));
+        buf_block_t *buf_child  = buf->load_it(*nth_point(cache), 1);    
+        byte *cache_child       = buf_child->frame + sizeof(node);
+        node *node_child        = (node *)(cache_child - sizeof(node));
         if (node_child->type){
             _insert_head_n(buf_child, k, v);
             *nth_key_n(cache, 0) = now->key = k;
@@ -750,7 +750,7 @@ template<class key_t,
     void _insert_head_l(buf_block_t *it, const key_t &k, const value_type &v)
     {
         byte *cache = it->frame + sizeof(node);
-        node *now = (node *)(cache - sizeof(node));
+        node *now   = (node *)(cache - sizeof(node));
         ++num;
         for (size_t i = now->size;i;i--){
             *nth_key_l(cache, i)    = *nth_key_l(cache, i - 1);
@@ -768,12 +768,12 @@ template<class key_t,
     */
     bool _remove_n(buf_block_t *it, const key_t &k){
         byte *cache = it->frame + sizeof(node);
-        node *now = (node *)(cache - sizeof(node));
-        size_t ord = b_search_n(cache, k, now->size);
-        point loc = *nth_point(cache, ord);
-        buf_block_t *buf_child = buf->load_it(loc, 1);    
-        byte *cache_child = buf_child->frame + sizeof(node);
-        node *node_child = (node *)(cache_child - sizeof(node));
+        node *now   = (node *)(cache - sizeof(node));
+        size_t ord  = b_search_n(cache, k, now->size);
+        point loc   = *nth_point(cache, ord);
+        buf_block_t *buf_child  = buf->load_it(loc, 1);    
+        byte *cache_child       = buf_child->frame + sizeof(node);
+        node *node_child        = (node *)(cache_child - sizeof(node));
         bool ret;
         if (node_child->type){
             ret = _remove_n(buf_child, k);
@@ -799,8 +799,8 @@ template<class key_t,
     }
     bool _remove_l(buf_block_t *it, const key_t k){
         byte *cache = it->frame + sizeof(node);
-        node *now = (node *)(cache - sizeof(node));
-        size_t ord = b_search_l(cache, k, now->size);
+        node *now   = (node *)(cache - sizeof(node));
+        size_t ord  = b_search_l(cache, k, now->size);
         if (equal(*nth_key_l(cache, ord), k)){
             --num;
             --(now->size);
@@ -819,14 +819,15 @@ public:
                 num(0), root_pos(0), buf(nullptr){}
     void init(const char *datafile_name, const char *alloc_name)
     {
-        buf = new buf_pool_t<node_size, node>;
-        index_name = new char[strlen(alloc_name) + 1];
+        buf         = new buf_pool_t<node_size, node>;
+        index_name  = new char[strlen(alloc_name) + 1];
         strcpy(index_name, alloc_name);
-        data_name = new char[strlen(datafile_name) + 1];
+        data_name   = new char[strlen(datafile_name) + 1];
         strcpy(data_name, datafile_name);
         alloc.init(index_name);
-        datafile = fopen(data_name, "rb+");
-        if (!datafile) datafile = fopen(data_name, "wb+");
+        datafile    = fopen(data_name, "rb+");
+        if (!datafile)
+            datafile = fopen(data_name, "wb+");
         buf->init(datafile);
 		#ifdef OUTPUT_INIT
         printf("size_of_node: %d; leaf_part: %d; non_leaf_part: %d\n", sizeof(node), part_size_l, part_size_n);

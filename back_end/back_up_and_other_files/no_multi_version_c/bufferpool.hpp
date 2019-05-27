@@ -371,11 +371,6 @@ public:
         flush_all();
         return to_block_t(LRU_use(offset, f));
     }
-    // bool release_it(buf_block_t *it){
-    //     if (it == nullptr) return false;
-    //     flush_back(it, f);
-    //     return true;
-    // }
     void dirty(to_block_t &to_it){
         buf_block_t *it = to_it.it;
         if (it->state > 2) return;
