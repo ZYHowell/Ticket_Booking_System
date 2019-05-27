@@ -1,5 +1,5 @@
 #pragma once
-//»ùÓÚÎÄ¼şÊµÏÖµÄÒ»¸övector
+//åŸºäºæ–‡ä»¶å®ç°çš„ä¸€ä¸ªvector
 
 #include <string>
 #include <fstream>
@@ -17,7 +17,7 @@ class dataFile {
 	int _size;
 	const int sizeofT;
 public:
-	//¹¹Ôìº¯Êı£º²ÎÊıÎªÎÄ¼şÃû£¬Èç¹û²»´æÔÚ¾Í´´½¨
+	//æ„é€ å‡½æ•°ï¼šå‚æ•°ä¸ºæ–‡ä»¶åï¼Œå¦‚æœä¸å­˜åœ¨å°±åˆ›å»º
 	dataFile(std::string name) :sizeofT(sizeof(T)),fileName(name) {
 		in.open(fileName,fstream::binary);
 		if (!in) {
@@ -38,7 +38,7 @@ public:
 	}
 	dataFile() = delete;
 
-	// Îö¹¹º¯Êı£º¹Ø±ÕÎÄ¼ş
+	// ææ„å‡½æ•°ï¼šå…³é—­æ–‡ä»¶
 	~dataFile() {
 		out.seekp(0);
 		out.write(reinterpret_cast<const char *>(&_size), sizeof(int));

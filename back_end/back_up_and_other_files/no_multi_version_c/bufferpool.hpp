@@ -10,6 +10,7 @@
 #include "utility.hpp"
 #include "hash.hpp"
 
+
 using lathe = size_t;
 
 //block of a buffer
