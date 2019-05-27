@@ -99,10 +99,11 @@ int main(){
     #endif
     for (long long i = 1;i <= test_size;i++){
         try{
+        //printf("\n%lld\n", i);
         test.insert(its[i], i);
         if (test.find(its[i]).second != i) printf("false insert:%lld;\n", i); 
-        test.double_check();
-        }catch(...) {printf("%lld;\n", i);}
+        //test.double_check();
+        }catch(...) {printf("wrong at %lld;\n", i);}
     }
 #endif
     #ifdef TEST_STRING_MODE

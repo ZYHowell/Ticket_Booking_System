@@ -1,10 +1,8 @@
 #ifndef SJTU_HASH_TABLE
 #define SJTU_HASH_TABLE
 #include "exceptions.h"
-#include "utility.hpp"
 template<class V>
 class hash_table_t{
-    std::shared_mutex latch;
     using point = long;
     V list[512];
 public:

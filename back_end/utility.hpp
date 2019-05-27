@@ -2,6 +2,7 @@
 #define SJTU_UTILITY_HPP
 
 #include <utility>
+#include "thread.hpp"
 
 template<class T1, class T2>
 class pair {
@@ -40,4 +41,5 @@ struct ut_list_head{
     ut_list_head(TYPE* p = nullptr, TYPE* n = nullptr, int c = 0):
         start(p), end(n), count(c){}
 };
+
 #endif

@@ -39,7 +39,7 @@ template<class key_t,
             return *this;
         }
     };
-    buf_pool_t<node_size, node>   *buf;
+    buf_pool_t<node_size>   *buf;
     Compare                 com;
     size_t                  num;
     FILE                    *datafile;
@@ -100,8 +100,6 @@ template<class key_t,
     }
     /*
         * find a particular key and return its pointer
-        * notice that as sub_find_t is returned, 
-        * THE LEAF BLOCK IS STILL SHARED LOCKED
     */
     sub_find_t _find(buf_block_t *it,const key_t& k) const
     {
@@ -113,15 +111,11 @@ template<class key_t,
             if (equal(*nth_key_l(cache, ord), k)) {
                 return sub_find_t(ord, it);
             }
-            else {
-                it->RW_latch.unlock_shared();
-                return sub_find_t(false, nullptr);
-            }
+            else return sub_find_t(false, nullptr);
         }
         else{
             ord = b_search_n(cache, k, p->size);
-            it->RW_latch.unlock_shared();
-            buf_block_t *tmp = buf->load_it(*nth_point(cache, ord), 0);
+            buf_block_t *tmp = buf->load_it(*nth_point(cache, ord));
             return _find(tmp, k);
         }
     }
@@ -150,21 +144,18 @@ template<class key_t,
                 if (ord + 1 < now->size) ++ord;
                 else{
                     if (now->next == invalid_p) break;
-                    tmp->RW_latch.unlock_shared();
-                    tmp = buf->load_it(now->next, 0);
+                    tmp = buf->load_it(now->next);
                     now = (node *)(tmp->frame);
 					cache = tmp->frame + sizeof(node);
                     ord = 0;
                 }
             }
-            tmp->RW_latch.unlock_shared();
             return ret;
         }
         else {
             if (com(k, p->key)) ord = 0;
             else ord = b_search_n(cache, k, p->size);
-            it->RW_latch.unlock_shared();
-            tmp = buf->load_it(*nth_point(cache, ord), 0);
+            tmp = buf->load_it(*nth_point(cache, ord));
             return _listof(tmp, k, comp);
         }
     }
@@ -332,7 +323,7 @@ template<class key_t,
     /*
         * Find the quickest way to solve the problem of extreme size.
         * save now and cache and left/right and its cache if necessary, 
-        * the parent is also dirty there
+        * but do not save the cache of the parent
     */
     inline void deal_surplus_n(buf_block_t *now_b, buf_block_t *par_b, size_t ord)
     {
@@ -343,31 +334,29 @@ template<class key_t,
         node *tmp;
         buf_block_t *tmp_b;
         if (now->pos != *nth_point(cache_par)){
-            tmp_b = buf->load_it(now->prior, 1);
+            tmp_b = buf->load_it(now->prior);
             tmp = (node *)(tmp_b->frame);
             if (tmp->size < part_size_n * 3 / 4) {
                 Lbalance_n(now_b, tmp_b);
-                *nth_key_n(cache_par, ord) = now->key;
-                buf->dirty(par_b);
-                tmp_b->RW_latch.unlock();
+                if (!equal(*nth_key_n(cache_par, ord), now->key)){
+                    *nth_key_n(cache_par, ord) = now->key;
+                    buf->dirty(par_b);
+                }
                 return;
             }
-            tmp_b->RW_latch.unlock();
         }
         if (now->pos != *nth_point(cache_par, par->size - 1)){
-            tmp_b = buf->load_it(now->next, 1);
+            tmp_b = buf->load_it(now->next);
             tmp = (node *)(tmp_b->frame);
             if (tmp->size < part_size_n * 3 / 4){
                 Rbalance_n(now_b, tmp_b);
-                *nth_key_n(cache_par, ord + 1) = tmp->key;
-                buf->dirty(par_b);
-                tmp_b->RW_latch.unlock();
+                if (!equal(*nth_key_n(cache_par, ord + 1), tmp->key)){
+                    *nth_key_n(cache_par, ord + 1) = tmp->key;
+                    buf->dirty(par_b);
+                }
                 return;
             }
-            else {
-                tmp_b->RW_latch.unlock();
-                split_n(now_b, par_b, ord);
-            }
+            else split_n(now_b, par_b, ord);
         }
         else split_n(now_b, par_b, ord);
     }
@@ -380,7 +369,7 @@ template<class key_t,
         node *tmp;
         buf_block_t *tmp_b;
         if (now->pos != *nth_point(cache_par)){
-            tmp_b = buf->load_it(now->prior, 1);
+            tmp_b = buf->load_it(now->prior);
             tmp = (node *)(tmp_b->frame);
             if (tmp->size < part_size_l * 3 / 4) {
                 Lbalance_l(now_b, tmp_b);
@@ -388,13 +377,11 @@ template<class key_t,
                     *nth_key_n(cache_par, ord) = now->key;
                     buf->dirty(par_b);
                 }
-                tmp_b->RW_latch.unlock();
                 return;
             }
-            tmp_b->RW_latch.unlock();
         }
         if (now->pos != *nth_point(cache_par, par->size - 1)){
-            tmp_b = buf->load_it(now->next, 1);
+            tmp_b = buf->load_it(now->next);
             tmp = (node *)(tmp_b->frame);
             if (tmp->size < part_size_l * 3 / 4){
                 Rbalance_l(now_b, tmp_b);
@@ -402,13 +389,9 @@ template<class key_t,
                     *nth_key_n(cache_par, ord + 1) = tmp->key;
                     buf->dirty(par_b);
                 }
-                tmp_b->RW_latch.unlock();
                 return;
             }
-            else {
-                tmp_b->RW_latch.unlock();
-                split_l(now_b, par_b, ord);
-            }
+            else split_l(now_b, par_b, ord);
         }
         else split_l(now_b, par_b, ord);
     }
@@ -421,7 +404,7 @@ template<class key_t,
         node *tmp;
         buf_block_t *tmp_b;
         if (now->pos != *nth_point(cache_par, par->size - 1)){
-            tmp_b = buf->load_it(now->next, 1);
+            tmp_b = buf->load_it(now->next);
             tmp = (node *)(tmp_b->frame);
             if ((part_size_n >> 1) < tmp->size){
                 Rreceive_n(now_b, tmp_b);
@@ -429,17 +412,13 @@ template<class key_t,
                     *nth_key_n(cache_par, ord + 1) = tmp->key;
                     buf->dirty(par_b);
                 }
-                tmp_b->RW_latch.unlock();
                 return;
             }
-            else {
-                merge_n(now_b, par_b, tmp_b, ord);
-                tmp_b->RW_latch.unlock();
-                return;
-            }
+            else merge_n(now_b, par_b, tmp_b, ord);
+            return;
         }
         if (now->pos != *nth_point(cache_par)){
-            tmp_b = buf->load_it(now->prior, 1);
+            tmp_b = buf->load_it(now->prior);
             tmp = (node *)(tmp_b->frame);
             if ((part_size_n >> 1) < tmp->size){
                 Lreceive_n(now_b, tmp_b);
@@ -447,13 +426,9 @@ template<class key_t,
                     *nth_key_n(cache_par, ord) = now->key;
                     buf->dirty(par_b);
                 }
-                tmp_b->RW_latch.unlock();
                 return;
             }
-            else {
-                merge_n(tmp_b, par_b, now_b, ord - 1);
-                tmp_b->RW_latch.unlock();
-            }
+            else merge_n(tmp_b, par_b, now_b, ord - 1);
         }
     }
     inline void deal_deficit_l(buf_block_t *now_b, buf_block_t *par_b, size_t ord)
@@ -465,7 +440,7 @@ template<class key_t,
         node *tmp;
         buf_block_t *tmp_b;
         if (now->pos != *nth_point(cache_par, par->size - 1)){
-            tmp_b = buf->load_it(now->next, 1);
+            tmp_b = buf->load_it(now->next);
             tmp = (node *)(tmp_b->frame);
             if ((part_size_l >> 1) < tmp->size){
                 Rreceive_l(now_b, tmp_b);
@@ -473,17 +448,13 @@ template<class key_t,
                     *nth_key_n(cache_par, ord + 1) = tmp->key;
                     buf->dirty(par_b);
                 }
-                tmp_b->RW_latch.unlock();
                 return;
             }
-            else {
-                merge_l(now_b, par_b, tmp_b, ord);
-                tmp_b->RW_latch.unlock();
-                return;
-            }
+            else merge_l(now_b, par_b, tmp_b, ord);
+            return;
         }
         if (now->pos != *nth_point(cache_par)){
-            tmp_b = buf->load_it(now->prior, 1);
+            tmp_b = buf->load_it(now->prior);
             tmp = (node *)(tmp_b->frame);
             if ((part_size_l >> 1) < tmp->size){
                 Lreceive_l(now_b, tmp_b);
@@ -491,13 +462,9 @@ template<class key_t,
                     *nth_key_n(cache_par, ord) = now->key;
                     buf->dirty(par_b);
                 }
-                tmp_b->RW_latch.unlock();
                 return;
             }
-            else {
-                merge_l(tmp_b, par_b, now_b, ord - 1);
-                tmp_b->RW_latch.unlock();
-            }
+            else merge_l(tmp_b, par_b, now_b, ord - 1);
         }
     }
     /*
@@ -509,14 +476,14 @@ template<class key_t,
     {
         byte *cache = now_b->frame + sizeof(node),
              *cache_par = par_b->frame + sizeof(node);
-        node *now   = (node *)(cache - sizeof(node)), 
-             *par   = (node *)(cache_par - sizeof(node));
-        size_t s    = now->size >> 1;
+        node *now = (node *)(cache - sizeof(node)), 
+             *par = (node *)(cache_par - sizeof(node));
+        size_t s = now->size >> 1;
         now->size -= s;
         size_t ns = now->size;
 
         point pos = alloc.alloc(node_size);
-        buf_block_t *tmp_b = buf->load_it(pos, 1);
+        buf_block_t *tmp_b = buf->load_it(pos);
 
         byte *cache_tmp = tmp_b->frame + sizeof(node);
         node *tmp       = (node *)(cache_tmp - sizeof(node));
@@ -524,10 +491,9 @@ template<class key_t,
         tmp->prior = now->pos, tmp->next = now->next;
 
         if (now->next != invalid_p){
-            buf_block_t *temp = buf->load_it(now->next, 1);
+            buf_block_t *temp = buf->load_it(now->next);
             ((node *)(temp->frame))->prior = tmp->pos;
             buf->dirty(temp);
-            temp->RW_latch.unlock();
         }
         now->next = tmp->pos;
 
@@ -536,7 +502,6 @@ template<class key_t,
             *nth_point(cache_tmp, i) = *nth_point(cache, ns + i);
         }
         buf->dirty(tmp_b), buf->dirty(now_b);
-        tmp_b->RW_latch.unlock();
         ns = order;
         for (size_t i = par->size;ns + 1 < i;i--){
             *nth_key_n(cache_par, i)    = *nth_key_n(cache_par, i - 1);
@@ -550,24 +515,23 @@ template<class key_t,
     void split_l(buf_block_t *now_b, buf_block_t *par_b, size_t order){
         byte *cache     = now_b->frame + sizeof(node),
              *cache_par = par_b->frame + sizeof(node);
-        node *now   = (node *)(cache - sizeof(node)), 
-             *par   = (node *)(cache_par - sizeof(node));
-        size_t s    = now->size >> 1;
+        node *now = (node *)(cache - sizeof(node)), 
+             *par = (node *)(cache_par - sizeof(node));
+        size_t s = now->size >> 1;
         now->size -= s;
         size_t ns = now->size;
 
         point pos = alloc.alloc(node_size);
-        buf_block_t *tmp_b = buf->load_it(pos, 1);
+        buf_block_t *tmp_b = buf->load_it(pos);
         byte *cache_tmp = tmp_b->frame + sizeof(node);
         node *tmp       = (node *)(cache_tmp - sizeof(node));
         tmp->key = *nth_key_l(cache, ns), tmp->type = now->type, tmp->pos = pos, tmp->size = s;
         tmp->prior = now->pos, tmp->next = now->next;
 
         if (now->next != invalid_p){
-            buf_block_t *temp = buf->load_it(now->next, 1);
+            buf_block_t *temp = buf->load_it(now->next);
             ((node *)(temp->frame))->prior = tmp->pos;
             buf->dirty(temp);
-            temp->RW_latch.unlock();
         }
         now->next = tmp->pos;
 
@@ -576,7 +540,6 @@ template<class key_t,
             *nth_value(cache_tmp, i) = *nth_value(cache, ns + i);
         }
         buf->dirty(tmp_b), buf->dirty(now_b);
-        tmp_b->RW_latch.unlock();
         ns = order;
         for (size_t i = par->size;ns + 1 < i;i--){
             *nth_key_n(cache_par, i)    = *nth_key_n(cache_par, i - 1);
@@ -586,6 +549,7 @@ template<class key_t,
         *nth_point(cache_par, ns + 1) = tmp->pos;
         ++(par->size);
         buf->dirty(par_b);
+        //print_node_l(tmp_b);
     }
     /*
         * Merge now and the next of it,
@@ -602,10 +566,9 @@ template<class key_t,
              *tmp = (node *)(cache_tmp - sizeof(node));
         now->next = tmp->next;
         if (tmp->next != invalid_p){
-            buf_block_t *temp = buf->load_it(tmp->next, 1);
+            buf_block_t *temp = buf->load_it(tmp->next);
             ((node *)(temp->frame))->prior = now->pos;
             buf->dirty(temp);
-            temp->RW_latch.unlock();
         }
         size_t ns = now->size;
         for (size_t i = 0;i < tmp->size;i++){
@@ -633,10 +596,9 @@ template<class key_t,
              *tmp = (node *)(cache_tmp - sizeof(node));
         now->next = tmp->next;
         if (tmp->next != invalid_p){
-            buf_block_t *temp = buf->load_it(tmp->next, 1);
+            buf_block_t *temp = buf->load_it(tmp->next);
             ((node *)(temp->frame))->prior = now->pos;
             buf->dirty(temp);
-            temp->RW_latch.unlock();
         }
         size_t ns = now->size;
         for (size_t i = 0;i < tmp->size;i++){
@@ -657,54 +619,42 @@ template<class key_t,
         * Insert (k,v) and return true if it is an insertion and false for a change, 
         * whether split or not is considered in its parent,
         * as we prove that all parts are smaller than part_size, the memory is safe.
-        * return 0 when it fails, 1 when the successfully-inserted 'it' does not oversized and 2 otherwise.
-        * that means, only deal_surplus is considered in its parent, dirty or not is considered in itself, 
-        * requiring the deal_surplus function dirty the parent
+        * But mention to judge the size of the root.(actually, it does need to be specially treated)
     */
-    int _insert_n(buf_block_t *it, const key_t &k, const value_type &v)
+    bool _insert_n(buf_block_t *it, const key_t &k, const value_type &v)
     {
         byte *cache = it->frame + sizeof(node);
-        node *now   = (node *)(cache - sizeof(node));
+        node *now = (node *)(cache - sizeof(node));
         size_t ord  = b_search_n(cache, k, now->size);
-        point loc   = *nth_point(cache, ord);
-        buf_block_t *buf_child  = buf->load_it(loc, 1);    
-        byte *cache_child       = buf_child->frame + sizeof(node);
-        node *node_child        = (node *)(cache_child - sizeof(node));
-        int ret;
+        point loc = *nth_point(cache, ord);
+        buf_block_t *buf_child = buf->load_it(loc);    
+        byte *cache_child = buf_child->frame + sizeof(node);
+        node *node_child = (node *)(cache_child - sizeof(node));
+        bool ret;
         if (node_child->type){
             ret = _insert_n(buf_child, k, v);
-            if (!ret) {
-                buf_child->RW_latch.unlock();
-                return 0;
-            }
-            if (ret == 2) {
+            if (!ret) return false;
+            if (node_child->size >= part_size_n) {
                 deal_surplus_n(buf_child, it, ord);
-                if (now->size >= part_size_n) ret = 2;
-                else ret = 1;
-            }
-        }
-        else{
-            ret = _insert_l(buf_child, k, v);
-            if (!ret) {
-                buf_child->RW_latch.unlock();
-                return 0;
-            }
-            if (ret == 2) {
-                deal_surplus_l(buf_child, it, ord);
-                if (now->size >= part_size_n) ret = 2;
-                else ret = 1;
             }
             else buf->dirty(buf_child);
         }
-        buf_child->RW_latch.unlock();
+        else{
+            ret = _insert_l(buf_child, k, v);
+            if (!ret) return false;
+            if (node_child->size >= part_size_l) {
+                deal_surplus_l(buf_child, it, ord);
+            }
+            else buf->dirty(buf_child);
+        }
         return ret;
     }
-    int _insert_l(buf_block_t *it, const key_t &k, const value_type &v)
+    bool _insert_l(buf_block_t *it, const key_t &k, const value_type &v)
     {
         byte *cache = it->frame + sizeof(node);
-        node *now   = (node *)(cache - sizeof(node));
+        node *now = (node *)(cache - sizeof(node));
         size_t ord  = b_search_l(cache, k, now->size);
-        if (equal(*nth_key_l(cache, ord), k)) return 0;
+        if (equal(*nth_key_l(cache, ord), k)) return false;
         ++num;
         for (size_t i = now->size;ord + 1 < i;i--){
             *nth_key_l(cache, i)    = *nth_key_l(cache, i - 1);
@@ -713,8 +663,9 @@ template<class key_t,
         ++(now->size);
         *nth_key_l(cache, ord + 1) = k;
         *nth_value(cache, ord + 1) = v;
-        if (now->size >= part_size_l) return 2;
-        return 1;
+        // p.key = *nth_key(p, 0); shall we add this?
+       // print_node_l(it);
+        return true;
     }
     /*
         * Insert (k,v) at the head of the tree and return true, 
@@ -726,7 +677,7 @@ template<class key_t,
     {
         byte *cache = it->frame + sizeof(node);
         node *now = (node *)(cache - sizeof(node));
-        buf_block_t *buf_child = buf->load_it(*nth_point(cache), 1);    
+        buf_block_t *buf_child = buf->load_it(*nth_point(cache));    
         byte *cache_child = buf_child->frame + sizeof(node);
         node *node_child = (node *)(cache_child - sizeof(node));
         if (node_child->type){
@@ -745,7 +696,6 @@ template<class key_t,
             }
             else buf->dirty(buf_child);
         }
-        buf_child->RW_latch.unlock();
     }
     void _insert_head_l(buf_block_t *it, const key_t &k, const value_type &v)
     {
@@ -771,7 +721,7 @@ template<class key_t,
         node *now = (node *)(cache - sizeof(node));
         size_t ord = b_search_n(cache, k, now->size);
         point loc = *nth_point(cache, ord);
-        buf_block_t *buf_child = buf->load_it(loc, 1);    
+        buf_block_t *buf_child = buf->load_it(loc);    
         byte *cache_child = buf_child->frame + sizeof(node);
         node *node_child = (node *)(cache_child - sizeof(node));
         bool ret;
@@ -794,7 +744,6 @@ template<class key_t,
             else buf->dirty(buf_child);
         }
         now->key = *nth_key_n(cache, 0);
-        buf_child->RW_latch.unlock();
         return ret;
     }
     bool _remove_l(buf_block_t *it, const key_t k){
@@ -819,7 +768,7 @@ public:
                 num(0), root_pos(0), buf(nullptr){}
     void init(const char *datafile_name, const char *alloc_name)
     {
-        buf = new buf_pool_t<node_size, node>;
+        buf = new buf_pool_t<node_size>;
         index_name = new char[strlen(alloc_name) + 1];
         strcpy(index_name, alloc_name);
         data_name = new char[strlen(datafile_name) + 1];
@@ -857,9 +806,8 @@ public:
 		#ifdef DEBUG_MODE
         printf("clear_root_point_seek: %d\n", 0);
 		#endif
-        buf->stop_it();
         buf->file_change(datafile);
-        buf->re_init();
+        buf->init();
 		#ifdef DEBUG_MODE
 		printf("clear_root_seek: %d\n", 0);
             #ifdef TEST_INT_MODE
@@ -896,9 +844,7 @@ public:
         buf_block_t *root = buf->load_it(root_pos, 0);
         if (com(k, ((node *)(root->frame))->key)) return 0;
         sub_find_t p = _find(root, k);
-        root->RW_latch.unlock_shared();
         if (p.second == nullptr) return 0;
-        p.second->RW_latch.unlock_shared();
         return 1;
     }
     find_t find(const key_t &k) const
@@ -907,14 +853,11 @@ public:
         buf_block_t *root = buf->load_it(root_pos, 0);
         if (com(k, ((node *)(root->frame))->key)) return find_t(false, value_type());
         sub_find_t p = _find(root, k);
-        root->RW_latch.unlock_shared();
         if (p.second == nullptr) return find_t(false, value_type());
 		#ifdef DEBUG_MODE
         printf("find_seek_in_database: %d\nwhich is: %d\n", p + sizeof(key_t),v);
 		#endif
-        value_type v = *nth_value(p.second->frame + sizeof(node), p.first);
-        p.second->RW_latch.unlock_shared();
-        return find_t(true, v);
+        return find_t(true, *nth_value(p.second->frame + sizeof(node), p.first));
     }
     bool set(const key_t &k, const value_type &v) const
     {
@@ -922,13 +865,9 @@ public:
         buf_block_t *root = buf->load_it(root_pos, 0);
         if (com(k, ((node *)(root->frame))->key)) return false;
         sub_find_t p = _find(root, k);
-        root->RW_latch.unlock_shared();
         if (p.second == nullptr) return false;
-        p.second->RW_latch.unlock_shared();
-        p.second->RW_latch.lock()
         *nth_value(p.second->frame + sizeof(node), p.first) = v;
         buf->dirty(p.second);
-        p.second->RW_latch.unlock();
         return 1;
     }
     bool insert(const key_t &k, const value_type &v)
@@ -943,62 +882,50 @@ public:
             *nth_key_l(root->frame + sizeof(node)) = k;
             *nth_value(root->frame + sizeof(node)) = v;
             buf->dirty(root);
-            root->RW_latch.unlock();
             return true;
         }
-        int ret = 1;
+        bool ret = true;
         byte *cache = root->frame + sizeof(node);
         if (root_n->type){
             if (com(root_n->key, k))
                 ret = _insert_n(root, k, v);
-            else {
-                ret = 2;
-                _insert_head_n(root, k, v);
-            }
-            if (ret == 2){
-                buf->dirty(root);
-                if (root_n->size >= part_size_n){
-                    point pos = alloc.alloc(node_size);
-                    buf_block_t *new_root_b = buf->load_it(pos, 1);
-                    byte *cache_new_root = new_root_b->frame + sizeof(node);
-                    node *new_root = (node *)(cache_new_root - sizeof(node));
-                    new_root->key = root_n->key,    new_root->size = 1;
-                    new_root->pos = pos,            new_root->type = 1;
-                    new_root->prior = new_root->next = invalid_p;
-                    *nth_key_n(cache_new_root) = root_n->key;
-                    *nth_point(cache_new_root) = root_n->pos;
-                    split_n(root, new_root_b, 0); 
-                    root_pos = new_root->pos;
-                    new_root_b->RW_latch.unlock();
-                }
+            else _insert_head_n(root, k, v);
+            buf->dirty(root);
+            if (root_n->size >= part_size_n){
+                point pos = alloc.alloc(node_size);
+                buf_block_t *new_root_b = buf->load_it(pos, 1);
+                byte *cache_new_root = new_root_b->frame + sizeof(node);
+                node *new_root = (node *)(cache_new_root - sizeof(node));
+                new_root->key = root_n->key,    new_root->size = 1;
+                new_root->pos = pos,            new_root->type = 1;
+                new_root->prior = new_root->next = invalid_p;
+                *nth_key_n(cache_new_root) = root_n->key;
+                *nth_point(cache_new_root) = root_n->pos;
+                split_n(root, new_root_b, 0); 
+                root_pos = new_root->pos;
+                new_root_b->RW_latch.unlock();
             }
         }
         else{
             if (com(root_n->key, k))
                 ret = _insert_l(root, k, v);
-            else {
-                ret = 2;
-                _insert_head_l(root, k, v);
-            }
-            if (ret == 2){
-                buf->dirty(root);
-                if (root_n->size >= part_size_l){
-                    point pos = alloc.alloc(node_size);
-                    buf_block_t *new_root_b = buf->load_it(pos, 1);
-                    byte *cache_new_root = new_root_b->frame + sizeof(node);
-                    node *new_root = (node *)(cache_new_root - sizeof(node));
-                    new_root->key = root_n->key, new_root->size = 1;
-                    new_root->pos = pos, new_root->type = 1;
-                    new_root->prior = new_root->next = invalid_p;
-                    *nth_key_n(cache_new_root) = root_n->key;
-                    *nth_point(cache_new_root) = root_n->pos;
-                    split_l(root, new_root_b, 0);
-                    root_pos = new_root->pos;
-                    new_root_b->RW_latch.unlock();
-                }
+            else _insert_head_l(root, k, v);
+            buf->dirty(root);
+            if (root_n->size >= part_size_l){
+                point pos = alloc.alloc(node_size);
+                buf_block_t *new_root_b = buf->load_it(pos, 1);
+                byte *cache_new_root = new_root_b->frame + sizeof(node);
+                node *new_root = (node *)(cache_new_root - sizeof(node));
+                new_root->key = root_n->key, new_root->size = 1;
+                new_root->pos = pos, new_root->type = 1;
+                new_root->prior = new_root->next = invalid_p;
+                *nth_key_n(cache_new_root) = root_n->key;
+                *nth_point(cache_new_root) = root_n->pos;
+                split_l(root, new_root_b, 0);
+                root_pos = new_root->pos;
+                new_root_b->RW_latch.unlock();
             }
         }
-        root->RW_latch.unlock();
         return ret;
     }
     bool remove(const key_t &k)
@@ -1011,13 +938,9 @@ public:
         bool ret = true;
         if (root->type) {
             ret = _remove_n(root_b, k);
-            if (!ret) {
-                root_b->RW_latch.unlock();
-                return 0;
-            }
+            if (!ret) return 0;
             if (root->size < 2){
                 alloc.free(root->pos, node_size);
-                root_b->RW_latch.unlock();
                 root_b      = buf->load_it(*nth_point(cache), 1);
                 root_pos    = ((node *)(root_b->frame))->pos;
             }
@@ -1025,13 +948,9 @@ public:
         }
         else {
             ret = _remove_l(root_b, k);
-            if (!ret) {
-                root_b->RW_latch.unlock();
-                return 0;
-            }
+            if (!ret) return 0; 
             buf->dirty(root_b);
         }
-        root_b->RW_latch.unlock();
         return ret;
     }
     vector<list_t> listof(key_t k, bool (*comp)(const key_t &a, const key_t &b)) const
@@ -1047,8 +966,9 @@ public:
     void double_check()
     {
         buf->check_hash();
-        //buf->check_flush();
+        buf->check_flush();
         buf->check_LRU();
+        buf->check_useage();
     }
 };
 
