@@ -1,40 +1,52 @@
 #pragma once
-#pragma warning(disable : 4996)
 //基于文件实现的一个vector
 
 #include <string>
+#include <fstream>
 #include <iostream>
-#include <stdio.h>
 #include "tool.h"
 
 using std::fstream;
 
 template<class T>
-class dataFile
-{
-	FILE        *_file;
-	long        num;
-	const int   Tsize;
+class dataFile {
+	std::string fileName;
+	std::ifstream in;
+	std::fstream out;
+	std::ifstream *ptr;
+	int _size;
+	const int sizeofT;
 public:
-	// 构造函数：参数为文件名，如果不存在就创建
-	dataFile(const std::string &name) : Tsize(sizeof(T))
-	{
-		_file = fopen(name.c_str(), "rb+");
-		if (!_file) _file = fopen(name.c_str(), "wb+"), num = 0;
-		else fread(&num, sizeof(long), 1, _file);
+	//构造函数：参数为文件名，如果不存在就创建
+	dataFile(std::string name) :sizeofT(sizeof(T)),fileName(name) {
+		in.open(fileName,fstream::binary);
+		if (!in) {
+			out.open(fileName,fstream::out| fstream::binary);
+			_size = 0;
+			out.seekp(0);
+			out.write(reinterpret_cast<const char *>(&_size), sizeof(int));
+			out.flush();
+			in.open(fileName, fstream::binary);
+		}
+		else {
+			out.open(fileName,fstream::in|fstream::out| fstream::binary);
+			in.seekg(0);
+			in.read(reinterpret_cast<char *>(&_size), sizeof(int));
+			//std ::cout << "File "<<fileName<<"exist,size = " << _size << '\n';
+		}
+		ptr = &in;
 	}
 	dataFile() = delete;
-	~dataFile()
-	{
-		fseek(_file, 0, SEEK_SET);
-		fwrite(&num, sizeof(long), 1, _file);
-		fclose(_file);
+
+	// 析构函数：关闭文件
+	~dataFile() {
+		out.seekp(0);
+		out.write(reinterpret_cast<const char *>(&_size), sizeof(int));
+		in.close();
+		out.close();
 	}
-
-
-	// get: return the i th record, 
-	// 1-base and the following functions are the same
-	T get(int i) const;
+	// get: return the i th record
+	T get(int i) const ; 
 
 	// replace the i th record with 'now'
 	void replace(const T& now, int i);
@@ -44,7 +56,7 @@ public:
 
 	void pop();
 
-	int size() const { return num; }
+	int size() const { return _size; }
 
 	void loadAll(T *ptr);
 
@@ -52,62 +64,55 @@ public:
 
 	void upload(int __size, T *ptr);
 
-	void clear()
-	{
-		//fclose(_file);
-		//_file = fopen(_file, "wb+");
-		num = 0;
-	}
+	void clear() { _size = 0; }
 };
 
 template<class T>
-T dataFile<T>::get(int i) const
-{
-	fseek(_file, (i - 1) * Tsize + sizeof(long), SEEK_SET);
-	T it;
-	fread(&it, Tsize, 1, _file);
-	return it;
+T dataFile<T>::get(int i) const {
+	ptr->seekg((i - 1)*sizeofT + sizeof(int));
+	T ret;
+	ptr->read(reinterpret_cast<char *>(&ret), sizeofT);
+	return ret;
 }
 
 template<class T>
-void dataFile<T>::replace(const T& now, int i)
-{
-	fseek(_file, (i - 1) * Tsize + sizeof(long), SEEK_SET);
-	fwrite(&now, Tsize, 1, _file);
+void dataFile<T>::replace(const T& now, int i) {
+	out.seekp((i - 1)*sizeofT + sizeof(int));
+	out.write(reinterpret_cast<const char *>(&now), sizeofT);
+	out.flush();
 }
 
 template<class T>
-void dataFile<T>::push(const T& ele)
-{
-	fseek(_file, num * Tsize + sizeof(long), SEEK_SET);
-	fwrite(&ele, Tsize, 1, _file);
-	++num;
+void dataFile<T>::push(const T& ele) {
+	_size++;
+	out.seekp((_size - 1)*sizeofT + sizeof(int));
+	out.write(reinterpret_cast<const char *>(&ele), sizeofT);
+	out.flush();
 }
 
 template<class T>
-void dataFile<T>::loadAll(T* ptr)
-{
-	fseek(_file, sizeof(long), SEEK_SET);
-	fread(ptr, Tsize, num * Tsize, _file);
+void dataFile<T>::loadAll(T* ptr) {
+	in.seekg(sizeof(int));
+	in.read(reinterpret_cast<char *>(ptr), _size*sizeofT);
 }
 
 template<class T>
 void dataFile<T>::load(int l, int r, T *ptr) {
-	fseek(_file, sizeof(long) + (l - 1) * Tsize, SEEK_SET);
-	fread(ptr, Tsize, r - l + 1, _file);
+	in.seekg(sizeof(int) + (l - 1)*sizeofT);
+	in.read(reinterpret_cast<char *>(ptr), (r - l + 1) * sizeof(T));
 }
 
 template<class T>
-void dataFile<T>::upload(int __size, T* ptr)
-{
-	num = __size;
-	rewind(_file);
-	fwrite(&num, sizeof(long), 1, _file);
-	fwrite(ptr, Tsize, num, _file);
+void dataFile<T>::upload(int __size,T* ptr) {
+	out.seekp(0);
+	_size = __size;
+	out.write(reinterpret_cast<const char *>(&_size), sizeof(int));
+	out.seekp(sizeof(int));
+	out.write(reinterpret_cast<const char *>(ptr), _size*sizeofT);
+	out.flush();
 }
 
 template<class T>
-void dataFile<T>::pop()
-{
-	--num;
+void dataFile<T>::pop() {
+	_size--;
 }

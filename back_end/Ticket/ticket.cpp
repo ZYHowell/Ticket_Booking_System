@@ -1,17 +1,17 @@
 #include "ticket.h"
 
-void Seat::print() const
-{
-		type.print();
-		printf(" %d %g", num + station::INITIAL_QUANTITY, price);
+std::ostream &operator << (std::ostream &os, const Seat &s) {
+	os << s.type << ' ' << s.num + station::INITIAL_QUANTITY << ' ' << s.price;
+	return os;
 }
-void ticket::print() const
-{
-	tID.print();printf(" ");from.print();printf(" ");Date.print();printf(" ");leave.print();printf(" ");
-	to.print();printf(" ");
-	Date2.print();printf(" ");arrive.print();printf(" ");
-	for (int i = 0; i < seat.size(); i++)
-		{seat[i].print(); printf(" ");}
+
+std::ostream &operator << (std::ostream &os, const ticket &t) {
+	os << t.tID << ' ' << t.from << ' ' << t.Date << ' ' << t.leave << ' '
+		<< t.to << ' ';
+	os<<t.Date2<< ' ' << t.arrive << ' ';
+	for (int i = 0; i < t.seat.size(); i++)
+		os << t.seat[i] << ' ';
+	return os;
 }
 
 bool cmpByFirstDim(const std::pair<shortString,shortString> &lhs, const std::pair<shortString,shortString>& rhs) {
@@ -106,17 +106,4 @@ ticketPair ticketSystem::transfer(const String &from, const String &to,
 		}
 	}
 	return ret;
-}
-std::ostream &operator << (std::ostream &os, const Seat &s) {
-	os << s.type << ' ' << s.num + station::INITIAL_QUANTITY << ' ' << s.price;
-	return os;
-}
-
-std::ostream &operator << (std::ostream &os, const ticket &t) {
-	os << t.tID << ' ' << t.from << ' ' << t.Date << ' ' << t.leave << ' '
-		<< t.to << ' ';
-	os<<t.Date2<< ' ' << t.arrive << ' ';
-	for (int i = 0; i < t.seat.size(); i++)
-		os << t.seat[i] << ' ';
-	return os;
 }

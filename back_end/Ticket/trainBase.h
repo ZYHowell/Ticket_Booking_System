@@ -10,7 +10,6 @@ struct station {
 	shortString name;
 	Time arrive, leave, stop;
 	short num[maxDate][maxClassN]; // 2018-06-01 到2018-06-30每一天的余票数
-
 	float price[maxClassN];
 
 	station() = default;
@@ -30,10 +29,8 @@ struct station {
 
 struct train {
 	static const int maxN = 50;
-
 	short n; //经过站的数量
 	short classN; //座位类别的数量
-
 	String name;
 	char catalog;
 	shortString ID,seatClass[maxClassN];
@@ -58,5 +55,4 @@ struct train {
 	int getStationID(const String &target) const;
 	int getClassID(const String &cls) const;
 	bool ok(const String &from, const String &to)const;
-	void print() const;
 };

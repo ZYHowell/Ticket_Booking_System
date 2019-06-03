@@ -1,20 +1,5 @@
 ﻿#include "train.h"
 
-void train::print() const
-{
-	ID.print();printf(" ");name.print();printf(" %c %d %d ", catalog, n, classN);
-	for (int i = 0; i < classN; i++) {
-		seatClass[i].print();printf(" ");
-	}
-	printf("\n");
-	for (int i = 0; i < n; i++) {
-		s[i].name.print();printf(" ");
-		s[i].arrive.print();printf(" ");s[i].leave.print();printf(" ");s[i].stop.print();printf(" ");
-		for (int j = 0; j < classN; j++)
-			{printf("￥%g ", s[i].price[j]);}
-		if (i + 1 != n) printf("\n");
-	}
-}
 
 std::ostream &operator << (std::ostream &os, const train &t) {
 	os << t.ID << ' ' << t.name << ' ' << t.catalog << ' '

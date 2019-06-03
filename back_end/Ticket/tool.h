@@ -65,17 +65,6 @@ public:
 	bool operator == (const String &a) const { return cmp(a) == 0; }
 	bool operator != (const String &a) const { return cmp(a) != 0; }
 	bool operator > (const String &a) const { return cmp(a) > 0; }
-
-	String operator += (const char &a)
-	{
-		s[l++] = a;
-		return *this;
-	}
-	void addend()
-	{
-		s[l] = '\0';
-	}
-
 	const char &operator [] (const int &idx) const {
 		return s[idx];
 	}
@@ -89,7 +78,6 @@ public:
 	Time asTime() const;
 	char aschar()const;
 	bool contain(const char &c)const;
-	void print() const;
 };
 
 class shortString {
@@ -123,7 +111,6 @@ public:
 	bool operator == (const shortString &a) const { return cmp(a) == 0; }
 	bool operator != (const shortString &a) const { return cmp(a) != 0; }
 	bool operator > (const shortString &a) const { return cmp(a) > 0; }
-	void print() const;
 };
 
 struct Time {
@@ -145,7 +132,6 @@ struct Time {
 		ret.t = t - rhs.t;
 		return ret;
 	}
-	void print() const;
 };
 
 struct date {
@@ -172,7 +158,6 @@ struct date {
 	int asint() {return day-1;}
 
 	date tomorrow() const { return date(day + 1);}
-	void print() const;
 };
 
 std::ostream &operator << (std::ostream &os, const Time &t);

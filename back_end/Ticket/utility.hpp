@@ -2,6 +2,8 @@
 #define SJTU_UTILITY_HPP
 
 #include <utility>
+#include <thread>
+#include "thread.hpp"
 
 template<class T1, class T2>
 class pair {

@@ -81,4 +81,3 @@ public:
 };
 
 std::ostream &operator << (std::ostream &os, const record &t);
-void print_record(const record &t);

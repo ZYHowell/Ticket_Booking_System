@@ -1,15 +1,6 @@
 #include "log.h"
 
-void print_record(const record &t)
-{
-t.first.trainID.print();printf(" ");
-t.first.from.print();	printf(" ");t.first.Date.print();printf(" ");	t.second.leave.print();printf(" ");
-t.first.to.print();		printf(" ");t.first.Date.print();printf(" ");	t.second.arrive.print();printf(" ");
-for (int i = 0; i < t.second.classN; i++)
-{
-	t.second.seatClass[i].print();printf(" %d %d ", t.second.num[i], t.second.price[i]);
-}
-}
+
 bool partailCompare(const keyInfo &lhs,const keyInfo &rhs) {
 	if (lhs.userID != rhs.userID) return lhs.userID < rhs.userID;
 	if (lhs.Date != rhs.Date) return lhs.Date < rhs.Date;
