@@ -52,23 +52,8 @@ public class BuyActivity extends AppCompatActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeButtonEnabled(true);
 
-        // 从后端获得座数量与价格
-        String[] left = new String[11];
-        String[] price = new String[11];
-        for(int i = 0; i < 11; i++){
-            left[i] = getIntent().getStringExtra("left_" + i);
-            price[i] = getIntent().getStringExtra("price_" + i);
-        }
+        refresh();
 
-        list = new ArrayList<>();
-        for(int i = 0; i < 11; i++){
-            if(left[i].equals("-1"))
-                list.add(Tools.getSeatType(i) + " ： 无");
-            else
-                list.add(Tools.getSeatType(i) + " ： ￥ " + price[i] + "     " + "剩余 " + left[i] + " 张");
-        }
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(BuyActivity.this, android.R.layout.simple_list_item_1, list);
-        ticket_list.setAdapter(adapter);
         ticket_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View vi, final int position, long id) { // 购票
@@ -124,6 +109,7 @@ public class BuyActivity extends AppCompatActivity {
                         Tools.showMessage(BuyActivity.this, BuyActivity.this, "购票成功！\n（"
                                 + Integer.valueOf(num) + "×" + Tools.getSeatType(ticket_type) + "）", "success");
                         progressbarFragment.dismiss();
+                        refresh();
                     }
                     else{
                         Tools.showMessage(BuyActivity.this, BuyActivity.this, "购票失败！", "error");
@@ -155,6 +141,59 @@ public class BuyActivity extends AppCompatActivity {
         destination_text.setText(intent.getStringExtra("destination"));
         depart_time_text.setText(intent.getStringExtra("depart_time"));
         destination_time_text.setText(intent.getStringExtra("destination_time"));
+    }
+
+    void refresh(){
+        // 从后端获得座数量与价格
+        progressbarFragment = new ProgressbarFragment();
+        progressbarFragment.setCancelable(false);
+        progressbarFragment.show(getSupportFragmentManager());
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String command = "query_available_ticket"
+                            + " " + getIntent().getStringExtra("train_id")
+                            + " " + getIntent().getStringExtra("date")
+                            + " " + getIntent().getStringExtra("departure")
+                            + " " + getIntent().getStringExtra("destination");
+                    // 返回2*11个数据 每一个二元组是 价格+剩余数量     查不到返回0
+                    String result = Tools.command(command);
+
+                    if(!result.equals("0")){
+                        final String[] left = new String[11];
+                        final String[] price = new String[11];
+                        for (int i = 0; i < 11; i++) {
+                            price[i] = Tools.getNthSubstring(result, " ", i * 2 );
+                            left[i] = Tools.getNthSubstring(result, " ", i * 2 + 1);
+                        }
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                list = new ArrayList<>();
+                                for (int i = 0; i < 11; i++) {
+                                    if (left[i].equals("-1"))
+                                        list.add(Tools.getSeatType(i) + " ： 无");
+                                    else
+                                        list.add(Tools.getSeatType(i) + " ： ￥ " + price[i] + "     " + "剩余 " + left[i] + " 张");
+                                }
+                                ArrayAdapter<String> adapter = new ArrayAdapter<String>(BuyActivity.this, android.R.layout.simple_list_item_1, list);
+                                ticket_list.setAdapter(adapter);
+                            }
+                        });
+                    }
+                    else {
+                        Tools.showMessage(BuyActivity.this, BuyActivity.this, "查询失败！", "error");
+                        finish();
+                    }
+                    progressbarFragment.dismiss();
+                } catch (Exception e) {
+                    Tools.showMessage(BuyActivity.this, BuyActivity.this, "请检查网络连接！", "warning");
+                    progressbarFragment.dismiss();
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     @Override

@@ -78,6 +78,12 @@ public class New2Activity extends AppCompatActivity {
                     progressbarFragment.setCancelable(false);
                     progressbarFragment.show(getSupportFragmentManager());
 
+                    if(station_cnt < 2){
+                        Tools.showMessage(New2Activity.this, New2Activity.this, "请至少添加2个站点！", "error");
+                        progressbarFragment.dismiss();
+                        return;
+                    }
+
                     command = " " + getIntent().getStringExtra("id")
                              + " " + getIntent().getStringExtra("name")
                              + " " + getIntent().getStringExtra("catalog")
@@ -165,7 +171,7 @@ public class New2Activity extends AppCompatActivity {
                 }
 
                 name.setOnClickListener(new changeStationClickListener());
-                class ModifyTimeOnClickListener implements View.OnClickListener{ // 仅直接修改对应TextView的字符串
+                class ModifyTimeOnClickListener implements View.OnClickListener{ // 仅直接修改对应TextVie                      w的字符串
                     @Override
                     public void onClick(final View v) {
                         Calendar calendar = Calendar.getInstance();

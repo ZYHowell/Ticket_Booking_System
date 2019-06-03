@@ -50,21 +50,8 @@ public class ReturnTicketActivity extends AppCompatActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeButtonEnabled(true);
 
-        // TODO : 从后端获得座位数量
-        String[] arr = new String[11];
-        for(int i = 0; i < 11; i++){
-            arr[i] = getIntent().getStringExtra("left_" + i);
-        }
+        refresh();
 
-        list = new ArrayList<>();
-        for(int i = 0; i <= 10; i++){
-            if(arr[i].equals("-1"))
-                list.add(Tools.getSeatType(i) + " ： 无");
-            else
-                list.add(Tools.getSeatType(i) + " ： 已购 " + arr[i] + " 张");
-        }
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(ReturnTicketActivity.this, android.R.layout.simple_list_item_1, list);
-        ticket_list.setAdapter(adapter);
         ticket_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View vi, final int position, long id) {
@@ -119,13 +106,66 @@ public class ReturnTicketActivity extends AppCompatActivity {
                     if(result.equals("1")){
                         Tools.showMessage(ReturnTicketActivity.this, ReturnTicketActivity.this, "退票成功！\n（"
                                 + Integer.valueOf(num) + "×" + Tools.getSeatType(ticket_type) + "）", "success");
-                        alertDialog.dismiss();
                         progressbarFragment.dismiss();
+                        refresh();
                     }
                     else{
                         Tools.showMessage(ReturnTicketActivity.this, ReturnTicketActivity.this, "退票失败！", "error");
                         progressbarFragment.dismiss();
                     }
+                } catch (Exception e) {
+                    Tools.showMessage(ReturnTicketActivity.this, ReturnTicketActivity.this, "请检查网络连接！", "warning");
+                    progressbarFragment.dismiss();
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    void refresh(){
+        // 从后端获得座数量
+        progressbarFragment = new ProgressbarFragment();
+        progressbarFragment.setCancelable(false);
+        progressbarFragment.show(getSupportFragmentManager());
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String command = "query_my_ticket"
+                            + " " + getIntent().getStringExtra("userid")
+                            + " " + getIntent().getStringExtra("train_id")
+                            + " " + getIntent().getStringExtra("date")
+                            + " " + getIntent().getStringExtra("departure")
+                            + " " + getIntent().getStringExtra("destination");
+                    // 返回11个数据 每一个是剩余数量     查不到返回0
+                    String result = Tools.command(command);
+
+                    if(!result.equals("0")) {
+                        final String[] arr = new String[11];
+                        for (int i = 0; i < 11; i++) {
+                            arr[i] = Tools.getNthSubstring(result, " ", i);
+                        }
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                list = new ArrayList<>();
+                                for (int i = 0; i <= 10; i++) {
+                                    if (arr[i].equals("-1"))
+                                        list.add(Tools.getSeatType(i) + " ： 无");
+                                    else
+                                        list.add(Tools.getSeatType(i) + " ： 已购 " + arr[i] + " 张");
+                                }
+                                ArrayAdapter<String> adapter = new ArrayAdapter<String>(ReturnTicketActivity.this, android.R.layout.simple_list_item_1, list);
+                                ticket_list.setAdapter(adapter);
+                            }
+                        });
+                    }
+                    else{
+                        Tools.showMessage(ReturnTicketActivity.this, ReturnTicketActivity.this, "查询失败！", "error");
+                        finish();
+                    }
+                    progressbarFragment.dismiss();
                 } catch (Exception e) {
                     Tools.showMessage(ReturnTicketActivity.this, ReturnTicketActivity.this, "请检查网络连接！", "warning");
                     progressbarFragment.dismiss();

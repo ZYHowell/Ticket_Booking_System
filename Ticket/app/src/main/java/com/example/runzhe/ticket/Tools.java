@@ -28,7 +28,7 @@ import es.dmoral.toasty.Toasty;
 public class Tools {
 
     static String command(String command) throws Exception{
-        return Client.main(command);
+        return Client.fuck(command);
     }
 
     static boolean legalDate(String date){
