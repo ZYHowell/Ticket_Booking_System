@@ -19,6 +19,11 @@ string getToken(const string &str, int t) {
 }
 
 int main() {
+#ifdef LOCAL_TEST
+	freopen("2s.in", "r", stdin);
+	freopen("myans.txt", "w", stdout);
+	S.process("clean", vector<token>());
+#endif // LOCAL_TEST
 	std::ios_base::sync_with_stdio(0);
 	//std::cout.precision(10);	
 	std::string str,s;

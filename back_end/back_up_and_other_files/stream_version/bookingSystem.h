@@ -15,10 +15,11 @@ class ticketBookingSystem{
 	ticketSystem Ticket;
 	userSystem User;
 	purchaseLog Log;
+	std::ostream &os;
 
 
 public:
-	ticketBookingSystem(){
+	ticketBookingSystem(std::ostream &_os = std::cout):os(_os){
 		Ticket.init(&Train);
 	}
 

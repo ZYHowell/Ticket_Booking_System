@@ -17,24 +17,21 @@ public:
 		const String &e, const String &ph, const userType &t = COMMON)
 		:id(i), name(n), passwd(p), email(e), phone(ph), type(t){}
 
-	bool match(const String &_pswd) { return _pswd == passwd; }
+	bool match(String _pswd) { return _pswd == passwd; }
 	void reset(const String &n, const String &p, const String &e, const String &ph) {
 		name = n; 
 		passwd = p;
 		email = e;
 		phone = ph;
 	}
-	void print() const;
 };
 
 class userSystem {
 	dataFile<user> B;
-	static const int INITIAL_ID = 2019;
 	int currentID;
+	static const int INITIAL_ID = 2019;
 public:
-	userSystem() :B("user"){
-		currentID = B.size() + INITIAL_ID;
-	}
+	userSystem() :B("user"){}
 
 	int add(const vector<token> &V);
 

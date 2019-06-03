@@ -12,7 +12,6 @@ struct Seat{
 
 	Seat() = default;
 	Seat(const shortString &s, const float &p, const int &n) :type(s), price(p), num(n) {}
-	void print() const;
 };
 
 struct ticket {
@@ -40,7 +39,6 @@ struct ticket {
 			seat.push_back(Seat(T.seatClass[i],price,_min));
 		}
 	}
-	void print() const;
 };
 
 typedef std::pair<ticket, ticket> ticketPair;

@@ -1,23 +1,5 @@
 #include "tool.h"
 
-void String::print() const
-{
-	printf("%s", s);
-}
-void shortString::print() const
-{
-	printf("%s", s);
-}
-void Time::print() const
-{
-	if (t < 0) printf("xx:xx");
-	else printf("%02d:%02d", t / 60, t % 60);
-}
-void date::print() const 
-{
-	if (day > 30) printf("2019-07-%02d", day-30);
-	else printf("2019-06-%02d", day);
-}
 std::ostream &operator << (std::ostream &os,const Time &time){
 	if (time.t < 0) os << "xx:xx";
 	else os << setw(2) << setfill('0') << time.t / 60
